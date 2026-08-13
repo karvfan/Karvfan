@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>کار و فناوری | فرزانگان و ۱۳ آبان — قروه</title>
+<title>سامانه آموزش و ارزیابی کار و فناوری</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -163,6 +163,10 @@ a{color:var(--sky)}
 .quiz-score{font-size:18px;font-weight:800}
 .quiz-msg{font-size:13px;color:var(--ink-soft,#6b6155);margin-top:6px}
 .quiz-pts-msg{font-size:13px;font-weight:800;color:var(--wood-dark,#8c5a32);margin-top:12px;min-height:20px}
+.presc-badge{display:inline-block;font-size:10px;font-weight:700;border-radius:20px;padding:2px 9px;vertical-align:middle;margin-right:4px}
+.presc-yes{background:var(--sage-bg);color:var(--sage)}
+.presc-no{background:var(--sky-bg);color:var(--sky)}
+.draft-card{border:1.5px dashed var(--sky);background:var(--sky-bg)}
 .mood-row{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:11.5px;color:var(--ink-soft,#6b6155)}
 .mood-row.mood-done{color:var(--sage);font-weight:700}
 .mood-btn{background:none;border:1.5px solid var(--line);border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer}
@@ -330,7 +334,7 @@ a{color:var(--sky)}
 <div id="gate" class="hidden">
   <div class="gate-card">
     <span class="gate-eyebrow">✂️ کار و فناوری — پایه‌های ۷ · ۸ · ۹</span>
-    <h1 class="gate-title">سامانه کار و فناوری<br>مدارس فرزانگان و ۱۳ آبان قروه</h1>
+    <h1 class="gate-title">سامانه آموزش و ارزیابی<br>کار و فناوری</h1>
     <p class="gate-sub">کارهای کلاسی‌تون رو آپلود کنید، آموزش ببینید و امتیاز جمع کنید 🎯</p>
     <div class="role-grid">
       <div class="role-card" onclick="goTo('studentAuth')">
@@ -377,10 +381,11 @@ a{color:var(--sky)}
       </div>
       <div class="field">
         <label>مدرسه</label>
-        <select id="saSchool">
-          <option value="فرزانگان">فرزانگان</option>
-          <option value="۱۳ آبان">۱۳ آبان</option>
-        </select>
+        <input id="saSchool" list="schoolSuggestions" placeholder="مثلاً: فرزانگان">
+        <datalist id="schoolSuggestions">
+          <option value="فرزانگان"></option>
+          <option value="۱۳ آبان"></option>
+        </datalist>
       </div>
       <div class="field">
         <label>پایه</label>
@@ -389,6 +394,10 @@ a{color:var(--sky)}
           <option value="8">پایه هشتم</option>
           <option value="9">پایه نهم</option>
         </select>
+      </div>
+      <div class="field">
+        <label>کلاس (اختیاری)</label>
+        <input id="saClass" placeholder="مثلاً: ۷/۲ یا الف">
       </div>
       <div class="field">
         <label>شماره موبایل</label>
@@ -560,7 +569,7 @@ a{color:var(--sky)}
     <div class="field"><label>عنوان واحد/درس</label><input id="lmUnitTitle" placeholder="مثلاً: آشنایی با برق و مدار ساده"></div>
     <div class="field"><label>ترتیب نمایش (عدد کوچک‌تر بالاتر می‌آید)</label><input id="lmOrder" type="number" value="1"></div>
     <div class="field"><label>متن آموزشی و نکات (سطح کتاب درسی)</label><textarea id="lmContent" rows="5" placeholder="متن آموزش این درس..."></textarea></div>
-    <div class="field"><label>🌟 مطالب تکمیلی و پیشرفته (سطح فرزانگان — اختیاری)</label><textarea id="lmAdvanced" rows="5" placeholder="مفاهیم عمیق‌تر و فرابخشی مرتبط با این درس، برای دانش‌آموزان تیزهوش..."></textarea></div>
+    <div class="field"><label>🌟 مطالب تکمیلی و پیشرفته (سطح پیشرفته — اختیاری)</label><textarea id="lmAdvanced" rows="5" placeholder="مفاهیم عمیق‌تر و فرابخشی مرتبط با این درس، برای دانش‌آموزان تیزهوش..."></textarea></div>
     <div class="field"><label>لینک ویدیو (آپارات/یوتیوب — اختیاری)</label><input id="lmVideo" placeholder="https://"></div>
     <div class="field"><label>لینک فایل PDF (اختیاری)</label>
       <div class="file-drop" id="lmPdfDrop" onclick="document.getElementById('lmPdfFile').click()">📄 انتخاب فایل PDF</div>
@@ -573,6 +582,9 @@ a{color:var(--sky)}
     </div>
     <div class="field">
       <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="lmPublished" checked style="width:auto"> برای دانش‌آموزان نمایش داده شود</label>
+    </div>
+    <div class="field">
+      <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="lmPrescribed" checked style="width:auto"> پودمان تجویزی (اگه نیمه‌تجویزی و قابل‌جایگزینیه، تیک رو بردارید)</label>
     </div>
     <div class="field quiz-field">
       <label>🎮 بازی و آزمون این درس (اختیاری)</label>
@@ -599,7 +611,7 @@ a{color:var(--sky)}
     <div class="field"><label>عنوان تکلیف</label><input id="amTitleInput" placeholder="مثلاً: عکس از میز کار این هفته"></div>
     <div class="field"><label>توضیح (اختیاری)</label><textarea id="amDesc" rows="3" placeholder="توضیح تکلیف..."></textarea></div>
     <div class="field"><label>پایه</label><select id="amGrade"><option value="">همه‌ی پایه‌ها</option><option value="7">هفتم</option><option value="8">هشتم</option><option value="9">نهم</option></select></div>
-    <div class="field"><label>مدرسه</label><select id="amSchool"><option value="">هر دو مدرسه</option><option value="فرزانگان">فرزانگان</option><option value="۱۳ آبان">۱۳ آبان</option></select></div>
+    <div class="field"><label>مدرسه (خالی = همه‌ی مدارس)</label><input id="amSchool" list="schoolSuggestions" placeholder="مثلاً: فرزانگان — یا خالی برای همه"></div>
     <div class="field"><label>مهلت تحویل (اختیاری)</label><input id="amDue" type="date"></div>
     <div class="field"><label>امتیاز پیشنهادی</label><input id="amPoints" type="number" value="10"></div>
     <div class="field"><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="amActive" checked style="width:auto"> فعال و قابل‌مشاهده برای دانش‌آموزان</label></div>
@@ -618,7 +630,7 @@ a{color:var(--sky)}
     <div class="field"><label>عنوان</label><input id="anTitle"></div>
     <div class="field"><label>متن</label><textarea id="anBody" rows="4"></textarea></div>
     <div class="field"><label>مخصوص کدام مدرسه؟</label>
-      <select id="anSchool"><option value="">هر دو مدرسه</option><option value="فرزانگان">فرزانگان</option><option value="۱۳ آبان">۱۳ آبان</option></select>
+      <input id="anSchool" list="schoolSuggestions" placeholder="مثلاً: فرزانگان — یا خالی برای همه">
     </div>
     <div class="field"><label>مخصوص کدام پایه؟</label>
       <select id="anGrade"><option value="">همه‌ی پایه‌ها</option><option value="7">هفتم</option><option value="8">هشتم</option><option value="9">نهم</option></select>
@@ -760,15 +772,17 @@ async function studentLogin(){
 }
 async function studentRegister(){
   const full_name = $('saName').value.trim();
-  const school = $('saSchool').value;
+  const school = $('saSchool').value.trim();
   const grade = parseInt($('saGrade').value);
+  const class_name = $('saClass').value.trim();
   const phone = $('saPhone').value.trim();
   $('saErr').textContent='';
   if(!full_name || full_name.length<3){ $('saErr').textContent='نام و نام خانوادگی رو کامل بنویسید'; return; }
+  if(!school){ $('saErr').textContent='نام مدرسه رو بنویسید'; return; }
   if(!/^0?9\d{9}$/.test(phone.replace(/\s/g,''))){ $('saErr').textContent='شماره موبایل معتبر نیست'; return; }
   $('saBtn').disabled=true; $('saBtn').innerHTML='<span class="spinner"></span> در حال ثبت‌نام...';
   try{
-    const { data, error } = await sb.rpc('student_login_or_register', { p_full_name: full_name, p_school: school, p_grade: grade, p_phone: phone });
+    const { data, error } = await sb.rpc('student_login_or_register', { p_full_name: full_name, p_school: school, p_grade: grade, p_phone: phone, p_class_name: class_name||null });
     if(error) throw error;
     student = data[0];
     localStorage.setItem('kf_student', JSON.stringify(student));
@@ -784,7 +798,7 @@ function studentLogout(){ localStorage.removeItem('kf_student'); student=null; g
 
 async function enterStudentApp(){
   $('stName').textContent = student.full_name;
-  $('stMeta').textContent = student.school+' · پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[student.grade]);
+  $('stMeta').textContent = student.school+' · پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[student.grade])+(student.class_name?(' · کلاس '+student.class_name):'');
   $('stPoints').textContent = student.points||0;
   goTo('studentApp');
   await loadLessonsFor(student.grade);
@@ -834,9 +848,9 @@ function renderLessonsPanel(){
     const emb = embedUrl(l.video_url);
     return '<div class="pattern-card">'+
       '<div class="tag-badge">'+(i+1)+'</div>'+
-      '<div class="section-title">'+esc(l.unit_title)+'</div>'+
+      '<div class="section-title">'+esc(l.unit_title)+' '+(l.is_prescribed? '<span class="presc-badge presc-yes">✅ تجویزی</span>' : '<span class="presc-badge presc-no">🔄 قابل جایگزینی</span>')+'</div>'+
       (l.content_text? '<div class="lesson-body">'+esc(l.content_text)+'</div>':'')+
-      (l.advanced_text? '<details class="adv-box"><summary>🌟 مطالب تکمیلی و پیشرفته (سطح فرزانگان)</summary><div class="lesson-body adv-body">'+esc(l.advanced_text)+'</div></details>':'')+
+      (l.advanced_text? '<details class="adv-box"><summary>🌟 مطالب تکمیلی و پیشرفته (سطح تیزهوشان)</summary><div class="lesson-body adv-body">'+esc(l.advanced_text)+'</div></details>':'')+
       (emb? '<div class="video-embed"><iframe src="'+emb+'" allowfullscreen></iframe></div>' : (l.video_url? '<div class="lesson-meta-row"><a class="chip-link" href="'+esc(l.video_url)+'" target="_blank">🎬 مشاهده ویدیو</a></div>':'')) +
       (l.sample_image_url? '<img class="sample-img" src="'+esc(l.sample_image_url)+'" onclick="openLightbox(\''+esc(l.sample_image_url)+'\')">':'')+
       (l.pdf_url? '<div class="lesson-meta-row"><a class="chip-link pdf" href="'+esc(l.pdf_url)+'" target="_blank">📄 دانلود جزوه PDF</a></div>':'')+
@@ -1495,19 +1509,65 @@ async function loadAllLessons(){
 function renderLessonsAdmin(){
   const el = $('tLessons');
   let html = '<button class="btn btn-thread btn-sm" style="margin-bottom:14px" onclick="openLessonModal(null)">➕ درس جدید</button>';
+
+  const drafts = lessons.filter(l=>l.is_alternative);
+  if(drafts.length){
+    html += '<div class="sec-title">📦 پیشنهادهای جایگزین (پیش‌نویس — هنوز به دانش‌آموزها نشون داده نمی‌شن)</div>';
+    drafts.forEach(l=>{
+      html += '<div class="pattern-card draft-card"><div class="lesson-admin-row">'+
+        '<div><div class="sub-title">'+esc(l.unit_title)+'</div>'+
+        '<div class="sub-lesson">پیشنهاد برای پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[l.grade])+' — می‌تونه جایگزین یکی از پودمان‌های نیمه‌تجویزی همون پایه بشه</div></div>'+
+        '<div class="lbtns"><button class="btn btn-ghost btn-sm" onclick="openLessonModal(\''+l.id+'\')">👁</button>'+
+        '<button class="btn btn-sage btn-sm" onclick="activateDraftLesson(\''+l.id+'\')">✅ فعال‌سازی</button></div></div></div>';
+    });
+  }
+
   GRADES.forEach(g=>{
-    const gl = lessons.filter(l=>l.grade===g);
+    const gl = lessons.filter(l=>l.grade===g && !l.is_alternative);
     html += '<div class="section-title">پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[g])+'</div>';
     if(!gl.length){ html += emptyState('📚','درسی ثبت نشده',''); }
     gl.forEach(l=>{
       html += '<div class="pattern-card"><div class="lesson-admin-row">'+
-        '<div><div class="sub-title">'+esc(l.unit_title)+'</div>'+
-        '<div class="sub-lesson">ترتیب: '+l.order_index+' · '+(l.is_published?'✅ نمایش‌داده‌شده':'🚫 پنهان')+'</div></div>'+
+        '<div><div class="sub-title">'+esc(l.unit_title)+' '+(l.is_prescribed?'<span class="presc-badge presc-yes">تجویزی</span>':'<span class="presc-badge presc-no">قابل‌جایگزینی</span>')+'</div>'+
+        '<div class="sub-lesson">ترتیب: '+l.order_index+' · '+(l.is_published?'✅ نمایش‌داده‌شده':'🚫 آرشیوشده')+'</div></div>'+
         '<div class="lbtns"><button class="btn btn-ghost btn-sm" onclick="openLessonModal(\''+l.id+'\')">✏️</button>'+
+        '<button class="btn btn-ghost btn-sm" onclick="duplicateLesson(\''+l.id+'\')">📋</button>'+
+        '<button class="btn btn-sky btn-sm" onclick="toggleArchiveLesson(\''+l.id+'\')">'+(l.is_published?'🗄️':'♻️')+'</button>'+
         '<button class="btn btn-brick btn-sm" onclick="deleteLesson(\''+l.id+'\')">🗑️</button></div></div></div>';
     });
   });
   el.innerHTML = html;
+}
+async function activateDraftLesson(id){
+  if(!confirm('این پودمان برای دانش‌آموزها فعال و قابل‌مشاهده بشه؟ (می‌تونید بعداً یکی از پودمان‌های قدیمی رو آرشیو کنید)')) return;
+  const { error } = await sb.from('lessons').update({ is_published: true, is_alternative: false }).eq('id', id);
+  if(error){ showToast('❌ خطا'); return; }
+  showToast('✅ فعال شد و برای دانش‌آموزها نمایش داده می‌شه');
+  await loadAllLessons(); renderLessonsAdmin();
+}
+async function duplicateLesson(id){
+  const l = lessons.find(x=>x.id===id); if(!l) return;
+  const payload = {
+    grade: l.grade, unit_title: l.unit_title+' (کپی)', order_index: l.order_index,
+    content_text: l.content_text, advanced_text: l.advanced_text, video_url: l.video_url,
+    pdf_url: l.pdf_url, sample_image_url: l.sample_image_url, is_published: false,
+    is_prescribed: l.is_prescribed, quiz_json: l.quiz_json, quiz_points: l.quiz_points
+  };
+  const { data, error } = await sb.from('lessons').insert(payload).select().single();
+  if(error){ showToast('❌ خطا در کپی'); console.error(error); return; }
+  showToast('📋 کپی شد — الان می‌تونید ویرایشش کنید');
+  await loadAllLessons(); renderLessonsAdmin();
+  openLessonModal(data.id);
+}
+async function toggleArchiveLesson(id){
+  const l = lessons.find(x=>x.id===id); if(!l) return;
+  const next = !l.is_published;
+  const msg = next? 'این درس دوباره برای دانش‌آموزها فعال بشه؟' : 'این درس آرشیو (پنهان) بشه؟ دیتاش حذف نمی‌شه و هر وقت خواستید می‌تونید برش گردونید.';
+  if(!confirm(msg)) return;
+  const { error } = await sb.from('lessons').update({ is_published: next }).eq('id', id);
+  if(error){ showToast('❌ خطا'); return; }
+  showToast(next? '♻️ دوباره فعال شد' : '🗄️ آرشیو شد');
+  await loadAllLessons(); renderLessonsAdmin();
 }
 function openLessonModal(id){
   lmPdfB64=null; lmImgB64=null;
@@ -1522,6 +1582,7 @@ function openLessonModal(id){
     $('lmOrder').value=l.order_index; $('lmContent').value=l.content_text||'';
     $('lmAdvanced').value=l.advanced_text||'';
     $('lmVideo').value=l.video_url||''; $('lmPublished').checked=l.is_published;
+    $('lmPrescribed').checked = l.is_prescribed!==false;
     $('lmQuiz').value = quizJsonToLines(l.quiz_json); $('lmQuizPoints').value = l.quiz_points||10;
     if(l.game_type && GAME_LABELS[l.game_type]){
       $('lmGameNote').style.display='block';
@@ -1534,6 +1595,7 @@ function openLessonModal(id){
     $('lmTitle').textContent='➕ درس جدید';
     $('lmId').value=''; $('lmGrade').value='7'; $('lmUnitTitle').value=''; $('lmOrder').value=(lessons.length+1);
     $('lmContent').value=''; $('lmAdvanced').value=''; $('lmVideo').value=''; $('lmPublished').checked=true;
+    $('lmPrescribed').checked=true;
     $('lmQuiz').value=''; $('lmQuizPoints').value=10;
   }
   openModal('lessonModalOv');
@@ -1564,6 +1626,7 @@ async function saveLesson(){
     video_url: $('lmVideo').value.trim()||null,
     pdf_url: lmPdfB64||null, sample_image_url: lmImgB64||null,
     is_published: $('lmPublished').checked, updated_at: new Date().toISOString(),
+    is_prescribed: $('lmPrescribed').checked,
     quiz_json: linesToQuizJson($('lmQuiz').value), quiz_points: parseInt($('lmQuizPoints').value)||10
   };
   const id = $('lmId').value;
@@ -1575,7 +1638,7 @@ async function saveLesson(){
   await loadAllLessons(); renderLessonsAdmin();
 }
 async function deleteLesson(id){
-  if(!confirm('این درس حذف بشه؟')) return;
+  if(!confirm('⚠️ این درس برای همیشه حذف می‌شه (کارهای آپلودشده‌ی مرتبط باهاش می‌مونن ولی لینکشون به این درس قطع می‌شه). اگه فقط می‌خواید موقتاً پنهانش کنید، به‌جاش از دکمه‌ی 🗄️ آرشیو استفاده کنید. مطمئنید؟')) return;
   const { error } = await sb.from('lessons').delete().eq('id', id);
   if(error){ showToast('❌ خطا در حذف'); return; }
   showToast('🗑️ حذف شد'); await loadAllLessons(); renderLessonsAdmin();
@@ -1649,67 +1712,4 @@ async function loadStudentsAdmin(){
   if($('stuSchool').value) q = q.eq('school', $('stuSchool').value);
   if($('stuGrade').value) q = q.eq('grade', parseInt($('stuGrade').value));
   const { data, error } = await q;
-  const list = $('stuList');
-  if(error || !data || !data.length){ list.outerHTML = emptyState('👩‍🎓','دانش‌آموزی یافت نشد',''); return; }
-  list.innerHTML = data.map(s=>'<div class="student-row"><span>'+esc(s.full_name)+' — '+esc(s.school)+' · پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[s.grade])+'</span>'+
-    '<span style="display:flex;align-items:center;gap:8px"><span class="pts-badge">'+s.points+' امتیاز</span>'+
-    '<button class="btn btn-ghost btn-sm" onclick="openReportCard(\''+s.id+'\')">🗂️ کارنامه</button></span></div>').join('');
-}
-
-/* ------------------------------------------------------------ کارنامه‌ی دانش‌آموز (مربی) */
-async function openReportCard(studentId){
-  $('reportBody').innerHTML = '<div class="empty-state"><div class="ic">⏳</div><div class="d">در حال بارگذاری...</div></div>';
-  openModal('reportModalOv');
-  const [{data:st}, {data:subs}, {data:quizzes}, {data:interest}] = await Promise.all([
-    sb.from('students').select('*').eq('id', studentId).single(),
-    sb.from('submissions').select('*, lessons(unit_title, category)').eq('student_id', studentId).eq('status','approved'),
-    sb.from('quiz_attempts').select('*, lessons(unit_title, category)').eq('student_id', studentId),
-    sb.from('interest_quiz_results').select('*').eq('student_id', studentId).order('taken_at',{ascending:false}).limit(1)
-  ]);
-  if(!st){ $('reportBody').innerHTML = emptyState('❌','دانش‌آموز پیدا نشد',''); return; }
-  $('reportTitle').textContent = '🗂️ کارنامه‌ی '+st.full_name;
-
-  const catMap = {}; Object.keys(CATEGORY_META).forEach(c=>catMap[c]=0);
-  (subs||[]).forEach(s=>{ const c=s.lessons&&s.lessons.category; if(c && catMap[c]!=null) catMap[c]+=s.points_awarded||0; });
-  (quizzes||[]).forEach(q=>{ const c=q.lessons&&q.lessons.category; if(c && catMap[c]!=null) catMap[c]+=q.points_awarded||0; });
-  const maxVal = Math.max(1, ...Object.values(catMap));
-
-  let html = '<div class="pattern-card"><div class="sub-desc">'+esc(st.school)+' · پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[st.grade])+' · مجموع امتیاز: '+st.points+'</div></div>';
-
-  html += '<div class="sec-title">🧭 نقاط قوت</div><div class="pattern-card">';
-  Object.keys(CATEGORY_META).forEach(cat=>{
-    const meta = CATEGORY_META[cat]; const val = catMap[cat]; const pct = Math.round((val/maxVal)*100);
-    html += '<div class="cat-bar-row"><div class="cat-bar-label"><span>'+meta.icon+' '+cat+'</span><span>'+val+'</span></div>'+
-      '<div class="cat-bar-track"><div class="cat-bar-fill" style="width:'+pct+'%;background:'+meta.color+'"></div></div></div>';
-  });
-  html += '</div>';
-
-  html += '<div class="sec-title">🏅 نشان‌ها</div><div class="pattern-card"><div class="badge-grid">';
-  Object.keys(CATEGORY_META).forEach(cat=>{
-    const meta = CATEGORY_META[cat]; const earned = catMap[cat] >= BADGE_THRESHOLD;
-    html += '<div class="badge-card '+(earned?'':'locked')+'"><div class="badge-emoji">'+meta.icon+'</div><div class="badge-name">'+meta.badge+'</div></div>';
-  });
-  html += '</div></div>';
-
-  if(interest && interest.length){
-    html += '<div class="sec-title">🎯 آزمون علاقه‌سنجی</div><div class="pattern-card"><div class="sub-desc">آخرین نتیجه ('+toJalali(interest[0].taken_at)+'): <b>'+esc(interest[0].top_category)+'</b></div></div>';
-  }
-
-  const withImg = (subs||[]).filter(s=>s.file_url && /\.(jpg|jpeg|png|webp|gif)$/i.test(s.file_url));
-  if(withImg.length){
-    html += '<div class="sec-title">🖼️ نمونه‌کارها</div><div class="pattern-card"><div class="badge-grid">';
-    withImg.slice(0,8).forEach(s=>{ html += '<img class="sample-img" style="border-radius:10px" src="'+esc(s.file_url)+'">'; });
-    html += '</div></div>';
-  }
-
-  html += '<button class="btn btn-thread btn-sm no-print" style="margin-top:10px" onclick="window.print()">🖨️ چاپ / ذخیره PDF</button>';
-  $('reportBody').innerHTML = html;
-}
-
-/* ------------------------------------------------------------ اطلاعیه‌ها (مربی) */
-async function loadAnnouncementsAdmin(){
-  const el = $('tAnn');
-  el.innerHTML = '<button class="btn btn-thread btn-sm" style="margin-bottom:14px" onclick="openModal(\'annModalOv\')">➕ اطلاعیه جدید</button><div id="anList"></div>';
-  const { data, error } = await sb.from('announcements').select('*').order('created_at',{ascending:false});
-  const list = $('anList');
-  if(e
+  const list = $('stu
