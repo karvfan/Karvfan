@@ -1,0 +1,56 @@
+name: ساخت خودکار اپلیکیشن اندروید
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ main ]
+    paths:
+      - 'karvfan-android/**'
+      - '.github/workflows/build-android.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: karvfan-android
+
+    steps:
+      - name: دریافت کد از ریپو
+        uses: actions/checkout@v4
+
+      - name: نصب Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: نصب Java (لازم برای ساخت اندروید)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: نصب پکیج‌های پروژه
+        run: npm install
+
+      - name: افزودن پلتفرم اندروید (اگر قبلاً اضافه نشده باشد)
+        run: |
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
+
+      - name: هم‌گام‌سازی فایل‌های وب با پروژه‌ی اندروید
+        run: npx cap sync android
+
+      - name: مجوز اجرا به gradlew
+        run: chmod +x android/gradlew
+
+      - name: ساخت فایل APK
+        working-directory: karvfan-android/android
+        run: ./gradlew assembleDebug
+
+      - name: آپلود فایل APK به‌عنوان خروجی این اجرا
+        uses: actions/upload-artifact@v4
+        with:
+          name: karvfan-app-debug
+          path: karvfan-android/android/app/build/outputs/apk/debug/app-debug.apk
