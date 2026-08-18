@@ -27,16 +27,7 @@ jobs:
           cp -r index.html manifest.json sw.js css js icon-192.png icon-512.png icon-512-maskable.png www/
 
       - name: Sync Capacitor Android project
-        run: |
-          set +e
-          npx cap sync android > sync_output.log 2>&1
-          code=$?
-          cat sync_output.log
-          if [ $code -ne 0 ]; then
-            ERRMSG=$(tail -c 900 sync_output.log | sed ':a;N;$!ba;s/\n/%0A/g')
-            echo "::error::CAP SYNC FAILED: $ERRMSG"
-            exit $code
-          fi
+        run: npx cap sync android
 
       - name: Set up JDK 21 (latest JDK fully supported by Gradle 8.14 / AGP 8.13)
         uses: actions/setup-java@v5

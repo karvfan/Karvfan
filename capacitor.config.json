@@ -1,0 +1,8 @@
+{
+  "appId": "com.karvfan.app",
+  "appName": "Karvfan",
+  "webDir": "www",
+  "android": {
+    "path": "karvfan-android"
+  }
+}
