@@ -1,8 +1,0 @@
-{
-  "appId": "ir.karvfan.app",
-  "appName": "کار و فناوری",
-  "webDir": "www",
-  "server": {
-    "androidScheme": "https"
-  }
-}
