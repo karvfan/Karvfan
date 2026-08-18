@@ -1,1 +1,341 @@
+/* ============================================================================
+   توکن‌های طراحی — الهام از کاغذ الگوی خیاطی و کاغذ کارگاهی (کرافت + خط‌چین برش)
+   ============================================================================ */
+:root{
+  --ink:#26334a;
+  --ink-soft:#5b6a83;
+  --paper:#f4eedd;
+  --paper-dark:#e9e0c8;
+  --card:#fffdf7;
+  --thread:#a8395a;
+  --thread-dark:#832c46;
+  --mustard:#d79a2c;
+  --sage:#4f7f58;
+  --sage-bg:#e7f0e5;
+  --sky:#356f8f;
+  --sky-bg:#e4eef3;
+  --brick:#ad3d33;
+  --brick-bg:#f7e5e0;
+  --amber-bg:#fbf0d9;
+  --line:#e2d8bd;
+  --shadow:0 10px 28px rgba(38,51,74,.10);
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+body{
+  font-family:'Vazirmatn',Tahoma,Arial,sans-serif;
+  min-height:100vh;color:var(--ink);
+  background:
+    linear-gradient(var(--paper),var(--paper)),
+    repeating-linear-gradient(0deg,rgba(38,51,74,.035) 0 1px,transparent 1px 26px),
+    repeating-linear-gradient(90deg,rgba(38,51,74,.035) 0 1px,transparent 1px 26px);
+  overflow-x:hidden;
+}
+button,input,select,textarea{font-family:'Vazirmatn',Tahoma,Arial,sans-serif}
+img{max-width:100%;display:block}
+a{color:var(--sky)}
+::selection{background:var(--thread);color:#fff}
 
+.hidden{display:none !important}
+
+/* ---------- دکمه‌ها ---------- */
+.btn{border:none;border-radius:10px;padding:11px 18px;font-size:13.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;justify-content:center;transition:transform .08s}
+.btn:active{transform:scale(.97)}
+.btn-thread{background:var(--thread);color:#fff}
+.btn-thread:hover{background:var(--thread-dark)}
+.btn-sky{background:var(--sky);color:#fff}
+.btn-sage{background:var(--sage);color:#fff}
+.btn-ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+.btn-brick{background:var(--brick);color:#fff}
+.btn-block{width:100%}
+.btn-sm{padding:7px 12px;font-size:12px;border-radius:8px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+
+/* ---------- گیت انتخاب نقش ---------- */
+#gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.gate-card{max-width:460px;width:100%;text-align:center}
+.gate-eyebrow{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1.5px dashed var(--line);border-radius:20px;padding:6px 16px;font-size:11.5px;font-weight:700;color:var(--thread);letter-spacing:.3px}
+.gate-title{font-size:26px;font-weight:800;margin:16px 0 6px;line-height:1.5}
+.gate-sub{color:var(--ink-soft);font-size:13.5px;margin-bottom:26px;line-height:2}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:420px){.role-grid{grid-template-columns:1fr}}
+.role-card{background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);padding:22px 14px;cursor:pointer;box-shadow:var(--shadow);text-align:center}
+.role-card:active{transform:scale(.98)}
+.role-card .ic{font-size:32px;margin-bottom:8px}
+.role-card .t{font-weight:800;font-size:15px;margin-bottom:4px}
+.role-card .d{font-size:11.5px;color:var(--ink-soft);line-height:1.7}
+
+/* ---------- بادج مدرسه/پایه ---------- */
+.pill{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:3px 11px;font-size:11px;font-weight:700}
+.pill-school{background:var(--sky-bg);color:var(--sky)}
+.pill-grade{background:var(--amber-bg);color:#8a621a}
+.pill-pending{background:var(--amber-bg);color:#8a621a}
+.pill-approved{background:var(--sage-bg);color:var(--sage)}
+.pill-needs_fix{background:#fdeadb;color:#a1541a}
+.pill-rejected{background:var(--brick-bg);color:var(--brick)}
+
+/* ---------- کارت‌های احراز هویت (فرم ورود) ---------- */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:22px}
+.auth-card{max-width:420px;width:100%;background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:26px 22px;position:relative;border:1.5px solid var(--line)}
+.auth-back{position:absolute;top:16px;left:16px;background:none;border:none;font-size:13px;color:var(--ink-soft);cursor:pointer;font-weight:700}
+.auth-head{text-align:center;margin-bottom:20px}
+.auth-head .ic{font-size:30px}
+.auth-head h2{font-size:18px;font-weight:800;margin-top:6px}
+.auth-head p{font-size:12px;color:var(--ink-soft);margin-top:4px}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;border:1.6px solid var(--line);border-radius:10px;padding:11px 13px;font-size:14px;outline:none;color:var(--ink);background:#fff}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--thread)}
+.field-err{color:var(--brick);font-size:11.5px;margin-top:8px;min-height:14px;text-align:center}
+
+/* ---------- نوار بالا و تب‌ها ---------- */
+.topbar{background:linear-gradient(120deg,var(--ink),#334463);padding:13px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:40;flex-wrap:wrap}
+.topbar-l{display:flex;align-items:center;gap:9px;color:#fff}
+.topbar-l .ic{font-size:20px}
+.topbar-l .name{font-weight:800;font-size:14.5px}
+.topbar-l .sub{font-size:11px;color:rgba(255,255,255,.65)}
+.topbar-r{display:flex;align-items:center;gap:8px}
+.points-chip{background:var(--mustard);color:#3a2900;border-radius:20px;padding:6px 13px;font-size:12px;font-weight:800;display:flex;align-items:center;gap:4px}
+.streak-chip{background:#ffe4d1;color:#8a3a0b}
+.deadline-banner{background:var(--brick);color:#fff;padding:10px 16px;font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:8px;overflow-x:auto;white-space:nowrap}
+.like-btn{background:none;border:none;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;gap:4px;color:var(--ink-soft,#6b6155);font-weight:700}
+.g-actions{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+.critique-panel{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.critique-item{font-size:11.5px;line-height:1.8;margin-bottom:5px;background:var(--paper-dark,#e9e0c8);border-radius:8px;padding:6px 9px}
+.eco-badge{background:var(--sage-bg,#e7f0e5);color:var(--sage,#4f7f58);font-size:11px;font-weight:700;border-radius:20px;padding:5px 11px;display:inline-block;margin-top:6px}
+.growth-compare{display:flex;align-items:center;gap:8px}
+.growth-item{flex:1;text-align:center}
+.growth-item img{width:100%;height:110px;object-fit:cover;border-radius:10px;border:1.5px solid var(--line)}
+.growth-label{font-size:10.5px;font-weight:700;color:var(--ink-soft,#6b6155);margin-top:5px;line-height:1.5}
+.growth-arrow{font-size:20px;color:var(--ink-soft,#6b6155);flex-shrink:0}
+.growth-strip{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.growth-strip img{width:56px;height:56px;object-fit:cover;border-radius:8px;flex-shrink:0;border:1px solid var(--line)}
+.like-btn.liked{color:var(--brick)}
+.logout-btn{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:9px;padding:8px 13px;font-size:11.5px;cursor:pointer;font-weight:700}
+
+.tabs{max-width:900px;margin:14px auto 0;padding:0 12px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;background:var(--card);border:1.5px solid var(--line);border-bottom:3px solid var(--line);border-radius:10px 10px 0 0;padding:10px 15px;font-size:12.5px;font-weight:700;color:var(--ink-soft);cursor:pointer;white-space:nowrap}
+.tab.active{color:var(--thread);border-bottom-color:var(--thread);background:#fff}
+.auth-tabs{display:flex;gap:6px;background:var(--paper-dark,#e9e0c8);border-radius:12px;padding:4px;margin-bottom:16px}
+.auth-tab{flex:1;text-align:center;padding:10px 4px;border:none;background:none;border-radius:9px;font-weight:700;font-size:13px;color:var(--ink-soft,#6b6155);cursor:pointer}
+.auth-tab.active{background:var(--card);color:var(--thread);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+
+.main{max-width:900px;margin:0 auto;padding:16px 12px 60px}
+.panel{display:none}.panel.active{display:block}
+
+/* ---------- کارت الگوی خیاطی (عنصر امضادار طراحی) ---------- */
+.pattern-card{background:var(--card);border:2px dashed var(--line);border-radius:var(--radius);padding:18px 16px;margin-bottom:14px;position:relative;box-shadow:var(--shadow)}
+.pattern-card::before{
+  content:'';position:absolute;top:-1px;right:16px;left:16px;height:6px;
+  background-image:radial-gradient(circle,var(--paper) 2.2px,transparent 2.3px);
+  background-size:14px 6px;background-repeat:repeat-x;background-position:top center;
+}
+.tag-badge{position:absolute;top:-12px;right:14px;background:var(--thread);color:#fff;font-size:11px;font-weight:800;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;transform:rotate(-6deg);box-shadow:0 4px 10px rgba(168,57,90,.4)}
+
+.section-title{font-size:15px;font-weight:800;margin:6px 0 12px;display:flex;align-items:center;gap:7px}
+.empty-state{text-align:center;padding:40px 16px;color:var(--ink-soft)}
+.empty-state .ic{font-size:34px;margin-bottom:10px}
+.empty-state .t{font-weight:700;font-size:14px;color:var(--ink);margin-bottom:4px}
+.empty-state .d{font-size:12px;line-height:1.9}
+
+/* ---------- درس‌ها ---------- */
+.lesson-body{font-size:13.5px;line-height:2.1;color:var(--ink);white-space:pre-wrap;margin-bottom:12px}
+.adv-box{background:var(--sky-bg,#e4eef3);border:1.5px dashed var(--sky,#356f8f);border-radius:10px;padding:10px 12px;margin-bottom:12px}
+.home-box{background:var(--sage-bg,#e7f0e5);border:1.5px solid var(--sage,#4f7f58);border-radius:10px;padding:10px 12px;margin-bottom:12px}
+.home-box-title{font-weight:800;font-size:12.5px;color:var(--sage,#4f7f58);margin-bottom:4px}
+.safety-box{background:var(--brick-bg,#f7e5e0);border:1.5px solid var(--brick,#ad3d33);border-radius:10px;padding:10px 12px;margin-bottom:12px}
+.safety-box-title{font-weight:800;font-size:12.5px;color:var(--brick,#ad3d33);margin-bottom:4px}
+.alt-box{background:var(--amber-bg,#fbf0d9);border:1.5px solid var(--mustard,#d79a2c);border-radius:10px;padding:10px 12px;margin-bottom:12px}
+.alt-box-title{font-weight:800;font-size:12.5px;color:#8a5a0b;margin-bottom:4px}
+.method-box{background:#f0e6f7;border:1.5px solid #9b6bb5;border-radius:10px;padding:10px 12px;margin-bottom:12px}
+.method-box-title{font-weight:800;font-size:12.5px;color:#6b3f8a;margin-bottom:4px}
+.adv-box summary{cursor:pointer;font-weight:800;font-size:12.5px;color:var(--sky-dark,#245065);list-style:none}
+.adv-box summary::-webkit-details-marker{display:none}
+.adv-box summary::before{content:'▸ ';display:inline-block;transition:transform .15s}
+.adv-box[open] summary::before{transform:rotate(90deg)}
+.adv-body{margin-top:8px;margin-bottom:0;font-size:13px}
+.quiz-done-badge{font-size:11px;color:var(--sage);font-weight:700;display:inline-flex;align-items:center;gap:4px}
+.due-late{color:var(--brick);font-weight:700}
+.assign-name-chip{background:var(--sky-bg);color:var(--sky);border-radius:9px;padding:9px 12px;font-size:13px;font-weight:700}
+.quiz-field{background:var(--sky-bg);border-radius:12px;padding:12px}
+.quiz-hint{font-size:11px;color:var(--ink-soft,#6b6155);line-height:1.8;margin-bottom:8px}
+.quiz-hint code{background:#fff;border-radius:5px;padding:2px 5px;font-size:10.5px}
+.quiz-progress{background:var(--paper-dark,#e9e1cd);border-radius:20px;height:8px;overflow:hidden;margin-bottom:10px}
+.quiz-progress-bar{background:var(--sky);height:100%;transition:width .3s}
+.quiz-qcount{font-size:11px;color:var(--ink-soft,#6b6155);margin-bottom:10px;font-weight:700}
+.quiz-question{font-size:16px;font-weight:800;margin-bottom:14px;line-height:1.7}
+.quiz-options{display:flex;flex-direction:column;gap:9px}
+.quiz-opt{text-align:right;padding:12px 14px;border-radius:11px;border:1.5px solid var(--line,#d8cba6);background:#fff;font-size:13.5px;font-weight:600;cursor:pointer;transition:.15s}
+.quiz-opt:hover{border-color:var(--sky)}
+.quiz-opt.quiz-correct{background:#dcebe2;border-color:var(--sage);color:var(--sage)}
+.quiz-opt.quiz-wrong{background:#f3dad5;border-color:var(--brick);color:var(--brick)}
+.quiz-result{text-align:center;padding:10px 4px}
+.quiz-stars{font-size:34px;letter-spacing:4px;margin-bottom:8px}
+.quiz-score{font-size:18px;font-weight:800}
+.quiz-msg{font-size:13px;color:var(--ink-soft,#6b6155);margin-top:6px}
+.quiz-pts-msg{font-size:13px;font-weight:800;color:var(--wood-dark,#8c5a32);margin-top:12px;min-height:20px}
+.presc-badge{display:inline-block;font-size:10px;font-weight:700;border-radius:20px;padding:2px 9px;vertical-align:middle;margin-right:4px}
+.presc-yes{background:var(--sage-bg);color:var(--sage)}
+.presc-no{background:var(--sky-bg);color:var(--sky)}
+.draft-card{border:1.5px dashed var(--sky);background:var(--sky-bg)}
+.mood-row{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:11.5px;color:var(--ink-soft,#6b6155)}
+.mood-row.mood-done{color:var(--sage);font-weight:700}
+.mood-btn{background:none;border:1.5px solid var(--line);border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer}
+.mood-btn:hover{border-color:var(--sky)}
+/* پروفایل استعداد */
+.cat-bar-row{margin-bottom:12px}
+.cat-bar-label{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;margin-bottom:4px}
+.cat-bar-track{background:var(--paper-dark,#e9e0c8);border-radius:20px;height:12px;overflow:hidden}
+.cat-bar-fill{height:100%;border-radius:20px;transition:width .5s}
+.badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;margin-top:14px}
+.badge-card{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center}
+.badge-card.locked{opacity:.35;filter:grayscale(1)}
+.badge-emoji{font-size:26px}
+.badge-name{font-size:10px;font-weight:700;margin-top:4px;line-height:1.4}
+.interest-opt{display:block;width:100%;text-align:right;padding:13px 14px;border-radius:11px;border:1.5px solid var(--line);background:#fff;font-size:13.5px;font-weight:700;cursor:pointer;margin-bottom:9px}
+.interest-opt:hover{border-color:var(--sky)}
+@media print{
+  body *{visibility:hidden}
+  #reportModalOv, #reportModalOv *, #districtReportModalOv, #districtReportModalOv *{visibility:visible}
+  #reportModalOv, #districtReportModalOv{position:absolute;top:0;left:0;width:100%;background:#fff}
+  .modal-close, .no-print{display:none!important}
+}
+.report-doc{padding:4px}
+.report-head{text-align:center;border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:6px}
+.report-title{font-size:17px;font-weight:800}
+.report-sub{font-size:12px;color:var(--ink-soft,#6b6155);margin-top:4px}
+.report-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+.report-table th,.report-table td{border:1px solid var(--line);padding:7px 8px;text-align:center}
+.report-table th{background:var(--paper-dark,#e9e0c8)}
+.report-note{font-size:11px;color:var(--ink-soft,#6b6155);margin-top:14px;line-height:1.8}
+/* بازی ۱: الهام از طبیعت */
+.match-grid{display:flex;gap:8px}
+.match-col{flex:1;display:flex;flex-direction:column;gap:8px}
+.match-card{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:12px;border:1.5px solid var(--line);background:#fff;cursor:pointer;font-family:inherit}
+.match-card .match-emoji{font-size:26px}
+.match-card .match-label{font-size:10.5px;font-weight:700;text-align:center;line-height:1.4;color:var(--ink)}
+.match-card.match-sel{border-color:var(--sky);box-shadow:0 0 0 3px var(--sky-bg)}
+.match-card.match-done{border-color:var(--sage);background:var(--sage-bg);opacity:.7}
+.match-card:disabled{cursor:default}
+/* بازی ۲: کارآگاه ایمیل */
+.email-card{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:13px;margin:10px 0;transition:.2s}
+.email-from{font-size:11.5px;color:var(--ink-soft,#6b6155);font-weight:700;direction:ltr;text-align:right;unicode-bidi:plaintext}
+.email-subj{font-size:14.5px;font-weight:800;margin-top:6px}
+.email-body{font-size:12.5px;color:var(--ink);margin-top:6px;line-height:1.8}
+.email-card.email-was-safe{border-color:var(--sage)}
+.email-card.email-was-unsafe{border-color:var(--brick)}
+.email-actions{display:flex;gap:8px;margin-top:4px}
+.email-actions .btn{flex:1}
+.email-feedback{margin-top:10px;padding:10px 12px;border-radius:10px;font-size:12.5px;line-height:1.8}
+.fb-correct{background:var(--sage-bg);color:var(--sage)}
+.fb-wrong{background:var(--brick-bg);color:var(--brick)}
+/* بازی ۳: الگوریتم ربات */
+.robot-msg{font-size:12.5px;font-weight:700;color:var(--ink-soft,#6b6155);margin-bottom:8px;min-height:18px}
+.robot-msg-ok{color:var(--sage)}
+.robot-msg-fail{color:var(--brick)}
+.robot-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;background:var(--paper-dark,#e9e0c8);border-radius:10px;padding:5px;margin-bottom:10px}
+.robot-cell{aspect-ratio:1;background:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.robot-cell.robot-obs{background:var(--brick-bg)}
+.robot-seq{min-height:34px;background:var(--sky-bg);border-radius:10px;padding:7px 10px;font-size:16px;letter-spacing:3px;margin-bottom:10px;text-align:center}
+.robot-seq-empty{font-size:11px;color:var(--ink-soft,#6b6155);letter-spacing:0}
+.robot-controls{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.robot-btn{padding:12px 0;border-radius:10px;border:1.5px solid var(--line);background:#fff;font-size:20px;cursor:pointer}
+.robot-actions{display:flex;gap:8px}
+.robot-actions .btn{flex:1}
+.lesson-meta-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.chip-link{display:inline-flex;align-items:center;gap:5px;background:var(--sky-bg);color:var(--sky);border-radius:9px;padding:8px 12px;font-size:12px;font-weight:700;text-decoration:none;border:none;cursor:pointer}
+.chip-link.pdf{background:var(--amber-bg);color:#8a621a}
+.video-embed{position:relative;padding-top:56.25%;border-radius:10px;overflow:hidden;margin-bottom:12px;background:#000}
+.video-embed iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
+.sample-img{border-radius:10px;margin-bottom:12px;cursor:zoom-in;border:1.5px solid var(--line);max-height:260px;object-fit:cover;width:100%}
+.scissor-divider{display:flex;align-items:center;gap:8px;color:var(--ink-soft);font-size:11px;margin:14px 0}
+.scissor-divider::before,.scissor-divider::after{content:'';flex:1;border-top:2px dashed var(--line)}
+
+/* ---------- کارهای من / گالری ---------- */
+.sub-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.sub-title{font-weight:800;font-size:14.5px}
+.sub-lesson{font-size:11.5px;color:var(--ink-soft);margin-top:2px}
+.sub-desc{font-size:12.5px;color:var(--ink-soft);line-height:1.8;margin:8px 0}
+.sub-file-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--sky);text-decoration:none;margin-top:4px}
+.teacher-note{background:var(--amber-bg);border-radius:9px;padding:9px 11px;font-size:12px;margin-top:9px;color:#6b4a10}
+.sub-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:11px;color:var(--ink-soft)}
+.pts-badge{background:var(--sage-bg);color:var(--sage);border-radius:20px;padding:3px 10px;font-weight:800;font-size:11.5px}
+
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:11px}
+.g-item{background:var(--card);border:1.5px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);cursor:pointer}
+.g-item img{width:100%;height:120px;object-fit:cover;background:var(--paper-dark)}
+.g-item .g-body{padding:9px 10px}
+.g-item .g-title{font-size:12px;font-weight:700;line-height:1.5}
+.g-item .g-name{font-size:10.5px;color:var(--ink-soft);margin-top:3px}
+
+.filter-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.filter-row select{flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:9px;padding:9px 11px;font-size:12.5px;background:#fff}
+
+/* ---------- رتبه‌بندی ---------- */
+.lb-row{display:flex;align-items:center;gap:10px;padding:11px 6px;border-bottom:1px solid var(--line)}
+.lb-row:last-child{border-bottom:none}
+.lb-rank{width:28px;height:28px;border-radius:50%;background:var(--paper-dark);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0}
+.lb-rank.r1{background:#ffd54a}.lb-rank.r2{background:#d7d7de}.lb-rank.r3{background:#e3a86b}
+.lb-name{flex:1;font-size:13px;font-weight:700}
+.lb-meta{font-size:10.5px;color:var(--ink-soft)}
+.lb-pts{font-weight:800;color:var(--thread);font-size:13.5px}
+
+/* ---------- اطلاعیه‌ها ---------- */
+.ann-card{border-right:4px solid var(--thread)}
+.ann-title{font-weight:800;font-size:14px;margin-bottom:5px}
+.ann-body{font-size:12.5px;color:var(--ink-soft);line-height:1.9;white-space:pre-wrap}
+.ann-date{font-size:10.5px;color:var(--ink-soft);margin-top:8px}
+
+/* ---------- FAB آپلود ---------- */
+.fab{position:fixed;bottom:22px;left:22px;background:var(--thread);color:#fff;border:none;border-radius:50%;width:58px;height:58px;font-size:26px;box-shadow:0 10px 24px rgba(168,57,90,.45);cursor:pointer;z-index:45;display:flex;align-items:center;justify-content:center}
+.fab:active{transform:scale(.94)}
+
+/* ---------- مودال‌ها ---------- */
+.modal-ov{position:fixed;inset:0;background:rgba(20,26,38,.55);display:none;align-items:flex-end;justify-content:center;z-index:200;backdrop-filter:blur(2px)}
+.modal-ov.open{display:flex}
+.modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;padding:20px 18px 26px;animation:slideUp .22s ease}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+@media(min-width:560px){.modal-ov{align-items:center}.modal{border-radius:18px}}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-head h3{font-size:16px;font-weight:800}
+.modal-close{background:var(--paper-dark);border:none;border-radius:50%;width:30px;height:30px;font-size:15px;cursor:pointer;color:var(--ink)}
+.modal-actions{display:flex;gap:8px;margin-top:16px}
+.file-drop{border:2px dashed var(--line);border-radius:12px;padding:20px 12px;text-align:center;cursor:pointer;font-size:12.5px;color:var(--ink-soft);background:var(--paper)}
+.file-drop.has-file{border-color:var(--sage);color:var(--sage);font-weight:700}
+.file-preview{margin-top:10px;border-radius:9px;max-height:180px;object-fit:cover;width:100%;display:none}
+
+/* ---------- Toast ---------- */
+#toast{position:fixed;bottom:20px;right:50%;transform:translateX(50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:700;z-index:500;display:none;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:88vw;text-align:center}
+
+/* ---------- بخش مربی: بررسی/مدیریت ---------- */
+.rev-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.rev-controls select,.rev-controls input{border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;font-size:12.5px}
+.rev-controls textarea{grid-column:1/-1;border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;font-size:12.5px;min-height:50px;resize:vertical}
+.rev-controls .chk-row{grid-column:1/-1;display:flex;align-items:center;gap:6px;font-size:12px}
+.rev-controls .save-row{grid-column:1/-1}
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:16px}
+@media(min-width:480px){.stat-grid{grid-template-columns:repeat(4,1fr)}}
+.stat-box{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:14px 8px;text-align:center}
+.stat-box .n{font-size:22px;font-weight:800;color:var(--thread)}
+.stat-box .l{font-size:10.5px;color:var(--ink-soft);margin-top:3px}
+.lesson-admin-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.lesson-admin-row .lbtns{display:flex;gap:6px;flex-shrink:0}
+.student-row{display:flex;justify-content:space-between;align-items:center;padding:9px 6px;border-bottom:1px solid var(--line);font-size:12.5px}
+.student-row:last-child{border-bottom:none}
+
+/* ---------- لایت‌باکس ---------- */
+#lightbox{position:fixed;inset:0;background:rgba(10,14,22,.9);display:none;align-items:center;justify-content:center;z-index:300;padding:20px}
+#lightbox.open{display:flex}
+#lightbox img{max-width:100%;max-height:90vh;border-radius:8px}
+#lightbox .lb-close{position:absolute;top:18px;left:18px;background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer}
+
+/* ---------- بخش راه‌اندازی (اگر هنوز کلید Supabase وصل نشده) ---------- */
+#setupNotice{max-width:560px;margin:60px auto;background:#fff;border-radius:16px;padding:26px 22px;box-shadow:var(--shadow);border:1.5px dashed var(--brick)}
+#setupNotice h2{color:var(--brick);font-size:17px;margin-bottom:10px}
+#setupNotice p{font-size:13px;line-height:2.1;color:var(--ink-soft);margin-bottom:8px}
+#setupNotice code{background:var(--paper-dark);padding:2px 7px;border-radius:6px;font-size:12px}
+
+.spinner{width:16px;height:16px;border-radius:50%;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
