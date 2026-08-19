@@ -9,8 +9,15 @@
 const SUPABASE_URL = 'https://oyjaxppsarypntotlzns.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95amF4cHBzYXJ5cG50b3Rsem5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNTk2OTUsImV4cCI6MjEwMTgzNTY5NX0.kkeJ637G8Eo2lrZol9FLoVG85GCgYU2fbm3CrLQy9ZY';
 
+let sb;
 const isConfigured = !SUPABASE_URL.includes('YOUR_') && !SUPABASE_ANON_KEY.includes('YOUR_');
-if (isConfigured) sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+if (isConfigured) {
+  try {
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } catch (e) {
+    console.error('Supabase client init failed:', e);
+  }
+}
 
 const SCHOOLS = ['فرزانگان', '۱۳ آبان'];
 const GRADES = [7, 8, 9];
