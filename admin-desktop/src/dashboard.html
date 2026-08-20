@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>پنل مدیریت کار و فناوری</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="dash-wrap">
+  <div class="sidebar">
+    <div class="brand">✂️ کار و فناوری</div>
+    <div class="role-tag" id="roleTag">—</div>
+    <nav id="navMenu">
+      <button data-p="pStats" class="active">📊 آمار</button>
+      <button data-p="pPending" id="navPending" class="hidden">✅ تأیید مدرسه‌ها</button>
+      <button data-p="pSchools">🏫 فهرست مدرسه‌ها</button>
+      <button data-p="pStaff" id="navStaff" class="hidden">🧑‍💼 مدیریت کارکنان</button>
+    </nav>
+    <button class="logout" id="logoutBtn">خروج</button>
+  </div>
+  <div class="content">
+    <div class="panel active" id="pStats">
+      <div class="topline"><h2>📊 آمار</h2></div>
+      <div id="statsBody"><div class="empty-state"><div class="ic">⏳</div>در حال بارگذاری...</div></div>
+    </div>
+    <div class="panel" id="pPending">
+      <div class="topline"><h2>✅ درخواست‌های تأیید مدرسه</h2></div>
+      <div id="pendingBody"></div>
+    </div>
+    <div class="panel" id="pSchools">
+      <div class="topline"><h2>🏫 فهرست مدرسه‌های تأییدشده</h2></div>
+      <div class="filter-row">
+        <select id="fProvince"><option value="">همه‌ی استان‌ها</option></select>
+        <select id="fCounty"><option value="">همه‌ی شهرستان‌ها</option></select>
+      </div>
+      <div id="schoolsBody"></div>
+    </div>
+    <div class="panel" id="pStaff">
+      <div class="topline"><h2>🧑‍💼 مدیریت کارکنان</h2></div>
+      <div class="form-card" id="staffFormCard">
+        <h3>➕ افزودن / تغییر نقش کاربر</h3>
+        <p style="font-size:12px;color:var(--sub);margin-top:-8px">کاربر باید قبلاً از پنل Supabase (Authentication) حساب داشته باشد</p>
+        <div class="field"><label>ایمیل کاربر</label><input id="sfEmail" type="email"></div>
+        <div class="field"><label>نام و نام خانوادگی</label><input id="sfName"></div>
+        <div class="field"><label>نقش</label>
+          <select id="sfRole"></select>
+        </div>
+        <div class="field" id="sfProvinceField"><label>استان</label><select id="sfProvince"></select></div>
+        <div class="field" id="sfCountyField"><label>شهرستان</label><select id="sfCounty"></select></div>
+        <div class="field" id="sfSchoolField"><label>مدرسه</label><select id="sfSchool"></select></div>
+        <div class="field-err" id="sfErr"></div>
+        <button class="btn btn-thread btn-block" id="sfBtn">ذخیره</button>
+      </div>
+      <div id="staffBody"></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="js/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

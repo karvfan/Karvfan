@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>ورود مدیر مدرسه</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-head">
+      <div class="ic">🏫</div>
+      <h2>ورود مدیر مدرسه</h2>
+      <p>با ایمیل و رمز عبور حساب مدیریتی وارد شوید</p>
+    </div>
+    <form id="loginForm">
+      <div class="field"><label>ایمیل</label><input id="email" type="email" placeholder="school-admin@example.com"></div>
+      <div class="field"><label>رمز عبور</label><input id="pass" type="password" placeholder="••••••••"></div>
+      <div class="field-err" id="loginErr"></div>
+      <button class="btn btn-navy btn-block" id="loginBtn" type="submit">ورود</button>
+    </form>
+    <a class="back-link" href="login-select.html">← بازگشت به انتخاب سطح دسترسی</a>
+  </div>
+</div>
+<script src="js/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/login.js"></script>
+<script>initLogin(['school_admin']);</script>
+</body>
+</html>

@@ -5,3 +5,5 @@ karvfan-android/.gradle/
 karvfan-android/local.properties
 *.log
 www/
+admin-desktop/dist/
+admin-desktop/node_modules/

@@ -1,0 +1,232 @@
+/**
+ * dashboard.js — منطق پنل مدیریت دسکتاپ (مدیر مدرسه / ادمین شهرستان-استان / سوپرادمین)
+ */
+let myScope = null; // {role, school, school_id, county_id, province_id}
+let allProvinces = [], allCounties = [];
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2600);
+}
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+async function boot(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!session){ window.location.href = 'login-select.html'; return; }
+
+  const { data: scopeRows, error } = await sb.rpc('my_scope');
+  if(error || !scopeRows || !scopeRows.length){ window.location.href = 'login-select.html'; return; }
+  myScope = scopeRows[0];
+
+  document.getElementById('roleTag').textContent =
+    (ROLE_LABELS[myScope.role]||myScope.role) + (myScope.school ? ' — ' + myScope.school : '');
+
+  // بارگذاری استان‌ها/شهرستان‌ها برای فیلترها و فرم‌ها
+  const [{ data: provs }, { data: counties }] = await Promise.all([
+    sb.from('provinces').select('*').order('name'),
+    sb.from('counties').select('*').order('name')
+  ]);
+  allProvinces = provs || []; allCounties = counties || [];
+
+  setupNav();
+  setupSchoolsFilter();
+  setupStaffForm();
+  document.getElementById('logoutBtn').onclick = async ()=>{ await sb.auth.signOut(); window.location.href='login-select.html'; };
+
+  switchPanel('pStats');
+}
+
+function setupNav(){
+  const canReview = ['county_admin','province_admin','super_admin'].includes(myScope.role);
+  const canManageStaff = ['county_admin','province_admin','super_admin'].includes(myScope.role);
+  document.getElementById('navPending').classList.toggle('hidden', !canReview);
+  document.getElementById('navStaff').classList.toggle('hidden', !canManageStaff);
+
+  document.querySelectorAll('#navMenu button').forEach(btn=>{
+    btn.addEventListener('click', ()=> switchPanel(btn.dataset.p));
+  });
+}
+
+function switchPanel(id){
+  document.querySelectorAll('#navMenu button').forEach(b=>b.classList.toggle('active', b.dataset.p===id));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id===id));
+  if(id==='pStats') loadStats();
+  if(id==='pPending') loadPending();
+  if(id==='pSchools') loadSchools();
+  if(id==='pStaff') loadStaff();
+}
+
+/* ==================================================== آمار ==================================================== */
+async function loadStats(){
+  const el = document.getElementById('statsBody');
+  el.innerHTML = '<div class="empty-state"><div class="ic">⏳</div>در حال بارگذاری...</div>';
+  const { data, error } = await sb.rpc('get_scoped_school_stats');
+  if(error){ el.innerHTML = '<div class="empty-state"><div class="ic">⚠️</div>خطا در دریافت آمار</div>'; console.error(error); return; }
+  if(!data || !data.length){ el.innerHTML = '<div class="empty-state"><div class="ic">📊</div>هنوز آماری برای محدوده‌ی شما ثبت نشده</div>'; return; }
+
+  const totalStudents = data.reduce((a,b)=>a+Number(b.student_count||0),0);
+  const totalSchools = data.length;
+  const avgPoints = (data.reduce((a,b)=>a+Number(b.avg_points||0),0)/totalSchools).toFixed(1);
+  const totalApproved = data.reduce((a,b)=>a+Number(b.approved_submissions||0),0);
+
+  let html = '<div class="stat-cards">'+
+    statCard(totalSchools,'مدرسه')+
+    statCard(totalStudents,'دانش‌آموز')+
+    statCard(avgPoints,'میانگین امتیاز')+
+    statCard(totalApproved,'کار تأییدشده')+
+  '</div>';
+
+  html += '<table class="data-table"><thead><tr><th>مدرسه</th><th>شهرستان</th><th>استان</th><th>دانش‌آموز</th><th>میانگین امتیاز</th><th>کار تأییدشده</th><th>تکلیف فعال</th></tr></thead><tbody>';
+  data.forEach(d=>{
+    html += `<tr><td>${esc(d.school_name)}</td><td>${esc(d.county_name)}</td><td>${esc(d.province_name)}</td><td>${d.student_count}</td><td>${d.avg_points}</td><td>${d.approved_submissions}</td><td>${d.active_assignments}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+function statCard(n,l){ return `<div class="stat-card"><div class="n">${n}</div><div class="l">${l}</div></div>`; }
+
+/* ==================================================== تأیید مدرسه‌ها ==================================================== */
+async function loadPending(){
+  const el = document.getElementById('pendingBody');
+  el.innerHTML = '<div class="empty-state"><div class="ic">⏳</div>در حال بارگذاری...</div>';
+  const { data, error } = await sb.rpc('get_pending_schools');
+  if(error){ el.innerHTML = '<div class="empty-state"><div class="ic">⚠️</div>خطا در دریافت لیست</div>'; console.error(error); return; }
+  if(!data || !data.length){ el.innerHTML = '<div class="empty-state"><div class="ic">✅</div>درخواست در انتظار تأییدی نیست</div>'; return; }
+
+  const countyMap = Object.fromEntries(allCounties.map(c=>[c.id,c]));
+  const provMap = Object.fromEntries(allProvinces.map(p=>[p.id,p]));
+
+  let html = '<table class="data-table"><thead><tr><th>نام مدرسه</th><th>شهرستان</th><th>استان</th><th>تاریخ درخواست</th><th>اقدام</th></tr></thead><tbody>';
+  data.forEach(s=>{
+    const county = countyMap[s.county_id];
+    const prov = county ? provMap[county.province_id] : null;
+    html += `<tr>
+      <td>${esc(s.name)}</td>
+      <td>${esc(county ? county.name : '—')}</td>
+      <td>${esc(prov ? prov.name : '—')}</td>
+      <td>${new Date(s.created_at).toLocaleDateString('fa-IR')}</td>
+      <td><div class="row-actions">
+        <button class="act-approve" onclick="reviewSchool(${s.id}, true)">تأیید</button>
+        <button class="act-reject" onclick="reviewSchool(${s.id}, false)">رد</button>
+      </div></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+async function reviewSchool(id, approve){
+  let reason = null;
+  if(!approve){ reason = prompt('دلیل رد درخواست (اختیاری):') || null; }
+  const { error } = await sb.rpc('review_school', { p_school_id: id, p_approve: approve, p_reason: reason });
+  if(error){ showToast('خطا: ' + error.message); return; }
+  showToast(approve ? 'مدرسه تأیید شد ✅' : 'درخواست رد شد');
+  loadPending();
+}
+
+/* ==================================================== فهرست مدرسه‌ها ==================================================== */
+function setupSchoolsFilter(){
+  const provSel = document.getElementById('fProvince');
+  allProvinces.forEach(p=> provSel.insertAdjacentHTML('beforeend', `<option value="${p.id}">${esc(p.name)}</option>`));
+  provSel.addEventListener('change', ()=>{
+    fillCountyOptions(document.getElementById('fCounty'), provSel.value, true);
+    loadSchools();
+  });
+  document.getElementById('fCounty').addEventListener('change', loadSchools);
+}
+function fillCountyOptions(selectEl, provinceId, withAllOption){
+  selectEl.innerHTML = withAllOption ? '<option value="">همه‌ی شهرستان‌ها</option>' : '<option value="">— انتخاب کنید —</option>';
+  allCounties.filter(c=> String(c.province_id)===String(provinceId))
+    .forEach(c=> selectEl.insertAdjacentHTML('beforeend', `<option value="${c.id}">${esc(c.name)}</option>`));
+}
+async function loadSchools(){
+  const el = document.getElementById('schoolsBody');
+  el.innerHTML = '<div class="empty-state"><div class="ic">⏳</div>در حال بارگذاری...</div>';
+  const countyId = document.getElementById('fCounty').value;
+  const provinceId = document.getElementById('fProvince').value;
+
+  let query = sb.from('schools').select('id,name,status,counties(name,province_id,provinces(name))').eq('status','approved').order('name');
+  if(countyId) query = query.eq('county_id', countyId);
+  const { data, error } = await query;
+  if(error){ el.innerHTML = '<div class="empty-state"><div class="ic">⚠️</div>خطا در دریافت لیست</div>'; console.error(error); return; }
+
+  let rows = data || [];
+  if(provinceId && !countyId) rows = rows.filter(r=> r.counties && String(r.counties.province_id)===String(provinceId));
+
+  if(!rows.length){ el.innerHTML = '<div class="empty-state"><div class="ic">🏫</div>مدرسه‌ای یافت نشد</div>'; return; }
+
+  let html = '<table class="data-table"><thead><tr><th>نام مدرسه</th><th>شهرستان</th><th>استان</th></tr></thead><tbody>';
+  rows.forEach(s=>{
+    html += `<tr><td>${esc(s.name)}</td><td>${esc(s.counties?.name)}</td><td>${esc(s.counties?.provinces?.name)}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+/* ==================================================== مدیریت کارکنان ==================================================== */
+function setupStaffForm(){
+  const roleSel = document.getElementById('sfRole');
+  const roleOptions = {
+    super_admin:   [['county_admin','ادمین شهرستان'],['school_admin','مدیر مدرسه'],['teacher','مربی']],
+    province_admin:[['county_admin','ادمین شهرستان'],['school_admin','مدیر مدرسه'],['teacher','مربی']],
+    county_admin:  [['school_admin','مدیر مدرسه'],['teacher','مربی']],
+  };
+  (roleOptions[myScope.role]||[]).forEach(([v,l])=> roleSel.insertAdjacentHTML('beforeend', `<option value="${v}">${l}</option>`));
+
+  const provSel = document.getElementById('sfProvince');
+  allProvinces.forEach(p=> provSel.insertAdjacentHTML('beforeend', `<option value="${p.id}">${esc(p.name)}</option>`));
+  provSel.addEventListener('change', ()=> fillCountyOptions(document.getElementById('sfCounty'), provSel.value, false));
+  document.getElementById('sfCounty').addEventListener('change', fillSfSchoolOptions);
+  roleSel.addEventListener('change', updateStaffFieldVisibility);
+  updateStaffFieldVisibility();
+
+  document.getElementById('sfBtn').addEventListener('click', submitStaffForm);
+}
+function updateStaffFieldVisibility(){
+  const role = document.getElementById('sfRole').value;
+  document.getElementById('sfProvinceField').classList.toggle('hidden', !role);
+  document.getElementById('sfCountyField').classList.toggle('hidden', !['county_admin','school_admin','teacher'].includes(role));
+  document.getElementById('sfSchoolField').classList.toggle('hidden', !['school_admin','teacher'].includes(role));
+}
+async function fillSfSchoolOptions(){
+  const sel = document.getElementById('sfSchool');
+  sel.innerHTML = '<option value="">— انتخاب کنید —</option>';
+  const countyId = document.getElementById('sfCounty').value;
+  if(!countyId) return;
+  const { data } = await sb.from('schools').select('id,name').eq('county_id', countyId).eq('status','approved').order('name');
+  (data||[]).forEach(s=> sel.insertAdjacentHTML('beforeend', `<option value="${s.id}">${esc(s.name)}</option>`));
+}
+async function submitStaffForm(){
+  const errEl = document.getElementById('sfErr'); errEl.textContent = '';
+  const email = document.getElementById('sfEmail').value.trim();
+  const full_name = document.getElementById('sfName').value.trim();
+  const role = document.getElementById('sfRole').value;
+  if(!email || !full_name || !role){ errEl.textContent = 'همه‌ی فیلدها را پر کنید'; return; }
+
+  const params = { p_email: email, p_full_name: full_name, p_role: role, p_school_id: null, p_county_id: null, p_province_id: null };
+  if(role==='province_admin') params.p_province_id = Number(document.getElementById('sfProvince').value) || null;
+  if(role==='county_admin') params.p_county_id = Number(document.getElementById('sfCounty').value) || null;
+  if(['school_admin','teacher'].includes(role)) params.p_school_id = Number(document.getElementById('sfSchool').value) || null;
+
+  const { error } = await sb.rpc('set_staff_role', params);
+  if(error){ errEl.textContent = 'خطا: ' + error.message; return; }
+  showToast('ذخیره شد ✅');
+  document.getElementById('sfEmail').value=''; document.getElementById('sfName').value='';
+  loadStaff();
+}
+async function loadStaff(){
+  const el = document.getElementById('staffBody');
+  el.innerHTML = '<div class="empty-state"><div class="ic">⏳</div>در حال بارگذاری...</div>';
+  const { data, error } = await sb.rpc('get_scoped_staff');
+  if(error){ el.innerHTML = '<div class="empty-state"><div class="ic">⚠️</div>خطا در دریافت لیست</div>'; console.error(error); return; }
+  if(!data || !data.length){ el.innerHTML = '<div class="empty-state"><div class="ic">🧑‍💼</div>هنوز کارمندی ثبت نشده</div>'; return; }
+
+  let html = '<table class="data-table"><thead><tr><th>نام</th><th>ایمیل</th><th>نقش</th><th>مدرسه</th><th>شهرستان</th><th>استان</th></tr></thead><tbody>';
+  data.forEach(s=>{
+    html += `<tr><td>${esc(s.full_name)}</td><td>${esc(s.email)}</td><td>${esc(ROLE_LABELS[s.role]||s.role)}</td><td>${esc(s.school_name)||'—'}</td><td>${esc(s.county_name)||'—'}</td><td>${esc(s.province_name)||'—'}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+document.addEventListener('DOMContentLoaded', boot);

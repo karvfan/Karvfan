@@ -1,0 +1,30 @@
+{
+  "name": "karvfan-admin-desktop",
+  "version": "1.0.0",
+  "description": "پنل مدیریتی دسکتاپ کار و فناوری — مدیر مدرسه، ادمین شهرستان/استان، سوپرادمین",
+  "main": "main.js",
+  "author": "Karvfan",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "ir.karvfan.admindesktop",
+    "productName": "کار و فناوری — پنل مدیریت",
+    "directories": { "output": "dist" },
+    "files": ["main.js", "preload.js", "src/**/*"],
+    "win": {
+      "target": ["nsis", "portable"],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

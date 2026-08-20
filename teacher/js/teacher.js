@@ -15,7 +15,8 @@ async function enterTeacherApp(){
 async function loadMyStaffInfo(uid){
   const { data } = await sb.from('staff').select('*').eq('id', uid).maybeSingle();
   myStaff = data; // اگه null باشه یعنی حساب قدیمی، دسترسی کامل (سازگاری با قبل)
-  const isDistrictLevel = !myStaff || myStaff.role==='district_supervisor' || !myStaff.school;
+  const districtRoles = ['county_admin','province_admin','super_admin'];
+  const isDistrictLevel = !myStaff || districtRoles.includes(myStaff.role) || !myStaff.school;
   $('tabDistrict').classList.toggle('hidden', !isDistrictLevel);
   $('tabStaff').classList.toggle('hidden', !isDistrictLevel);
 }
