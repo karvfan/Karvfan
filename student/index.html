@@ -128,7 +128,7 @@
     <div class="modal-head"><h3>📤 آپلود کار جدید</h3><button class="modal-close" onclick="closeModal('uploadModalOv')">✕</button></div>
     <div class="field" id="upLessonField">
       <label>مربوط به کدام درس؟ (اختیاری)</label>
-      <select id="upLesson"><option value="">— انتخاب نکنید —</option></select>
+      <select id="upLesson" onchange="onWatermarkFieldsChange()"><option value="">— انتخاب نکنید —</option></select>
     </div>
     <div class="field" id="upAssignField" style="display:none">
       <label>تکلیف هفتگی</label>
@@ -136,7 +136,7 @@
     </div>
     <div class="field">
       <label>عنوان کار</label>
-      <input id="upTitle" placeholder="مثلاً: ساخت جعبه مقوایی">
+      <input id="upTitle" placeholder="مثلاً: ساخت جعبه مقوایی" oninput="onWatermarkFieldsChange()">
     </div>
     <div class="field">
       <label>توضیح کوتاه (اختیاری)</label>
@@ -163,10 +163,11 @@
       <textarea id="upEcoNote" rows="2" class="hidden" placeholder="چطور این کار رو سازگارتر با محیط‌زیست کردی؟" style="margin-top:6px"></textarea>
     </div>
     <div class="field">
-      <label>عکس یا فایل کار</label>
-      <div class="file-drop" id="upDrop" onclick="document.getElementById('upFile').click()">📎 برای انتخاب عکس یا فایل ضربه بزنید</div>
-      <input type="file" id="upFile" accept="image/*,application/pdf" class="hidden" onchange="onUploadFileChange()">
+      <label>عکس فعالیت (فقط از دوربین گوشی)</label>
+      <div class="file-drop" id="upDrop" onclick="document.getElementById('upFile').click()">📷 برای گرفتن عکس از فعالیتت ضربه بزن</div>
+      <input type="file" id="upFile" accept="image/*" capture="environment" class="hidden" onchange="onUploadFileChange()">
       <img id="upPreview" class="file-preview">
+      <div style="font-size:11.5px;color:var(--sub);margin-top:6px">نام و نام‌خانوادگی، مدرسه، پودمان و اسمی که برای کارت گذاشتی، خودکار روی عکس ثبت می‌شه.</div>
     </div>
     <div class="field-err" id="upErr"></div>
     <div class="modal-actions">

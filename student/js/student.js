@@ -413,7 +413,7 @@ function openUploadModal(lessonId, assignmentId){
   $('dqProblem').value=''; $('dqIdeas').value=''; $('dqWhy').value=''; $('dqHow').value=''; $('dqImprove').value='';
   $('cqProduct').value=''; $('cqPrice').value=''; $('cqSell').value=''; $('cqCustomers').value='';
   $('upEco').checked=false; $('upEcoNote').value=''; $('upEcoNote').classList.add('hidden');
-  uploadFileB64=null; uploadFileExt=null; uploadAssignmentId = assignmentId||null;
+  uploadFileB64=null; uploadFileExt=null; rawUploadB64=null; uploadAssignmentId = assignmentId||null;
   $('upDrop').textContent='📎 برای انتخاب عکس یا فایل ضربه بزنید'; $('upDrop').classList.remove('has-file');
   $('upPreview').style.display='none'; $('upFile').value='';
   const lessonField = $('upLessonField');
@@ -441,19 +441,90 @@ function openUploadModal(lessonId, assignmentId){
     : '🎨 این یه چالش طراحی بازه — به این سؤال‌ها فکر کن و جواب بده:';
   openModal('uploadModalOv');
 }
+let rawUploadB64 = null; // عکس خام (بدون واترمارک) — برای بازتولید واترمارک وقتی عنوان/پودمان عوض می‌شه
+
 async function onUploadFileChange(){
   const f = $('upFile').files[0]; if(!f) return;
-  uploadFileB64 = await fileToBase64(f);
-  uploadFileExt = extOf(f.name, f.type.includes('pdf')?'pdf':'jpg');
-  $('upDrop').textContent = '✅ '+f.name; $('upDrop').classList.add('has-file');
-  if(f.type.startsWith('image/')){ $('upPreview').src=uploadFileB64; $('upPreview').style.display='block'; }
-  else { $('upPreview').style.display='none'; }
+  if(!f.type.startsWith('image/')){ showToast('فقط عکس قابل قبوله'); $('upFile').value=''; return; }
+  $('upDrop').textContent = '⏳ در حال آماده‌سازی عکس...';
+  rawUploadB64 = await fileToBase64(f);
+  await renderWatermarkedUpload();
+  $('upDrop').textContent = '✅ عکس گرفته شد (برای گرفتن دوباره ضربه بزن)'; $('upDrop').classList.add('has-file');
+}
+
+/* واترمارک: نام دانش‌آموز، مدرسه، پودمان (درس انتخاب‌شده)، و اسمی که برای کار گذاشته */
+function currentWatermarkLines(){
+  const lines = [];
+  if(student && student.full_name) lines.push(student.full_name);
+  if(student && student.school) lines.push(student.school);
+  const lessonSel = $('upLesson');
+  const lessonFieldEl = $('upLessonField');
+  let podmanName = '';
+  if(lessonFieldEl && lessonFieldEl.style.display !== 'none' && lessonSel.value){
+    const l = lessons.find(x=>String(x.id)===String(lessonSel.value));
+    if(l) podmanName = l.unit_title;
+  }
+  if(!podmanName && uploadAssignmentId){
+    const a = assignments.find(x=>x.id===uploadAssignmentId);
+    if(a) podmanName = a.title;
+  }
+  if(podmanName) lines.push('پودمان: ' + podmanName);
+  const workTitle = $('upTitle').value.trim();
+  if(workTitle) lines.push(workTitle);
+  return lines;
+}
+
+async function renderWatermarkedUpload(){
+  if(!rawUploadB64) return;
+  const lines = currentWatermarkLines();
+  uploadFileB64 = await drawWatermark(rawUploadB64, lines);
+  uploadFileExt = 'jpg';
+  $('upPreview').src = uploadFileB64; $('upPreview').style.display='block';
+}
+function onWatermarkFieldsChange(){ if(rawUploadB64) renderWatermarkedUpload(); }
+
+function drawWatermark(dataUrl, lines){
+  return new Promise((resolve)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const maxDim = 1600;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if(Math.max(w,h) > maxDim){
+        const scale = maxDim / Math.max(w,h);
+        w = Math.round(w*scale); h = Math.round(h*scale);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+
+      if(lines.length){
+        const fontSize = Math.max(13, Math.round(w * 0.028));
+        const lineHeight = Math.round(fontSize * 1.45);
+        const pad = Math.round(fontSize * 0.7);
+        const boxH = lines.length * lineHeight + pad * 2;
+        ctx.fillStyle = 'rgba(0,0,0,0.52)';
+        ctx.fillRect(0, h - boxH, w, boxH);
+        ctx.font = fontSize + 'px Vazirmatn, Tahoma, sans-serif';
+        ctx.direction = 'rtl';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#ffffff';
+        lines.forEach((line, i)=>{
+          const y = h - boxH + pad + lineHeight*i + lineHeight/2;
+          ctx.fillText(line, w - pad, y, w - pad*2);
+        });
+      }
+      resolve(canvas.toDataURL('image/jpeg', 0.85));
+    };
+    img.src = dataUrl;
+  });
 }
 async function submitUpload(){
   const title = $('upTitle').value.trim();
   $('upErr').textContent='';
   if(!title){ $('upErr').textContent='عنوان کار را بنویسید'; return; }
-  if(!uploadFileB64){ $('upErr').textContent='یک عکس یا فایل انتخاب کنید'; return; }
+  if(!uploadFileB64){ $('upErr').textContent='یک عکس از فعالیتت بگیر'; return; }
   $('upBtn').disabled=true; $('upBtn').innerHTML='<span class="spinner"></span> در حال ارسال...';
   try{
     const fileUrl = await uploadToStorage('submission-files', uploadFileB64, uploadFileExt);
