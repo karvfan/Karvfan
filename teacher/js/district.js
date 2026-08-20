@@ -76,44 +76,78 @@ function openDistrictReport(){
   openModal('districtReportModalOv');
 }
 
-/* ------------------------------------------------------------ مدیریت کارکنان (نقش‌ها) */
+/* ------------------------------------------------------------ مدیریت کارکنان (نقش‌ها) — سلسله‌مراتبی */
+/* هر نقش فقط می‌تواند نقش‌های پایین‌تر از خودش را بسازد:
+   سوپرادمین → سوپرادمین + ادمین استان + ادمین شهرستان + مدیر مدرسه + معلم
+   ادمین استان → ادمین شهرستان + مدیر مدرسه + معلم
+   ادمین شهرستان → مدیر مدرسه + معلم                                      */
+const CREATABLE_ROLES = {
+  super_admin:    [['super_admin','سوپرادمین'],['province_admin','ادمین استان'],['county_admin','ادمین شهرستان'],['school_admin','مدیر مدرسه'],['teacher','معلم']],
+  province_admin: [['county_admin','ادمین شهرستان'],['school_admin','مدیر مدرسه'],['teacher','معلم']],
+  county_admin:   [['school_admin','مدیر مدرسه'],['teacher','معلم']],
+};
 async function loadStaffAdmin(){
   const el = $('tStaff');
-  let html = '<div class="sec-title">🧑‍💼 کارکنان و نقش‌ها</div>'+
+  const role = myStaff ? myStaff.role : 'teacher';
+  const roleOpts = CREATABLE_ROLES[role] || [];
+  const { provinces, counties } = await loadRegionsCache();
+
+  let html = '<div class="sec-title">🧑‍💼 افزودن / تغییر نقش کارمند</div>'+
     '<div class="pattern-card">'+
     '<div class="field"><label>ایمیل حساب (باید قبلاً از Authentication → Users در Supabase ساخته شده باشد)</label><input id="stfEmail" placeholder="example@gmail.com"></div>'+
     '<div class="field"><label>نام و نام خانوادگی</label><input id="stfName" placeholder="نام کارمند"></div>'+
-    '<div class="field"><label>نقش</label><select id="stfRole">'+
-      '<option value="teacher">معلم (فقط مدرسه‌ی خودش)</option>'+
-      '<option value="school_admin">مدیر مدرسه (فقط مدرسه‌ی خودش، دسترسی کامل)</option>'+
-      '<option value="district_supervisor">ناظر منطقه/شهرستان (فقط مشاهده‌ی آمار همه‌ی مدارس)</option>'+
+    '<div class="field"><label>نقش</label><select id="stfRole" onchange="updateStaffFieldsWeb()">'+
+      roleOpts.map(([v,l])=>'<option value="'+v+'">'+l+'</option>').join('')+
     '</select></div>'+
-    '<div class="field"><label>مدرسه (برای «ناظر منطقه» خالی بگذارید = همه‌ی مدارس)</label><input id="stfSchool" list="schoolSuggestions" placeholder="مثلاً: فرزانگان"></div>'+
+    '<div class="field" id="stfProvinceField"><label>استان</label><select id="stfProvince" onchange="document.getElementById(\'stfCounty\').innerHTML = countyOptionsHtml(_regionsCache.counties, this.value)">'+provinceOptionsHtml(provinces)+'</select></div>'+
+    '<div class="field" id="stfCountyField"><label>شهرستان</label><select id="stfCounty" onchange="fillStfSchoolOptions()">'+countyOptionsHtml(counties,'')+'</select></div>'+
+    '<div class="field" id="stfSchoolField"><label>مدرسه</label><select id="stfSchool"><option value="">— ابتدا شهرستان را انتخاب کنید —</option></select></div>'+
     '<div class="field-err" id="stfErr"></div>'+
     '<button class="btn btn-thread btn-sm" onclick="addStaff()">➕ افزودن / به‌روزرسانی نقش</button>'+
     '</div>'+
-    '<div class="sec-title">لیست فعلی</div><div class="pattern-card" id="stfList"></div>';
+    '<div class="sec-title">لیست فعلی (در محدوده‌ی دسترسی شما)</div><div class="pattern-card" id="stfList">'+emptyState('⏳','در حال بارگذاری...','')+'</div>';
   el.innerHTML = html;
-  const { data } = await sb.from('staff').select('*').order('created_at');
-  const roleLabel = {teacher:'معلم', school_admin:'مدیر مدرسه', district_supervisor:'ناظر منطقه'};
+  updateStaffFieldsWeb();
+
+  const { data, error } = await sb.rpc('get_scoped_staff');
+  const roleLabel = {teacher:'معلم', school_admin:'مدیر مدرسه', county_admin:'ادمین شهرستان', province_admin:'ادمین استان', super_admin:'سوپرادمین'};
   const list = $('stfList');
-  if(!data || !data.length){ list.innerHTML = emptyState('🧑‍💼','هنوز کارمندی (غیر از خودتون) ثبت نشده',''); return; }
-  list.innerHTML = data.map(s=>'<div class="student-row"><span>'+esc(s.full_name)+' — '+(roleLabel[s.role]||s.role)+(s.school?(' · '+esc(s.school)):' · همه‌ی مدارس')+'</span></div>').join('');
+  if(error || !data || !data.length){ list.innerHTML = emptyState('🧑‍💼','هنوز کارمندی (غیر از خودتون) ثبت نشده',''); return; }
+  list.innerHTML = data.map(s=>{
+    const scope = s.school_name || s.county_name || s.province_name || 'کل کشور';
+    return '<div class="student-row"><span>'+esc(s.full_name)+' — '+(roleLabel[s.role]||s.role)+' · '+esc(scope)+'</span></div>';
+  }).join('');
+}
+function updateStaffFieldsWeb(){
+  const role = $('stfRole').value;
+  $('stfProvinceField').classList.toggle('hidden', role==='super_admin');
+  $('stfCountyField').classList.toggle('hidden', !['county_admin','school_admin','teacher'].includes(role));
+  $('stfSchoolField').classList.toggle('hidden', !['school_admin','teacher'].includes(role));
+}
+async function fillStfSchoolOptions(){
+  const sel = $('stfSchool');
+  const countyId = $('stfCounty').value;
+  if(!countyId){ sel.innerHTML = '<option value="">— ابتدا شهرستان را انتخاب کنید —</option>'; return; }
+  const { data } = await sb.from('schools').select('id,name').eq('county_id', countyId).eq('status','approved').order('name');
+  sel.innerHTML = '<option value="">— انتخاب کنید —</option>' + (data||[]).map(s=>'<option value="'+s.id+'">'+esc(s.name)+'</option>').join('');
 }
 async function addStaff(){
   const email = $('stfEmail').value.trim();
   const full_name = $('stfName').value.trim();
   const role = $('stfRole').value;
-  const school = $('stfSchool').value.trim() || null;
   $('stfErr').textContent='';
   if(!email || !full_name){ $('stfErr').textContent='ایمیل و نام رو کامل وارد کنید'; return; }
-  const { data: found, error: lookErr } = await sb.rpc('lookup_auth_user_by_email', { p_email: email });
-  if(lookErr || !found || !found.length){ $('stfErr').textContent='حسابی با این ایمیل پیدا نشد — اول باید از Supabase → Authentication → Users ساخته بشه'; return; }
-  const uid = found[0].id;
-  const { error } = await sb.from('staff').upsert({ id: uid, full_name, role, school });
-  if(error){ $('stfErr').textContent='خطا در ثبت'; console.error(error); return; }
+  if(role==='province_admin' && !$('stfProvince').value){ $('stfErr').textContent='استان رو انتخاب کنید'; return; }
+  if(role==='county_admin' && !$('stfCounty').value){ $('stfErr').textContent='شهرستان رو انتخاب کنید'; return; }
+  if(['school_admin','teacher'].includes(role) && !$('stfSchool').value){ $('stfErr').textContent='مدرسه رو انتخاب کنید'; return; }
+  const params = { p_email: email, p_full_name: full_name, p_role: role, p_school_id: null, p_county_id: null, p_province_id: null };
+  if(role==='province_admin') params.p_province_id = Number($('stfProvince').value) || null;
+  if(role==='county_admin') params.p_county_id = Number($('stfCounty').value) || null;
+  if(['school_admin','teacher'].includes(role)) params.p_school_id = Number($('stfSchool').value) || null;
+  const { error } = await sb.rpc('set_staff_role', params);
+  if(error){ $('stfErr').textContent = 'خطا: '+error.message; return; }
   showToast('✅ ثبت شد');
-  $('stfEmail').value=''; $('stfName').value=''; $('stfSchool').value='';
+  $('stfEmail').value=''; $('stfName').value='';
   loadStaffAdmin();
 }
 

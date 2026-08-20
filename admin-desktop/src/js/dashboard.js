@@ -54,6 +54,7 @@ function switchPanel(id){
   if(id==='pStats') loadStats();
   if(id==='pPending') loadPending();
   if(id==='pSchools') loadSchools();
+  if(id==='pAddStudent') initAddStudentForm();
   if(id==='pStaff') loadStaff();
 }
 
@@ -167,9 +168,9 @@ async function loadSchools(){
 function setupStaffForm(){
   const roleSel = document.getElementById('sfRole');
   const roleOptions = {
-    super_admin:   [['county_admin','ادمین شهرستان'],['school_admin','مدیر مدرسه'],['teacher','مربی']],
-    province_admin:[['county_admin','ادمین شهرستان'],['school_admin','مدیر مدرسه'],['teacher','مربی']],
-    county_admin:  [['school_admin','مدیر مدرسه'],['teacher','مربی']],
+    super_admin:   [['super_admin','سوپرادمین'],['province_admin','ادمین استان'],['county_admin','ادمین شهرستان'],['school_admin','مدیر مدرسه'],['teacher','معلم']],
+    province_admin:[['county_admin','ادمین شهرستان'],['school_admin','مدیر مدرسه'],['teacher','معلم']],
+    county_admin:  [['school_admin','مدیر مدرسه'],['teacher','معلم']],
   };
   (roleOptions[myScope.role]||[]).forEach(([v,l])=> roleSel.insertAdjacentHTML('beforeend', `<option value="${v}">${l}</option>`));
 
@@ -184,7 +185,7 @@ function setupStaffForm(){
 }
 function updateStaffFieldVisibility(){
   const role = document.getElementById('sfRole').value;
-  document.getElementById('sfProvinceField').classList.toggle('hidden', !role);
+  document.getElementById('sfProvinceField').classList.toggle('hidden', !role || role==='super_admin');
   document.getElementById('sfCountyField').classList.toggle('hidden', !['county_admin','school_admin','teacher'].includes(role));
   document.getElementById('sfSchoolField').classList.toggle('hidden', !['school_admin','teacher'].includes(role));
 }
@@ -202,6 +203,9 @@ async function submitStaffForm(){
   const full_name = document.getElementById('sfName').value.trim();
   const role = document.getElementById('sfRole').value;
   if(!email || !full_name || !role){ errEl.textContent = 'همه‌ی فیلدها را پر کنید'; return; }
+  if(role==='province_admin' && !document.getElementById('sfProvince').value){ errEl.textContent='استان رو انتخاب کنید'; return; }
+  if(role==='county_admin' && !document.getElementById('sfCounty').value){ errEl.textContent='شهرستان رو انتخاب کنید'; return; }
+  if(['school_admin','teacher'].includes(role) && !document.getElementById('sfSchool').value){ errEl.textContent='مدرسه رو انتخاب کنید'; return; }
 
   const params = { p_email: email, p_full_name: full_name, p_role: role, p_school_id: null, p_county_id: null, p_province_id: null };
   if(role==='province_admin') params.p_province_id = Number(document.getElementById('sfProvince').value) || null;
@@ -227,6 +231,28 @@ async function loadStaff(){
   });
   html += '</tbody></table>';
   el.innerHTML = html;
+}
+
+/* ==================================================== ثبت دانش‌آموز (کاسکید از سطح معلم) ==================================================== */
+let _asWired = false;
+function initAddStudentForm(){
+  document.getElementById('asSchool').value = myScope.school || '';
+  if(_asWired) return; _asWired = true;
+  document.getElementById('asBtn').addEventListener('click', async ()=>{
+    const errEl = document.getElementById('asErr'); errEl.textContent='';
+    const full_name = document.getElementById('asName').value.trim();
+    const school = document.getElementById('asSchool').value.trim();
+    const grade = parseInt(document.getElementById('asGrade').value);
+    const class_name = document.getElementById('asClass').value.trim();
+    const phone = document.getElementById('asPhone').value.trim();
+    if(!full_name || full_name.length<3){ errEl.textContent='نام و نام خانوادگی رو کامل بنویسید'; return; }
+    if(!school){ errEl.textContent='نام مدرسه رو بنویسید'; return; }
+    if(!/^0?9\d{9}$/.test(phone.replace(/\s/g,''))){ errEl.textContent='شماره موبایل معتبر نیست'; return; }
+    const { error } = await sb.rpc('student_login_or_register', { p_full_name: full_name, p_school: school, p_grade: grade, p_phone: phone, p_class_name: class_name||null });
+    if(error){ errEl.textContent = 'خطا: '+error.message; return; }
+    showToast('✅ دانش‌آموز ثبت شد');
+    document.getElementById('asName').value=''; document.getElementById('asClass').value=''; document.getElementById('asPhone').value='';
+  });
 }
 
 document.addEventListener('DOMContentLoaded', boot);

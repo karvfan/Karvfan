@@ -27,6 +27,8 @@ function switchTeacherTab(id){
   if(id==='tLessons') renderLessonsAdmin();
   if(id==='tAssign') loadAssignmentsAdmin();
   if(id==='tStudents') loadStudentsAdmin();
+  if(id==='tAddStudent') loadAddStudentPanel();
+  if(id==='tSchools') loadSchoolsPanel();
   if(id==='tAnn') loadAnnouncementsAdmin();
   if(id==='tStats') loadStats();
   if(id==='tDistrict') loadDistrictDashboard();

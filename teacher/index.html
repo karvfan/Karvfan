@@ -67,6 +67,8 @@
     <button class="tab" data-p="tLessons" onclick="switchTeacherTab('tLessons')">📚 آموزش‌ها</button>
     <button class="tab" data-p="tAssign" onclick="switchTeacherTab('tAssign')">📅 تکالیف هفتگی</button>
     <button class="tab" data-p="tStudents" onclick="switchTeacherTab('tStudents')">👩‍🎓 دانش‌آموزان</button>
+    <button class="tab" data-p="tAddStudent" onclick="switchTeacherTab('tAddStudent')">➕ ثبت دانش‌آموز</button>
+    <button class="tab" data-p="tSchools" onclick="switchTeacherTab('tSchools')">🏫 مدرسه‌ها</button>
     <button class="tab" data-p="tAnn" onclick="switchTeacherTab('tAnn')">📢 اطلاعیه‌ها</button>
     <button class="tab" data-p="tStats" onclick="switchTeacherTab('tStats')">📊 آمار</button>
     <button class="tab hidden" id="tabDistrict" data-p="tDistrict" onclick="switchTeacherTab('tDistrict')">🏛️ آمار کلان</button>
@@ -77,6 +79,8 @@
     <div class="panel" id="tLessons"></div>
     <div class="panel" id="tAssign"></div>
     <div class="panel" id="tStudents"></div>
+    <div class="panel" id="tAddStudent"></div>
+    <div class="panel" id="tSchools"></div>
     <div class="panel" id="tAnn"></div>
     <div class="panel" id="tStats"></div>
     <div class="panel" id="tDistrict"></div>
@@ -231,6 +235,7 @@
 <script src="../shared/js/utils.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/teacher.js"></script>
+<script src="js/schools.js"></script>
 <script src="js/district.js"></script>
 <script src="js/main.js"></script>
 </body>
