@@ -34,7 +34,18 @@ async function boot(){
   setupStaffForm();
   document.getElementById('logoutBtn').onclick = async ()=>{ await sb.auth.signOut(); window.location.href='login-select.html'; };
 
+  refreshPendingBadge();
   switchPanel('pStats');
+}
+function setBadge(id, n){
+  const el = document.getElementById(id); if(!el) return;
+  if(n && n>0){ el.textContent = n>99?'99+':n; el.classList.remove('hidden'); }
+  else { el.classList.add('hidden'); }
+}
+async function refreshPendingBadge(){
+  if(!['county_admin','province_admin','super_admin'].includes(myScope.role)) return;
+  const { data } = await sb.rpc('get_pending_schools');
+  setBadge('badgePending', data ? data.length : 0);
 }
 
 function setupNav(){
@@ -123,6 +134,7 @@ async function reviewSchool(id, approve){
   if(error){ showToast('خطا: ' + error.message); return; }
   showToast(approve ? 'مدرسه تأیید شد ✅' : 'درخواست رد شد');
   loadPending();
+  refreshPendingBadge();
 }
 
 /* ==================================================== فهرست مدرسه‌ها ==================================================== */
@@ -239,7 +251,7 @@ function initAddStudentForm(){
   document.getElementById('asSchool').value = myScope.school || '';
   if(_asWired) return; _asWired = true;
   document.getElementById('asBtn').addEventListener('click', async ()=>{
-    const errEl = document.getElementById('asErr'); errEl.textContent='';
+    const errEl = document.getElementById('asErr'); errEl.textContent=''; errEl.style.color='';
     const full_name = document.getElementById('asName').value.trim();
     const school = document.getElementById('asSchool').value.trim();
     const grade = parseInt(document.getElementById('asGrade').value);
@@ -248,10 +260,12 @@ function initAddStudentForm(){
     if(!full_name || full_name.length<3){ errEl.textContent='نام و نام خانوادگی رو کامل بنویسید'; return; }
     if(!school){ errEl.textContent='نام مدرسه رو بنویسید'; return; }
     if(!/^0?9\d{9}$/.test(phone.replace(/\s/g,''))){ errEl.textContent='شماره موبایل معتبر نیست'; return; }
-    const { error } = await sb.rpc('student_login_or_register', { p_full_name: full_name, p_school: school, p_grade: grade, p_phone: phone, p_class_name: class_name||null });
+    const pin = String(Math.floor(1000 + Math.random()*9000));
+    const { error } = await sb.rpc('student_login_or_register', { p_full_name: full_name, p_school: school, p_grade: grade, p_phone: phone, p_pin: pin, p_class_name: class_name||null });
     if(error){ errEl.textContent = 'خطا: '+error.message; return; }
-    showToast('✅ دانش‌آموز ثبت شد');
     document.getElementById('asName').value=''; document.getElementById('asClass').value=''; document.getElementById('asPhone').value='';
+    errEl.innerHTML = '✅ ثبت شد. پین ورودش: <b style="font-size:16px">'+pin+'</b>';
+    errEl.style.color = 'var(--green)';
   });
 }
 

@@ -52,6 +52,7 @@ input,select,textarea{font-family:inherit}
 .sidebar nav button:hover{background:rgba(255,255,255,.08)}
 .sidebar nav button.active{background:rgba(255,255,255,.15);opacity:1;font-weight:600}
 .sidebar .logout{background:rgba(255,255,255,.08);border:none;color:#fff;padding:10px;border-radius:9px;font-size:13px}
+.tab-badge{display:inline-block;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10.5px;line-height:17px;text-align:center;font-weight:800}
 .content{flex:1;padding:26px 30px;overflow-y:auto;max-height:100vh}
 .content h2{margin-top:0}
 .topline{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}

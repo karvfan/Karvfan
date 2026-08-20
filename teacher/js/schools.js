@@ -100,6 +100,7 @@ async function reviewSchoolWeb(id, approve){
   if(error){ showToast('خطا: '+error.message); return; }
   showToast(approve?'✅ مدرسه تأیید شد':'درخواست رد شد');
   loadSchoolsPanel();
+  if(typeof refreshBadges === 'function') refreshBadges();
 }
 
 /* ==================================================== تب «ثبت دانش‌آموز» ==================================================== */
@@ -129,8 +130,12 @@ async function submitAddStudent(){
   if(!full_name || full_name.length<3){ $('asErr').textContent='نام و نام خانوادگی رو کامل بنویسید'; return; }
   if(!school){ $('asErr').textContent='نام مدرسه رو بنویسید'; return; }
   if(!/^0?9\d{9}$/.test(phone.replace(/\s/g,''))){ $('asErr').textContent='شماره موبایل معتبر نیست'; return; }
-  const { error } = await sb.rpc('student_login_or_register', { p_full_name: full_name, p_school: school, p_grade: grade, p_phone: phone, p_class_name: class_name||null });
+  const pin = String(Math.floor(1000 + Math.random()*9000));
+  const { error } = await sb.rpc('student_login_or_register', { p_full_name: full_name, p_school: school, p_grade: grade, p_phone: phone, p_pin: pin, p_class_name: class_name||null });
   if(error){ $('asErr').textContent='خطا: '+error.message; return; }
-  showToast('✅ دانش‌آموز ثبت شد — می‌تونه با همین شماره وارد بشه');
   $('asName').value=''; $('asClass').value=''; $('asPhone').value='';
+  $('tAddStudent').insertAdjacentHTML('afterbegin',
+    '<div class="pattern-card" style="border:1.5px solid var(--sky);margin-bottom:14px">'+
+    '✅ دانش‌آموز ثبت شد. پین ورودش رو بهش بده: <b style="font-size:18px;letter-spacing:2px">'+pin+'</b>'+
+    '</div>');
 }

@@ -5,6 +5,15 @@
 
 function $(id){ return document.getElementById(id); }
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// برای نمایش عمومی (رتبه‌بندی): نام کوچیک کامل + حرف اول فامیل — حریم خصوصی دانش‌آموزان
+function maskName(fullName){
+  const parts = (fullName||'').trim().split(/\s+/);
+  if(parts.length < 2) return fullName || '';
+  const first = parts[0];
+  const lastInitial = parts[parts.length-1].charAt(0);
+  return first + ' ' + lastInitial + '.';
+}
 function showToast(msg){ const t=$('toast'); t.textContent=msg; t.style.display='block'; clearTimeout(window._tt); window._tt=setTimeout(()=>t.style.display='none', 2600); }
 function goTo(id){ document.querySelectorAll('.screen').forEach(el=>el.classList.add('hidden')); const t=$(id); if(t) t.classList.remove('hidden'); }
 function closeModal(id){ $(id).classList.remove('open'); }

@@ -11,6 +11,22 @@ async function enterTeacherApp(){
   await loadAllLessons();
   await loadMyStaffInfo(session.user.id);
   switchTeacherTab('tReview');
+  refreshBadges();
+}
+async function refreshBadges(){
+  const { count } = await sb.from('submissions').select('id', { count:'exact', head:true }).eq('status','pending');
+  setBadge('badgeReview', count);
+
+  const districtRoles = ['county_admin','province_admin','super_admin'];
+  if(myStaff && districtRoles.includes(myStaff.role)){
+    const { data } = await sb.rpc('get_pending_schools');
+    setBadge('badgeSchools', data ? data.length : 0);
+  }
+}
+function setBadge(id, n){
+  const el = $(id); if(!el) return;
+  if(n && n>0){ el.textContent = n>99?'99+':n; el.classList.remove('hidden'); }
+  else { el.classList.add('hidden'); }
 }
 async function loadMyStaffInfo(uid){
   const { data } = await sb.from('staff').select('*').eq('id', uid).maybeSingle();
@@ -83,6 +99,7 @@ async function saveReview(id){
   if(error){ showToast('❌ خطا در ذخیره'); console.error(error); return; }
   showToast('✅ بررسی ذخیره شد');
   loadReview();
+  refreshBadges();
 }
 
 /* ------------------------------------------------------------ مدیریت آموزش‌ها (مربی) */
@@ -309,7 +326,10 @@ async function loadStudentsAdmin(){
   el.innerHTML = '<div class="filter-row">'+
     '<select id="stuSchool" onchange="loadStudentsAdmin()"><option value="">همه مدارس</option>'+SCHOOLS.map(s=>'<option value="'+s+'">'+s+'</option>').join('')+'</select>'+
     '<select id="stuGrade" onchange="loadStudentsAdmin()"><option value="">همه پایه‌ها</option>'+GRADES.map(g=>'<option value="'+g+'">پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[g])+'</option>').join('')+'</select>'+
-    '</div><button class="btn btn-sky btn-sm" style="margin-bottom:12px" onclick="exportStudentsCSV()">📊 خروجی اکسل (CSV)</button>'+
+    '</div><div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">'+
+      '<button class="btn btn-sky btn-sm" onclick="exportStudentsCSV()">📊 خروجی لیست (CSV)</button>'+
+      '<button class="btn btn-thread btn-sm" onclick="exportGradebookCSV()">🗂️ خروجی کارنامه‌ی کامل (CSV)</button>'+
+    '</div>'+
     '<div class="pattern-card" id="stuList"></div>';
   let q = sb.from('students').select('*').order('full_name');
   if($('stuSchool').value) q = q.eq('school', $('stuSchool').value);
@@ -332,13 +352,43 @@ function exportStudentsCSV(){
     const vals = [s.full_name, s.school, gradeFa[s.grade]||s.grade, s.class_name||'', s.phone, s.points, s.streak||0];
     lines.push(vals.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','));
   });
+  downloadCSV(lines, 'karvfan-students-'+(new Date().toISOString().slice(0,10))+'.csv');
+}
+function downloadCSV(lines, filename){
   const csv = '\uFEFF' + lines.join('\r\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = 'karvfan-students-'+(new Date().toISOString().slice(0,10))+'.csv';
+  a.href = url; a.download = filename;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+async function exportGradebookCSV(){
+  const rows = window._stuAdminList || [];
+  if(!rows.length){ showToast('چیزی برای خروجی نیست'); return; }
+  showToast('⏳ در حال آماده‌سازی کارنامه‌ها...');
+  const cats = Object.keys(CATEGORY_META);
+  const gradeFa = {7:'هفتم',8:'هشتم',9:'نهم'};
+  const header = ['نام و نام خانوادگی','مدرسه','پایه','کلاس','امتیاز کل','روز متوالی','کار تأییدشده', ...cats];
+  const lines = [header.join(',')];
+
+  const results = await Promise.all(rows.map(async s=>{
+    const [{data:subs}, {data:quizzes}] = await Promise.all([
+      sb.from('submissions').select('points_awarded, lessons(category)').eq('student_id', s.id).eq('status','approved'),
+      sb.from('quiz_attempts').select('points_awarded, lessons(category)').eq('student_id', s.id)
+    ]);
+    const catMap = {}; cats.forEach(c=>catMap[c]=0);
+    (subs||[]).forEach(x=>{ const c=x.lessons&&x.lessons.category; if(c && catMap[c]!=null) catMap[c]+=x.points_awarded||0; });
+    (quizzes||[]).forEach(x=>{ const c=x.lessons&&x.lessons.category; if(c && catMap[c]!=null) catMap[c]+=x.points_awarded||0; });
+    return { s, catMap, approvedCount: (subs||[]).length };
+  }));
+
+  results.forEach(({s, catMap, approvedCount})=>{
+    const vals = [s.full_name, s.school, gradeFa[s.grade]||s.grade, s.class_name||'', s.points, s.streak||0, approvedCount, ...cats.map(c=>catMap[c])];
+    lines.push(vals.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','));
+  });
+  downloadCSV(lines, 'karvfan-gradebook-'+(new Date().toISOString().slice(0,10))+'.csv');
+  showToast('✅ خروجی کارنامه آماده شد');
 }
 
 /* ------------------------------------------------------------ کارنامه‌ی دانش‌آموز (مربی) */

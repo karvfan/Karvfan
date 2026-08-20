@@ -340,7 +340,7 @@ async function loadGallery(){
       '<div onclick="'+(isImg?'openLightbox(\''+esc(g.file_url)+'\')':'window.open(\''+esc(g.file_url)+'\',\'_blank\')')+'">'+
       (isImg? '<img src="'+esc(g.file_url)+'">' : '<div style="height:120px;display:flex;align-items:center;justify-content:center;font-size:34px;background:var(--paper-dark)">📄</div>')+
       '</div>'+
-      '<div class="g-body"><div class="g-title">'+esc(g.title)+'</div><div class="g-name">'+esc(g.student_name)+' · '+esc(g.school)+'</div>'+
+      '<div class="g-body"><div class="g-title">'+esc(g.title)+'</div><div class="g-name">'+esc(maskName(g.student_name))+' · '+esc(g.school)+'</div>'+
       (g.is_eco_friendly? '<div class="eco-badge">♻️ سازگار با محیط‌زیست</div>':'')+
       '<div class="g-actions"><button class="like-btn '+(liked?'liked':'')+'" onclick="toggleLike(\''+g.id+'\', this)">'+(liked?'❤️':'🤍')+' <span>'+g.like_count+'</span></button>'+
       '<button class="like-btn" onclick="toggleCritique(\''+g.id+'\')">💬 نقد سازنده</button></div>'+
@@ -392,9 +392,13 @@ async function loadLeaderboard(){
   const { data, error } = await sb.rpc('get_leaderboard', { p_school:school, p_grade:grade });
   const list = $('lbList');
   if(error || !data || !data.length){ list.outerHTML = emptyState('🏆','هنوز رتبه‌بندی خالیه','با آپلود و تأیید کارها امتیاز جمع کنید تا اینجا دیده بشید'); return; }
-  list.innerHTML = data.map((r,i)=>'<div class="lb-row"><div class="lb-rank r'+(i+1)+'">'+(i+1)+'</div>'+
-    '<div style="flex:1"><div class="lb-name">'+esc(r.full_name)+'</div><div class="lb-meta">'+esc(r.school)+' · پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[r.grade])+'</div></div>'+
-    '<div class="lb-pts">'+r.points+'</div></div>').join('');
+  list.innerHTML = data.map((r,i)=>{
+    const isMe = student && r.id === student.id;
+    const displayName = isMe ? (r.full_name + ' (خودت)') : maskName(r.full_name);
+    return '<div class="lb-row"'+(isMe?' style="background:var(--amber-bg);border-radius:8px"':'')+'><div class="lb-rank r'+(i+1)+'">'+(i+1)+'</div>'+
+    '<div style="flex:1"><div class="lb-name">'+esc(displayName)+'</div><div class="lb-meta">'+esc(r.school)+' · پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[r.grade])+'</div></div>'+
+    '<div class="lb-pts">'+r.points+'</div></div>';
+  }).join('');
 }
 
 /* ------------------------------------------------------------ اطلاعیه‌ها */

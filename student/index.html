@@ -45,6 +45,10 @@
         <label>شماره موبایل</label>
         <input id="saLoginPhone" placeholder="09xxxxxxxxx" inputmode="numeric">
       </div>
+      <div class="field">
+        <label>پین ۴ رقمی</label>
+        <input id="saLoginPin" placeholder="••••" inputmode="numeric" maxlength="4" type="password">
+      </div>
       <div class="field-err" id="saLoginErr"></div>
       <button class="btn btn-thread btn-block" onclick="studentLogin()" id="saLoginBtn">ورود به سامانه</button>
     </div>
@@ -77,6 +81,14 @@
       <div class="field">
         <label>شماره موبایل</label>
         <input id="saPhone" placeholder="09xxxxxxxxx" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label>یک پین ۴ رقمی بساز (برای ورودهای بعدی لازمه، فراموش نکن)</label>
+        <input id="saPin" placeholder="••••" inputmode="numeric" maxlength="4" type="password">
+      </div>
+      <div class="field">
+        <label>تکرار پین</label>
+        <input id="saPinConfirm" placeholder="••••" inputmode="numeric" maxlength="4" type="password">
       </div>
       <div class="field-err" id="saErr"></div>
       <button class="btn btn-thread btn-block" onclick="studentRegister()" id="saBtn">ساخت حساب و ورود</button>
