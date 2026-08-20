@@ -3,9 +3,10 @@
  * همه‌ی فایل‌های دیگر به این متغیرها دسترسی دارند چون هر اسکریپت اینجا
  * به‌صورت classic script (نه ES module) بارگذاری می‌شه و همه در یک scope سراسری‌اند.
  * باید بعد از config.js و قبل از بقیه بارگذاری بشه.
+ * توجه: sb توسط config.js تعریف می‌شود؛ اینجا دوباره تعریف نمی‌کنیم
+ * (تعریف دوباره‌ی let در دو <script> جدا باعث SyntaxError می‌شود).
  */
 
-let sb = null;
 let student = null;      // {id, full_name, school, grade, points}
 let lessons = [];        // کش درس‌های پایه‌ی دانش‌آموز فعلی یا همه (برای مربی)
 let assignments = [];    // کش تکالیف هفتگی

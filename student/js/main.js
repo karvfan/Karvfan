@@ -1,5 +1,5 @@
 /**
- * main.js — نقطه‌ی شروع برنامه. باید همیشه آخرین اسکریپت بارگذاری‌شده باشد.
+ * main.js — نقطه‌ی شروع اپ دانش‌آموز. باید همیشه آخرین اسکریپت بارگذاری‌شده باشد.
  */
 
 function withTimeout(promise, ms){
@@ -12,7 +12,6 @@ function withTimeout(promise, ms){
 (async function init(){
   if(!isConfigured){ $('setupNotice').classList.remove('hidden'); return; }
   try{
-    // دانش‌آموز از قبل واردشده؟
     const saved = localStorage.getItem('kf_student');
     if(saved){
       try{
@@ -21,15 +20,11 @@ function withTimeout(promise, ms){
         if(!error && data && data[0]){ student = data[0]; localStorage.setItem('kf_student', JSON.stringify(student)); await enterStudentApp(); return; }
       }catch(e){ console.error('خطا در بازیابی دانش‌آموز:', e); }
     }
-    // مربی از قبل واردشده؟
-    const { data:{ session } } = await withTimeout(sb.auth.getSession(), 8000);
-    if(session){ await enterTeacherApp(); return; }
   }catch(e){
     console.error('خطا در اتصال به سرور، ورود به صفحه‌ی ورود:', e);
   }
-  goTo('gate');
+  goTo('studentAuth');
 })();
-sb && sb.auth.onAuthStateChange((event)=>{ if(event==='SIGNED_OUT') goTo('gate'); });
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
 }

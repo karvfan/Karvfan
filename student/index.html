@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>دانش‌آموز | سامانه آموزش و ارزیابی کار و فناوری</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#26334a">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="کار و فناوری">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="../shared/js/vendor/supabase.js"></script>
+<link rel="stylesheet" href="../shared/css/style.css">
+</head>
+<body>
+
+<!-- ==================== پیام راه‌اندازی (وقتی کلید Supabase تنظیم نشده) ==================== -->
+<div id="setupNotice" class="hidden">
+  <h2>⚠️ سامانه هنوز به دیتابیس وصل نشده</h2>
+  <p>۱) یک پروژه رایگان در <code>supabase.com</code> بسازید.</p>
+  <p>۲) محتوای فایل <code>schema.sql</code> را در SQL Editor آن اجرا کنید.</p>
+  <p>۳) مقدار <code>SUPABASE_URL</code> و <code>SUPABASE_ANON_KEY</code> را در ابتدای فایل config.js با مقادیر پروژه‌ی خودتان جایگزین کنید.</p>
+</div>
+
+<!-- ==================== ورود / ثبت‌نام دانش‌آموز ==================== -->
+<div id="studentAuth" class="screen hidden auth-wrap">
+  <div class="auth-card">
+    <div class="auth-head">
+      <div class="ic">🎒</div>
+      <h2>دانش‌آموز</h2>
+      <p>اگه قبلاً ثبت‌نام کردی، از تب «ورود» و فقط با شماره موبایل وارد شو</p>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="saTabLogin" onclick="switchAuthTab('login')">ورود</button>
+      <button class="auth-tab" id="saTabReg" onclick="switchAuthTab('register')">ثبت‌نام</button>
+    </div>
+
+    <div id="saLoginForm">
+      <div class="field">
+        <label>شماره موبایل</label>
+        <input id="saLoginPhone" placeholder="09xxxxxxxxx" inputmode="numeric">
+      </div>
+      <div class="field-err" id="saLoginErr"></div>
+      <button class="btn btn-thread btn-block" onclick="studentLogin()" id="saLoginBtn">ورود به سامانه</button>
+    </div>
+
+    <div id="saRegForm" class="hidden">
+      <div class="field">
+        <label>نام و نام خانوادگی</label>
+        <input id="saName" placeholder="مثلاً: زهرا احمدی">
+      </div>
+      <div class="field">
+        <label>مدرسه</label>
+        <input id="saSchool" list="schoolSuggestions" placeholder="مثلاً: فرزانگان">
+        <datalist id="schoolSuggestions">
+          <option value="فرزانگان"></option>
+          <option value="۱۳ آبان"></option>
+        </datalist>
+      </div>
+      <div class="field">
+        <label>پایه</label>
+        <select id="saGrade">
+          <option value="7">پایه هفتم</option>
+          <option value="8">پایه هشتم</option>
+          <option value="9">پایه نهم</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>کلاس (اختیاری)</label>
+        <input id="saClass" placeholder="مثلاً: ۷/۲ یا الف">
+      </div>
+      <div class="field">
+        <label>شماره موبایل</label>
+        <input id="saPhone" placeholder="09xxxxxxxxx" inputmode="numeric">
+      </div>
+      <div class="field-err" id="saErr"></div>
+      <button class="btn btn-thread btn-block" onclick="studentRegister()" id="saBtn">ساخت حساب و ورود</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== اپ دانش‌آموز ==================== -->
+<div id="studentApp" class="screen hidden">
+  <div class="topbar">
+    <div class="topbar-l">
+      <span class="ic">🧵</span>
+      <div>
+        <div class="name" id="stName">—</div>
+        <div class="sub" id="stMeta">—</div>
+      </div>
+    </div>
+    <div class="topbar-r">
+      <div class="points-chip">🏅 <span id="stPoints">0</span> امتیاز</div>
+      <div class="points-chip streak-chip" id="streakChip" style="display:none">🔥 <span id="stStreak">0</span> روز</div>
+      <button class="logout-btn" onclick="studentLogout()">خروج</button>
+    </div>
+  </div>
+  <div id="deadlineBanner"></div>
+  <div class="tabs">
+    <button class="tab active" data-p="pLessons" onclick="switchStudentTab('pLessons')">📚 آموزش</button>
+    <button class="tab" data-p="pAssign" onclick="switchStudentTab('pAssign')">📅 تکالیف هفته</button>
+    <button class="tab" data-p="pMine" onclick="switchStudentTab('pMine')">📤 کارهای من</button>
+    <button class="tab" data-p="pProfile" onclick="switchStudentTab('pProfile')">🧭 پروفایل من</button>
+    <button class="tab" data-p="pGallery" onclick="switchStudentTab('pGallery')">🖼️ گالری</button>
+    <button class="tab" data-p="pBoard" onclick="switchStudentTab('pBoard')">🏆 رتبه‌بندی</button>
+    <button class="tab" data-p="pAnn" onclick="switchStudentTab('pAnn')">📢 اطلاعیه‌ها</button>
+  </div>
+  <div class="main">
+    <div class="panel active" id="pLessons"></div>
+    <div class="panel" id="pAssign"></div>
+    <div class="panel" id="pMine"></div>
+    <div class="panel" id="pProfile"></div>
+    <div class="panel" id="pGallery"></div>
+    <div class="panel" id="pBoard"></div>
+    <div class="panel" id="pAnn"></div>
+  </div>
+  <button class="fab" onclick="openUploadModal(null)" title="آپلود کار جدید">＋</button>
+</div>
+
+<!-- ==================== مودال: آپلود کار ==================== -->
+<div class="modal-ov" id="uploadModalOv">
+  <div class="modal">
+    <div class="modal-head"><h3>📤 آپلود کار جدید</h3><button class="modal-close" onclick="closeModal('uploadModalOv')">✕</button></div>
+    <div class="field" id="upLessonField">
+      <label>مربوط به کدام درس؟ (اختیاری)</label>
+      <select id="upLesson"><option value="">— انتخاب نکنید —</option></select>
+    </div>
+    <div class="field" id="upAssignField" style="display:none">
+      <label>تکلیف هفتگی</label>
+      <div class="assign-name-chip">📅 <span id="upAssignName"></span></div>
+    </div>
+    <div class="field">
+      <label>عنوان کار</label>
+      <input id="upTitle" placeholder="مثلاً: ساخت جعبه مقوایی">
+    </div>
+    <div class="field">
+      <label>توضیح کوتاه (اختیاری)</label>
+      <textarea id="upDesc" rows="3" placeholder="چه کاری انجام دادید؟"></textarea>
+    </div>
+    <div id="upChallengeFields" class="hidden">
+      <div class="quiz-hint" style="margin-bottom:10px" id="upChallengeHint">🎨 این یه چالش طراحی بازه — به این سؤال‌ها فکر کن و جواب بده:</div>
+      <div id="upDesignFields">
+        <div class="field"><label>۱. چه مشکل یا نیاز واقعی‌ای رو پیدا کردی؟</label><textarea id="dqProblem" rows="2"></textarea></div>
+        <div class="field"><label>۲. چه ایده‌های مختلفی به ذهنت رسید؟</label><textarea id="dqIdeas" rows="2"></textarea></div>
+        <div class="field"><label>۳. چرا همین ایده رو انتخاب کردی؟</label><textarea id="dqWhy" rows="2"></textarea></div>
+        <div class="field"><label>۴. چطور ساختیش؟</label><textarea id="dqHow" rows="2"></textarea></div>
+        <div class="field"><label>۵. اگه دوباره می‌ساختیش، چی رو بهتر می‌کردی؟</label><textarea id="dqImprove" rows="2"></textarea></div>
+      </div>
+      <div id="upCompanyFields" class="hidden">
+        <div class="field"><label>۱. محصولت چیه و چه مشکلی رو حل می‌کنه؟</label><textarea id="cqProduct" rows="2"></textarea></div>
+        <div class="field"><label>۲. قیمتش چقدره و چرا همین قیمت؟</label><textarea id="cqPrice" rows="2"></textarea></div>
+        <div class="field"><label>۳. چطور می‌خوای بفروشیش/تبلیغش کنی؟</label><textarea id="cqSell" rows="2"></textarea></div>
+        <div class="field"><label>۴. مشتری‌های احتمالیت کی‌ان؟</label><textarea id="cqCustomers" rows="2"></textarea></div>
+      </div>
+    </div>
+    <div class="field">
+      <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="upEco" style="width:auto" onchange="$('upEcoNote').classList.toggle('hidden', !this.checked)"> ♻️ از مواد بازیافتی یا دورریختنی استفاده کردم</label>
+      <textarea id="upEcoNote" rows="2" class="hidden" placeholder="چطور این کار رو سازگارتر با محیط‌زیست کردی؟" style="margin-top:6px"></textarea>
+    </div>
+    <div class="field">
+      <label>عکس یا فایل کار</label>
+      <div class="file-drop" id="upDrop" onclick="document.getElementById('upFile').click()">📎 برای انتخاب عکس یا فایل ضربه بزنید</div>
+      <input type="file" id="upFile" accept="image/*,application/pdf" class="hidden" onchange="onUploadFileChange()">
+      <img id="upPreview" class="file-preview">
+    </div>
+    <div class="field-err" id="upErr"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('uploadModalOv')">انصراف</button>
+      <button class="btn btn-thread" style="flex:2" id="upBtn" onclick="submitUpload()">ارسال کار</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== مودال: بازی و آزمون درس ==================== -->
+<div class="modal-ov" id="quizModalOv">
+  <div class="modal">
+    <div class="modal-head"><h3>🎮 بازی و آزمون</h3><button class="modal-close" onclick="closeModal('quizModalOv')">✕</button></div>
+    <div id="quizBody"></div>
+  </div>
+</div>
+
+<!-- ==================== مودال: آزمون علاقه‌سنجی ==================== -->
+<div class="modal-ov" id="interestModalOv">
+  <div class="modal">
+    <div class="modal-head"><h3>🧭 آزمون علاقه‌سنجی</h3><button class="modal-close" onclick="closeModal('interestModalOv')">✕</button></div>
+    <div id="interestBody"></div>
+  </div>
+</div>
+
+<!-- ==================== لایت‌باکس تصویر ==================== -->
+<div id="lightbox" onclick="closeLightbox()">
+  <button class="lb-close" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" src="">
+</div>
+
+<div id="toast"></div>
+
+<script src="../shared/js/config.js"></script>
+<script src="../shared/js/state.js"></script>
+<script src="../shared/js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/student.js"></script>
+<script src="js/games.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+karvfan-android
+.github
+.git
+node_modules
+README.md
+package.json
+capacitor.config.json
+wrangler.jsonc

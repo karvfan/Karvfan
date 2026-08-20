@@ -6,7 +6,7 @@
 function $(id){ return document.getElementById(id); }
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function showToast(msg){ const t=$('toast'); t.textContent=msg; t.style.display='block'; clearTimeout(window._tt); window._tt=setTimeout(()=>t.style.display='none', 2600); }
-function goTo(id){ ['gate','studentAuth','teacherAuth','studentApp','teacherApp'].forEach(i=>$(i).classList.add('hidden')); $(id).classList.remove('hidden'); }
+function goTo(id){ document.querySelectorAll('.screen').forEach(el=>el.classList.add('hidden')); const t=$(id); if(t) t.classList.remove('hidden'); }
 function closeModal(id){ $(id).classList.remove('open'); }
 function openModal(id){ $(id).classList.add('open'); }
 function openLightbox(src){ $('lightboxImg').src = src; $('lightbox').classList.add('open'); }
