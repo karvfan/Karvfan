@@ -41,7 +41,7 @@ async function studentLogin(){
     const { data, error } = await sb.rpc('student_login', { p_phone: phone, p_pin: pin });
     if(error) throw error;
     if(!data || !data.length){
-      $('saLoginErr').textContent = 'شماره یا پین اشتباه است — اگه حساب نداری، از تب «ثبت‌نام» استفاده کن';
+      $('saLoginErr').textContent = 'شماره یا پین اشتباه است — اگه حساب نداری از تب «ثبت‌نام» استفاده کن، اگه پینت یادت رفته از معلمت بخواه ریستش کنه';
       return;
     }
     if(data[0].locked_seconds){
