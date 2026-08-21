@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">Karvfan</string>
-    <string name="title_activity_main">Karvfan</string>
-    <string name="package_name">com.karvfan.app</string>
-    <string name="custom_url_scheme">com.karvfan.app</string>
-</resources>
