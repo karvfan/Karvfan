@@ -340,7 +340,14 @@ async function loadStudentsAdmin(){
   if(error || !data || !data.length){ list.outerHTML = emptyState('👩‍🎓','دانش‌آموزی یافت نشد',''); return; }
   list.innerHTML = data.map(s=>'<div class="student-row"><span>'+esc(s.full_name)+' — '+esc(s.school)+' · پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[s.grade])+(s.class_name?(' · کلاس '+esc(s.class_name)):'')+(s.streak>0?(' · 🔥'+s.streak):'')+'</span>'+
     '<span style="display:flex;align-items:center;gap:8px"><span class="pts-badge">'+s.points+' امتیاز</span>'+
+    '<button class="btn btn-ghost btn-sm" onclick="resetStudentPin(\''+s.id+'\',\''+esc(s.full_name).replace(/'/g,"\\'")+'\')">🔑 ریست پین</button>'+
     '<button class="btn btn-ghost btn-sm" onclick="openReportCard(\''+s.id+'\')">🗂️ کارنامه</button></span></div>').join('');
+}
+async function resetStudentPin(studentId, studentName){
+  if(!confirm('پین «'+studentName+'» ریست بشه؟ پین قبلی‌ش دیگه کار نمی‌کنه.')) return;
+  const { data: pin, error } = await sb.rpc('staff_reset_student_pin', { p_student_id: studentId });
+  if(error){ showToast('خطا: '+error.message); return; }
+  alert('پین جدید «'+studentName+'»: '+pin+'\n\nاینو یادداشت کن و به دانش‌آموز بده.');
 }
 function exportStudentsCSV(){
   const rows = window._stuAdminList || [];

@@ -40,3 +40,13 @@ function initLogin(allowedRoles){
     }
   });
 }
+
+async function forgotPasswordDesktop(){
+  const email = prompt('ایمیل حسابتون رو وارد کنید:');
+  if(!email || !email.trim()) return;
+  const { error } = await sb.auth.resetPasswordForEmail(email.trim(), {
+    redirectTo: 'https://karvfan.hodaahmadi898.workers.dev/teacher/reset-password.html'
+  });
+  if(error){ alert('خطا: ' + error.message); return; }
+  alert('اگه این ایمیل ثبت باشه، لینک تغییر رمز ارسال شد. ایمیل رو با مرورگر (نه این برنامه) باز کنید تا رمز جدید تنظیم بشه.');
+}

@@ -59,12 +59,17 @@
         <input id="saName" placeholder="مثلاً: زهرا احمدی">
       </div>
       <div class="field">
+        <label>استان</label>
+        <select id="saProvince" onchange="onRegProvinceChange()"><option value="">— انتخاب کنید —</option></select>
+      </div>
+      <div class="field">
+        <label>شهرستان</label>
+        <select id="saCounty" onchange="onRegCountyChange()"><option value="">— ابتدا استان را انتخاب کنید —</option></select>
+      </div>
+      <div class="field">
         <label>مدرسه</label>
-        <input id="saSchool" list="schoolSuggestions" placeholder="مثلاً: فرزانگان">
-        <datalist id="schoolSuggestions">
-          <option value="فرزانگان"></option>
-          <option value="۱۳ آبان"></option>
-        </datalist>
+        <select id="saSchool"><option value="">— ابتدا شهرستان را انتخاب کنید —</option></select>
+        <div style="font-size:11.5px;color:var(--sub);margin-top:4px">مدرسه‌تون تو لیست نیست؟ به معلمتون بگید از پنل خودش درخواست ثبت مدرسه بده.</div>
       </div>
       <div class="field">
         <label>پایه</label>

@@ -16,6 +16,7 @@
       <button data-p="pSchools">🏫 فهرست مدرسه‌ها</button>
       <button data-p="pAddStudent">➕ ثبت دانش‌آموز</button>
       <button data-p="pStaff" id="navStaff" class="hidden">🧑‍💼 مدیریت کارکنان</button>
+      <button data-p="pAudit" id="navAudit" class="hidden">📜 گزارش فعالیت‌ها</button>
     </nav>
     <button class="logout" id="logoutBtn">خروج</button>
   </div>
@@ -40,7 +41,9 @@
       <div class="topline"><h2>➕ ثبت دانش‌آموز جدید</h2></div>
       <div class="form-card">
         <div class="field"><label>نام و نام خانوادگی</label><input id="asName"></div>
-        <div class="field"><label>مدرسه</label><input id="asSchool" placeholder="نام مدرسه"></div>
+        <div class="field"><label>استان</label><select id="asProvince"></select></div>
+        <div class="field"><label>شهرستان</label><select id="asCounty"></select></div>
+        <div class="field"><label>مدرسه</label><select id="asSchool"><option value="">— ابتدا شهرستان را انتخاب کنید —</option></select></div>
         <div class="field"><label>پایه</label><select id="asGrade"><option value="7">هفتم</option><option value="8">هشتم</option><option value="9">نهم</option></select></div>
         <div class="field"><label>کلاس (اختیاری)</label><input id="asClass"></div>
         <div class="field"><label>شماره موبایل</label><input id="asPhone" placeholder="09xxxxxxxxx"></div>
@@ -65,6 +68,10 @@
         <button class="btn btn-thread btn-block" id="sfBtn">ذخیره</button>
       </div>
       <div id="staffBody"></div>
+    </div>
+    <div class="panel" id="pAudit">
+      <div class="topline"><h2>📜 گزارش فعالیت‌های مدیریتی</h2></div>
+      <div id="auditBody"><div class="empty-state"><div class="ic">⏳</div>در حال بارگذاری...</div></div>
     </div>
   </div>
 </div>

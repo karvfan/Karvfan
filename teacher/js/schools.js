@@ -107,18 +107,43 @@ async function reviewSchoolWeb(id, approve){
 /* هر سمت (معلم و بالاتر) می‌تواند دانش‌آموز ثبت کند — چون هر سطح قابلیت‌های سطح پایین‌تر را هم دارد. */
 async function loadAddStudentPanel(){
   const el = $('tAddStudent');
-  const defaultSchool = (myStaff && myStaff.school) ? myStaff.school : '';
+  const { provinces } = await loadRegionsCache();
   el.innerHTML =
     '<div class="sec-title">➕ ثبت دانش‌آموز جدید</div>'+
     '<div class="pattern-card">'+
       '<div class="field"><label>نام و نام خانوادگی</label><input id="asName" placeholder="مثلاً: زهرا احمدی"></div>'+
-      '<div class="field"><label>مدرسه</label><input id="asSchool" list="schoolSuggestions" value="'+esc(defaultSchool)+'" placeholder="نام مدرسه"></div>'+
+      '<div class="field"><label>استان</label><select id="asProvince" onchange="onAddStudentProvinceChange()">'+provinceOptionsHtml(provinces)+'</select></div>'+
+      '<div class="field"><label>شهرستان</label><select id="asCounty" onchange="onAddStudentCountyChange()">'+countyOptionsHtml([],'')+'</select></div>'+
+      '<div class="field"><label>مدرسه</label><select id="asSchool"><option value="">— ابتدا شهرستان را انتخاب کنید —</option></select></div>'+
       '<div class="field"><label>پایه</label><select id="asGrade"><option value="7">هفتم</option><option value="8">هشتم</option><option value="9">نهم</option></select></div>'+
       '<div class="field"><label>کلاس (اختیاری)</label><input id="asClass" placeholder="مثلاً: ۷/۲"></div>'+
       '<div class="field"><label>شماره موبایل (برای ورود بعدی دانش‌آموز لازم است)</label><input id="asPhone" placeholder="09xxxxxxxxx" inputmode="numeric"></div>'+
       '<div class="field-err" id="asErr"></div>'+
       '<button class="btn btn-thread btn-sm" onclick="submitAddStudent()">✅ ثبت دانش‌آموز</button>'+
     '</div>';
+  // اگه معلم به یه مدرسه‌ی مشخص تعلق داره، پیش‌فرض همونو انتخاب کن
+  if(myStaff && myStaff.school_id){
+    const { data: sc } = await sb.from('schools').select('*, counties(*, provinces(*))').eq('id', myStaff.school_id).maybeSingle();
+    if(sc && sc.counties && sc.counties.provinces){
+      $('asProvince').value = sc.counties.provinces.id;
+      await onAddStudentProvinceChange();
+      $('asCounty').value = sc.counties.id;
+      await onAddStudentCountyChange();
+      $('asSchool').value = sc.name;
+    }
+  }
+}
+async function onAddStudentProvinceChange(){
+  $('asCounty').innerHTML = countyOptionsHtml(_regionsCache.counties, $('asProvince').value);
+  $('asSchool').innerHTML = '<option value="">— ابتدا شهرستان را انتخاب کنید —</option>';
+}
+async function onAddStudentCountyChange(){
+  const countyId = $('asCounty').value;
+  if(!countyId){ $('asSchool').innerHTML = '<option value="">— ابتدا شهرستان را انتخاب کنید —</option>'; return; }
+  const { data } = await sb.from('schools').select('*').eq('county_id', countyId).eq('status','approved').order('name');
+  $('asSchool').innerHTML = (data&&data.length) ?
+    '<option value="">— انتخاب کنید —</option>' + data.map(s=>'<option value="'+esc(s.name)+'">'+esc(s.name)+'</option>').join('') :
+    '<option value="">— مدرسه‌ای در این شهرستان تأیید نشده —</option>';
 }
 async function submitAddStudent(){
   const full_name = $('asName').value.trim();
@@ -128,7 +153,7 @@ async function submitAddStudent(){
   const phone = $('asPhone').value.trim();
   $('asErr').textContent='';
   if(!full_name || full_name.length<3){ $('asErr').textContent='نام و نام خانوادگی رو کامل بنویسید'; return; }
-  if(!school){ $('asErr').textContent='نام مدرسه رو بنویسید'; return; }
+  if(!school){ $('asErr').textContent='مدرسه رو انتخاب کنید'; return; }
   if(!/^0?9\d{9}$/.test(phone.replace(/\s/g,''))){ $('asErr').textContent='شماره موبایل معتبر نیست'; return; }
   const pin = String(Math.floor(1000 + Math.random()*9000));
   const { error } = await sb.rpc('student_login_or_register', { p_full_name: full_name, p_school: school, p_grade: grade, p_phone: phone, p_pin: pin, p_class_name: class_name||null });

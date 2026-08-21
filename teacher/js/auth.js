@@ -15,3 +15,13 @@ async function teacherLogin(){
   await enterTeacherApp();
 }
 async function teacherLogout(){ await sb.auth.signOut(); goTo('teacherAuth'); }
+
+async function forgotPassword(){
+  const email = prompt('ایمیل حسابتون رو وارد کنید تا لینک تغییر رمز براتون ارسال بشه:');
+  if(!email || !email.trim()) return;
+  const { error } = await sb.auth.resetPasswordForEmail(email.trim(), {
+    redirectTo: window.location.origin + window.location.pathname.replace('index.html','') + 'reset-password.html'
+  });
+  if(error){ alert('خطا: ' + error.message); return; }
+  alert('اگه این ایمیل توی سامانه ثبت باشه، یه لینک تغییر رمز براش ارسال شد — ایمیلتون رو چک کنید.');
+}

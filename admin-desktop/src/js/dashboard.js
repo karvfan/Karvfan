@@ -53,6 +53,7 @@ function setupNav(){
   const canManageStaff = ['county_admin','province_admin','super_admin'].includes(myScope.role);
   document.getElementById('navPending').classList.toggle('hidden', !canReview);
   document.getElementById('navStaff').classList.toggle('hidden', !canManageStaff);
+  document.getElementById('navAudit').classList.toggle('hidden', myScope.role!=='super_admin');
 
   document.querySelectorAll('#navMenu button').forEach(btn=>{
     btn.addEventListener('click', ()=> switchPanel(btn.dataset.p));
@@ -67,6 +68,7 @@ function switchPanel(id){
   if(id==='pSchools') loadSchools();
   if(id==='pAddStudent') initAddStudentForm();
   if(id==='pStaff') loadStaff();
+  if(id==='pAudit') loadAuditLog();
 }
 
 /* ==================================================== آمار ==================================================== */
@@ -248,8 +250,26 @@ async function loadStaff(){
 /* ==================================================== ثبت دانش‌آموز (کاسکید از سطح معلم) ==================================================== */
 let _asWired = false;
 function initAddStudentForm(){
-  document.getElementById('asSchool').value = myScope.school || '';
+  const provSel = document.getElementById('asProvince');
+  if(!provSel.options.length){
+    allProvinces.forEach(p=> provSel.insertAdjacentHTML('beforeend', `<option value="${p.id}">${esc(p.name)}</option>`));
+  }
+  if(myScope.school_id){
+    sb.from('schools').select('*, counties(*, provinces(*))').eq('id', myScope.school_id).maybeSingle().then(({data:sc})=>{
+      if(sc && sc.counties && sc.counties.provinces){
+        provSel.value = sc.counties.provinces.id;
+        fillCountyOptions(document.getElementById('asCounty'), provSel.value, false);
+        document.getElementById('asCounty').value = sc.counties.id;
+        fillAsSchoolOptions().then(()=>{ document.getElementById('asSchool').value = sc.name; });
+      }
+    });
+  }
   if(_asWired) return; _asWired = true;
+  provSel.addEventListener('change', ()=>{
+    fillCountyOptions(document.getElementById('asCounty'), provSel.value, false);
+    document.getElementById('asSchool').innerHTML = '<option value="">— ابتدا شهرستان را انتخاب کنید —</option>';
+  });
+  document.getElementById('asCounty').addEventListener('change', fillAsSchoolOptions);
   document.getElementById('asBtn').addEventListener('click', async ()=>{
     const errEl = document.getElementById('asErr'); errEl.textContent=''; errEl.style.color='';
     const full_name = document.getElementById('asName').value.trim();
@@ -258,7 +278,7 @@ function initAddStudentForm(){
     const class_name = document.getElementById('asClass').value.trim();
     const phone = document.getElementById('asPhone').value.trim();
     if(!full_name || full_name.length<3){ errEl.textContent='نام و نام خانوادگی رو کامل بنویسید'; return; }
-    if(!school){ errEl.textContent='نام مدرسه رو بنویسید'; return; }
+    if(!school){ errEl.textContent='مدرسه رو انتخاب کنید'; return; }
     if(!/^0?9\d{9}$/.test(phone.replace(/\s/g,''))){ errEl.textContent='شماره موبایل معتبر نیست'; return; }
     const pin = String(Math.floor(1000 + Math.random()*9000));
     const { error } = await sb.rpc('student_login_or_register', { p_full_name: full_name, p_school: school, p_grade: grade, p_phone: phone, p_pin: pin, p_class_name: class_name||null });
@@ -267,6 +287,30 @@ function initAddStudentForm(){
     errEl.innerHTML = '✅ ثبت شد. پین ورودش: <b style="font-size:16px">'+pin+'</b>';
     errEl.style.color = 'var(--green)';
   });
+}
+async function fillAsSchoolOptions(){
+  const sel = document.getElementById('asSchool');
+  const countyId = document.getElementById('asCounty').value;
+  if(!countyId){ sel.innerHTML = '<option value="">— ابتدا شهرستان را انتخاب کنید —</option>'; return; }
+  const { data } = await sb.from('schools').select('id,name').eq('county_id', countyId).eq('status','approved').order('name');
+  sel.innerHTML = (data&&data.length) ? '<option value="">— انتخاب کنید —</option>' + data.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('')
+    : '<option value="">— مدرسه‌ای در این شهرستان تأیید نشده —</option>';
+}
+
+/* ==================================================== گزارش فعالیت‌های مدیریتی (فقط سوپرادمین) ==================================================== */
+const AUDIT_ACTION_LABELS = { approve_school:'✅ تأیید مدرسه', reject_school:'❌ رد مدرسه', set_staff_role:'🧑‍💼 تعیین نقش کارمند' };
+async function loadAuditLog(){
+  const el = document.getElementById('auditBody');
+  el.innerHTML = '<div class="empty-state"><div class="ic">⏳</div>در حال بارگذاری...</div>';
+  const { data, error } = await sb.rpc('get_audit_log', { p_limit: 200 });
+  if(error){ el.innerHTML = '<div class="empty-state"><div class="ic">⚠️</div>خطا در دریافت گزارش</div>'; console.error(error); return; }
+  if(!data || !data.length){ el.innerHTML = '<div class="empty-state"><div class="ic">📜</div>هنوز فعالیتی ثبت نشده</div>'; return; }
+  let html = '<table class="data-table"><thead><tr><th>زمان</th><th>انجام‌دهنده</th><th>اقدام</th><th>مورد</th></tr></thead><tbody>';
+  data.forEach(a=>{
+    html += `<tr><td>${new Date(a.created_at).toLocaleString('fa-IR')}</td><td>${esc(a.actor_email)}</td><td>${esc(AUDIT_ACTION_LABELS[a.action]||a.action)}</td><td>${esc(a.target_desc)}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
 }
 
 document.addEventListener('DOMContentLoaded', boot);
