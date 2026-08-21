@@ -17,7 +17,7 @@ function withTimeout(promise, ms){
       try{
         const parsed = JSON.parse(saved);
         const { data, error } = await withTimeout(sb.rpc('get_student_profile', { p_student_id: parsed.id }), 8000);
-        if(!error && data && data[0]){ student = data[0]; localStorage.setItem('kf_student', JSON.stringify(student)); await enterStudentApp(); return; }
+        if(!error && data && data[0]){ student = sanitizeStudent({ ...parsed, ...data[0] }); localStorage.setItem('kf_student', JSON.stringify(student)); await enterStudentApp(); return; }
       }catch(e){ console.error('خطا در بازیابی دانش‌آموز:', e); }
     }
   }catch(e){

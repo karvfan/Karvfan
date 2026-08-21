@@ -17,7 +17,7 @@
     "appId": "ir.karvfan.admindesktop",
     "productName": "کار و فناوری — پنل مدیریت",
     "directories": { "output": "dist" },
-    "files": ["main.js", "preload.js", "src/**/*"],
+    "files": ["main.js", "src/**/*"],
     "win": {
       "target": ["nsis", "portable"],
       "icon": "build/icon.ico"

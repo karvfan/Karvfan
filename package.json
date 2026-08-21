@@ -4,7 +4,9 @@
   "description": "از این پس، پروژه به‌جای یک فایل بزرگ، توی چند فایل مرتب سازمان‌دهی شده — نگه‌داری و ارتقاش خیلی راحت‌تره.",
   "main": "sw.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test",
+    "lint": "eslint . --ext .js --ignore-pattern node_modules --ignore-pattern karvfan-android",
+    "format": "prettier --write \"**/*.{js,json,css,html}\""
   },
   "keywords": [],
   "author": "",
@@ -14,5 +16,9 @@
     "@capacitor/cli": "^8.5.0",
     "@capacitor/core": "^8.5.0",
     "@supabase/supabase-js": "^2.112.3"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.0"
   }
 }
