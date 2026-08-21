@@ -1,9 +1,11 @@
-karvfan-android
+karvfan-android-student
+karvfan-android-teacher
 admin-desktop
 .github
 .git
 node_modules
 README.md
 package.json
-capacitor.config.json
+capacitor.config.student.json
+capacitor.config.teacher.json
 wrangler.jsonc
