@@ -23,8 +23,11 @@ jobs:
 
       - name: Prepare web assets (www/)
         run: |
-          mkdir -p www
-          cp -r index.html manifest.json sw.js css js icon-192.png icon-512.png icon-512-maskable.png www/
+          mkdir -p www/student www/teacher
+          cp index.html www/
+          cp -r student/* www/student/
+          cp -r teacher/* www/teacher/
+          cp -r shared www/shared
 
       - name: Sync Capacitor Android project
         run: npx cap sync android
