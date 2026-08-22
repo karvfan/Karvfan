@@ -8,6 +8,9 @@ on:
       - '.github/workflows/build-admin-desktop.yml'
   workflow_dispatch: {}
 
+permissions:
+  contents: write
+
 jobs:
   build-windows:
     runs-on: windows-latest
@@ -34,3 +37,13 @@ jobs:
           path: |
             admin-desktop/dist/*.exe
           if-no-files-found: error
+
+      - name: Publish to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-builds
+          name: "آخرین نسخه‌های ساخته‌شده (خودکار)"
+          make_latest: true
+          files: admin-desktop/dist/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

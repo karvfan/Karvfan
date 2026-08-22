@@ -12,6 +12,9 @@ on:
       - '.github/workflows/build-android-teacher.yml'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -62,3 +65,16 @@ jobs:
         with:
           name: karvfan-teacher-debug-apk
           path: karvfan-android-teacher/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Rename APK for release
+        run: cp karvfan-android-teacher/app/build/outputs/apk/debug/app-debug.apk karvfan-teacher.apk
+
+      - name: Publish to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-builds
+          name: "آخرین نسخه‌های ساخته‌شده (خودکار)"
+          make_latest: true
+          files: karvfan-teacher.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
