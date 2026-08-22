@@ -52,6 +52,7 @@ function setupNav(){
   const canReview = ['county_admin','province_admin','super_admin'].includes(myScope.role);
   const canManageStaff = ['county_admin','province_admin','super_admin'].includes(myScope.role);
   document.getElementById('navPending').classList.toggle('hidden', !canReview);
+  document.getElementById('navBulkImport').classList.toggle('hidden', !canReview);
   document.getElementById('navStaff').classList.toggle('hidden', !canManageStaff);
   document.getElementById('navAudit').classList.toggle('hidden', myScope.role!=='super_admin');
 
@@ -65,6 +66,7 @@ function switchPanel(id){
   document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id===id));
   if(id==='pStats') loadStats();
   if(id==='pPending') loadPending();
+  if(id==='pBulkImport') initBulkImport();
   if(id==='pSchools') loadSchools();
   if(id==='pAddStudent') initAddStudentForm();
   if(id==='pStaff') loadStaff();
@@ -311,6 +313,31 @@ async function loadAuditLog(){
   });
   html += '</tbody></table>';
   el.innerHTML = html;
+}
+
+/* ==================================================== وارد کردن گروهی مدرسه ==================================================== */
+let _biWired = false;
+function initBulkImport(){
+  const provSel = document.getElementById('biProvince');
+  if(!provSel.options.length){
+    allProvinces.forEach(p=> provSel.insertAdjacentHTML('beforeend', `<option value="${p.id}">${esc(p.name)}</option>`));
+  }
+  if(_biWired) return; _biWired = true;
+  provSel.addEventListener('change', ()=> fillCountyOptions(document.getElementById('biCounty'), provSel.value, false));
+  document.getElementById('biBtn').addEventListener('click', async ()=>{
+    const errEl = document.getElementById('biErr'); errEl.textContent=''; errEl.style.color='';
+    const countyId = Number(document.getElementById('biCounty').value) || null;
+    const names = document.getElementById('biNames').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    if(!countyId){ errEl.textContent='شهرستان رو انتخاب کن'; return; }
+    if(!names.length){ errEl.textContent='حداقل یک اسم مدرسه بنویس'; return; }
+    const items = names.map(n=>({ county_id: countyId, name: n }));
+    const { data, error } = await sb.rpc('bulk_import_schools', { p_items: items });
+    if(error){ errEl.textContent = 'خطا: ' + error.message; return; }
+    errEl.style.color = 'var(--green)';
+    errEl.textContent = '✅ '+data+' مدرسه وارد و تأیید شد';
+    document.getElementById('biNames').value = '';
+    refreshPendingBadge();
+  });
 }
 
 document.addEventListener('DOMContentLoaded', boot);

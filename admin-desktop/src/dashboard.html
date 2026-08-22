@@ -13,6 +13,7 @@
     <nav id="navMenu">
       <button data-p="pStats" class="active">📊 آمار</button>
       <button data-p="pPending" id="navPending" class="hidden">✅ تأیید مدرسه‌ها<span class="tab-badge hidden" id="badgePending" style="margin-inline-start:6px"></span></button>
+      <button data-p="pBulkImport" id="navBulkImport" class="hidden">📥 وارد کردن گروهی مدرسه</button>
       <button data-p="pSchools">🏫 فهرست مدرسه‌ها</button>
       <button data-p="pAddStudent">➕ ثبت دانش‌آموز</button>
       <button data-p="pStaff" id="navStaff" class="hidden">🧑‍💼 مدیریت کارکنان</button>
@@ -28,6 +29,16 @@
     <div class="panel" id="pPending">
       <div class="topline"><h2>✅ درخواست‌های تأیید مدرسه</h2></div>
       <div id="pendingBody"></div>
+    </div>
+    <div class="panel" id="pBulkImport">
+      <div class="topline"><h2>📥 وارد کردن گروهی مدرسه</h2></div>
+      <div class="form-card" style="max-width:560px">
+        <div class="field"><label>استان</label><select id="biProvince"></select></div>
+        <div class="field"><label>شهرستان</label><select id="biCounty"></select></div>
+        <div class="field"><label>اسم مدرسه‌ها (هر خط یک مدرسه)</label><textarea id="biNames" rows="8" style="width:100%;padding:10px;border:1.5px solid var(--line);border-radius:10px;font-family:inherit" placeholder="فرزانگان&#10;۱۳ آبان&#10;شهید بهشتی"></textarea></div>
+        <div class="field-err" id="biErr"></div>
+        <button class="btn btn-thread btn-block" id="biBtn">وارد کردن و تأیید خودکار</button>
+      </div>
     </div>
     <div class="panel" id="pSchools">
       <div class="topline"><h2>🏫 فهرست مدرسه‌های تأییدشده</h2></div>
