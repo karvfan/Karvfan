@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">کار و فناوری - دانش‌آموز</string>
+    <string name="title_activity_main">کار و فناوری - دانش‌آموز</string>
+    <string name="package_name">com.karvfan.student</string>
+    <string name="custom_url_scheme">com.karvfan.student</string>
+</resources>

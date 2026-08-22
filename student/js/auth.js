@@ -41,7 +41,7 @@ async function studentLogin(){
     const { data, error } = await sb.rpc('student_login', { p_phone: phone, p_pin: pin });
     if(error) throw error;
     if(!data || !data.length){
-      $('saLoginErr').textContent = 'شماره یا پین اشتباه است — اگه حساب نداری، از تب «ثبت‌نام» استفاده کن';
+      $('saLoginErr').textContent = 'شماره یا پین اشتباه است — اگه حساب نداری از تب «ثبت‌نام» استفاده کن، اگه پینت یادت رفته از معلمت بخواه ریستش کنه';
       return;
     }
     if(data[0].locked_seconds){
@@ -49,7 +49,7 @@ async function studentLogin(){
       $('saLoginErr').textContent = 'به‌خاطر چندبار پین اشتباه، حساب موقتاً قفل شده — حدود '+mins+' دقیقه‌ی دیگه دوباره امتحان کن';
       return;
     }
-    student = data[0];
+    student = sanitizeStudent(data[0]);
     localStorage.setItem('kf_student', JSON.stringify(student));
     await enterStudentApp();
   }catch(e){
@@ -77,7 +77,7 @@ async function studentRegister(){
   try{
     const { data, error } = await sb.rpc('student_login_or_register', { p_full_name: full_name, p_school: school, p_grade: grade, p_phone: phone, p_pin: pin, p_class_name: class_name||null });
     if(error) throw error;
-    student = data[0];
+    student = sanitizeStudent(data[0]);
     localStorage.setItem('kf_student', JSON.stringify(student));
     await enterStudentApp();
   }catch(e){

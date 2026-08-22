@@ -1,0 +1,64 @@
+name: Build Android (Teacher)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'teacher/**'
+      - 'shared/**'
+      - 'karvfan-android-teacher/**'
+      - 'capacitor.config.teacher.json'
+      - 'package.json'
+      - '.github/workflows/build-android-teacher.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Prepare web assets (www-teacher/)
+        run: |
+          mkdir -p www-teacher
+          cp -r teacher/* www-teacher/
+          cp -r shared www-teacher/shared
+          # مسیرهای نسبی "../shared/..." که برای ساختار سایت (teacher/ زیرپوشه) نوشته شدن،
+          # چون اینجا index.html خودش در ریشه‌ی webDir قرار می‌گیره، به "shared/..." تبدیل می‌شن
+          grep -rl '\.\./shared/' www-teacher --include="*.html" | xargs -r sed -i 's#\.\./shared/#shared/#g'
+
+      - name: Use teacher Capacitor config
+        run: cp capacitor.config.teacher.json capacitor.config.json
+
+      - name: Sync Capacitor Android project
+        run: npx cap sync android
+
+      - name: Set up JDK 21 (latest JDK fully supported by Gradle 8.14 / AGP 8.13)
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Grant execute permission for gradlew
+        working-directory: karvfan-android-teacher
+        run: chmod +x ./gradlew
+
+      - name: Build debug APK
+        working-directory: karvfan-android-teacher
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: karvfan-teacher-debug-apk
+          path: karvfan-android-teacher/app/build/outputs/apk/debug/app-debug.apk

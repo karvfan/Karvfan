@@ -22,6 +22,15 @@ function openLightbox(src){ $('lightboxImg').src = src; $('lightbox').classList.
 function closeLightbox(){ $('lightbox').classList.remove('open'); }
 function fileToBase64(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
 
+// حذف فیلدهای حساس (پین/هش پین و مشابه) قبل از ذخیره در localStorage —
+// حتی اگه RPC سمت Supabase این فیلدها رو برگردونه، اینجا فیلتر می‌شن تا هیچ‌وقت
+// روی دستگاه کاربر یا در تاریخچه‌ی مرورگر ذخیره نشن.
+function sanitizeStudent(row){
+  if(!row || typeof row !== 'object') return row;
+  const { pin, pin_hash, password, password_hash, ...safe } = row;
+  return safe;
+}
+
 // تبدیل تاریخ میلادی به شمسی (نمایشی)
 function toJalali(dateStr){
   const d = new Date(dateStr);
