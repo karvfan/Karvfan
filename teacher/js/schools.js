@@ -120,6 +120,14 @@ async function loadAddStudentPanel(){
       '<div class="field"><label>شماره موبایل (برای ورود بعدی دانش‌آموز لازم است)</label><input id="asPhone" placeholder="09xxxxxxxxx" inputmode="numeric"></div>'+
       '<div class="field-err" id="asErr"></div>'+
       '<button class="btn btn-thread btn-sm" onclick="submitAddStudent()">✅ ثبت دانش‌آموز</button>'+
+    '</div>'+
+    '<div class="sec-title">📥 واردکردن گروهی (کل کلاس با هم)</div>'+
+    '<div class="pattern-card">'+
+      '<div style="font-size:12px;color:var(--sub);margin-bottom:10px">هر خط: نام و نام‌خانوادگی، شماره موبایل، کلاس (اختیاری) — با کاما یا Tab جدا کنید. مدرسه و پایه از فرم بالا استفاده می‌شه.</div>'+
+      '<textarea id="biStudents" rows="6" style="width:100%;padding:10px;border:1.5px solid var(--line);border-radius:10px;font-family:inherit" placeholder="زهرا احمدی, 09121112233, ۷/۲&#10;علی رضایی, 09121112244"></textarea>'+
+      '<div class="field-err" id="biErr" style="margin-top:8px"></div>'+
+      '<button class="btn btn-sky btn-sm" style="margin-top:6px" onclick="submitBulkStudents()">وارد کردن گروهی</button>'+
+      '<div id="biResult" style="margin-top:12px"></div>'+
     '</div>';
   // اگه معلم به یه مدرسه‌ی مشخص تعلق داره، پیش‌فرض همونو انتخاب کن
   if(myStaff && myStaff.school_id){
@@ -163,4 +171,27 @@ async function submitAddStudent(){
     '<div class="pattern-card" style="border:1.5px solid var(--sky);margin-bottom:14px">'+
     '✅ دانش‌آموز ثبت شد. پین ورودش رو بهش بده: <b style="font-size:18px;letter-spacing:2px">'+pin+'</b>'+
     '</div>');
+}
+async function submitBulkStudents(){
+  const errEl = $('biErr'); errEl.textContent='';
+  const school = $('asSchool').value.trim();
+  const grade = parseInt($('asGrade').value);
+  const raw = $('biStudents').value.trim();
+  if(!school){ errEl.textContent='اول از فرم بالا مدرسه رو انتخاب کنید'; return; }
+  if(!raw){ errEl.textContent='حداقل یک دانش‌آموز بنویسید'; return; }
+  const items = raw.split('\n').map(line=>line.trim()).filter(Boolean).map(line=>{
+    const parts = line.split(/[,\t]/).map(p=>p.trim());
+    return { full_name: parts[0]||'', phone: parts[1]||'', class_name: parts[2]||'' };
+  });
+  const { data, error } = await sb.rpc('bulk_import_students', { p_school: school, p_grade: grade, p_items: items });
+  if(error){ errEl.textContent = 'خطا: '+error.message; return; }
+  let html = '<table style="width:100%;font-size:13px;border-collapse:collapse">';
+  html += '<tr style="text-align:right;color:var(--sub)"><th>نام</th><th>شماره</th><th>پین</th><th>وضعیت</th></tr>';
+  data.forEach(r=>{
+    html += '<tr><td>'+esc(r.full_name)+'</td><td>'+esc(r.phone)+'</td><td><b>'+(r.pin||'—')+'</b></td><td>'+esc(r.status)+'</td></tr>';
+  });
+  html += '</table>';
+  $('biResult').innerHTML = html;
+  $('biStudents').value = '';
+  showToast('✅ '+data.filter(r=>r.status==='ثبت شد').length+' دانش‌آموز ثبت شد');
 }

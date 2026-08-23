@@ -15,6 +15,16 @@ async function enterStudentApp(){
   renderLessonsPanel();
   switchStudentTab('pLessons');
   loadDeadlineBanner();
+  refreshMineBadge();
+}
+async function refreshMineBadge(){
+  const { data } = await sb.rpc('count_unseen_reviews', { p_student_id: student.id });
+  setStBadge('badgeMine', data);
+}
+function setStBadge(id, n){
+  const el = $(id); if(!el) return;
+  if(n && n>0){ el.textContent = n>99?'99+':n; el.classList.remove('hidden'); }
+  else { el.classList.add('hidden'); }
 }
 async function loadMyLikes(){
   const { data } = await sb.rpc('get_gallery_likes', { p_student_id: student.id });
@@ -49,7 +59,7 @@ function switchStudentTab(id){
   document.querySelectorAll('#studentApp .tab').forEach(t=>t.classList.toggle('active', t.dataset.p===id));
   document.querySelectorAll('#studentApp .panel').forEach(p=>p.classList.toggle('active', p.id===id));
   if(id==='pAssign') loadAssignmentsPanel();
-  if(id==='pMine') loadMySubmissions();
+  if(id==='pMine'){ loadMySubmissions(); sb.rpc('mark_submissions_seen', { p_student_id: student.id }).then(()=> setStBadge('badgeMine', 0)); }
   if(id==='pProfile') loadProfilePanel();
   if(id==='pGallery') loadGallery();
   if(id==='pBoard') loadLeaderboard();

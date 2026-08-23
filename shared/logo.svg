@@ -1,0 +1,33 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2e3f5c"/>
+      <stop offset="1" stop-color="#1c2738"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="512" height="512" rx="108" fill="url(#bg)"/>
+
+  <g transform="translate(256,256)">
+    <g fill="#d79a2c">
+      <g id="teeth"><rect x="-19" y="-172" width="38" height="50" rx="8"/></g>
+      <use href="#teeth" transform="rotate(45)"/>
+      <use href="#teeth" transform="rotate(90)"/>
+      <use href="#teeth" transform="rotate(135)"/>
+      <use href="#teeth" transform="rotate(180)"/>
+      <use href="#teeth" transform="rotate(225)"/>
+      <use href="#teeth" transform="rotate(270)"/>
+      <use href="#teeth" transform="rotate(315)"/>
+      <circle r="150"/>
+    </g>
+    <circle r="150" fill="none" stroke="#1c2738" stroke-width="10"/>
+    <circle r="112" fill="#f4eedd"/>
+  </g>
+
+  <g transform="translate(256,256) rotate(45)">
+    <rect x="-14" y="-108" width="28" height="216" rx="14" fill="#a8395a"/>
+    <circle cx="0" cy="-108" r="34" fill="none" stroke="#a8395a" stroke-width="16"/>
+    <circle cx="0" cy="-108" r="14" fill="#f4eedd"/>
+    <circle cx="0" cy="108" r="20" fill="#a8395a"/>
+    <circle cx="0" cy="108" r="9" fill="#f4eedd"/>
+  </g>
+</svg>

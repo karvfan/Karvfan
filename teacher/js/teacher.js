@@ -94,7 +94,8 @@ async function saveReview(id){
   const { data:{session} } = await sb.auth.getSession();
   const { error } = await sb.from('submissions').update({
     status, points_awarded, teacher_note, is_public,
-    reviewed_at: new Date().toISOString(), reviewed_by: session?session.user.email:null
+    reviewed_at: new Date().toISOString(), reviewed_by: session?session.user.email:null,
+    seen_by_student: false
   }).eq('id', id);
   if(error){ showToast('❌ خطا در ذخیره'); console.error(error); return; }
   showToast('✅ بررسی ذخیره شد');
