@@ -24,7 +24,22 @@ function withTimeout(promise, ms){
     console.error('خطا در اتصال به سرور، ورود به صفحه‌ی ورود:', e);
   }
   goTo('studentAuth');
+  await prefillFromQrLink();
 })();
+async function prefillFromQrLink(){
+  const params = new URLSearchParams(location.search);
+  const schoolId = params.get('school');
+  if(!schoolId) return;
+  const { data: sc } = await sb.from('schools').select('*, counties(*, provinces(*))').eq('id', schoolId).eq('status','approved').maybeSingle();
+  if(!sc || !sc.counties || !sc.counties.provinces) return;
+  switchAuthTab('register');
+  await loadRegProvinces();
+  $('saProvince').value = sc.counties.provinces.id;
+  await onRegProvinceChange();
+  $('saCounty').value = sc.counties.id;
+  await onRegCountyChange();
+  $('saSchool').value = sc.name;
+}
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
 }

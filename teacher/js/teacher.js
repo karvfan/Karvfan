@@ -411,6 +411,9 @@ async function exportGradebookCSV(){
 }
 
 /* ------------------------------------------------------------ کارنامه‌ی دانش‌آموز (مربی) */
+function printCurrentReportCertificate(){
+  if(window._currentReportStudent) openCertificate(window._currentReportStudent);
+}
 async function openReportCard(studentId){
   $('reportBody').innerHTML = '<div class="empty-state"><div class="ic">⏳</div><div class="d">در حال بارگذاری...</div></div>';
   openModal('reportModalOv');
@@ -428,7 +431,10 @@ async function openReportCard(studentId){
   (quizzes||[]).forEach(q=>{ const c=q.lessons&&q.lessons.category; if(c && catMap[c]!=null) catMap[c]+=q.points_awarded||0; });
   const maxVal = Math.max(1, ...Object.values(catMap));
 
-  let html = '<div class="pattern-card"><div class="sub-desc">'+esc(st.school)+' · پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[st.grade])+(st.class_name?(' · کلاس '+esc(st.class_name)):'')+' · مجموع امتیاز: '+st.points+'</div></div>';
+  let html = '<div class="pattern-card"><div class="sub-desc">'+esc(st.school)+' · پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[st.grade])+(st.class_name?(' · کلاس '+esc(st.class_name)):'')+' · مجموع امتیاز: '+st.points+'</div>'+
+    '<button class="btn btn-thread btn-sm" style="margin-top:10px" onclick="printCurrentReportCertificate()">🏆 چاپ گواهی</button>'+
+    '</div>';
+  window._currentReportStudent = st;
 
   html += '<div class="sec-title">🧭 نقاط قوت</div><div class="pattern-card">';
   Object.keys(CATEGORY_META).forEach(cat=>{
@@ -490,6 +496,20 @@ async function deleteAnnouncement(id){
 }
 
 /* ------------------------------------------------------------ آمار (مربی) */
+async function renderSubmissionTrendChart(){
+  const days = 14;
+  const since = new Date(); since.setDate(since.getDate() - (days-1)); since.setHours(0,0,0,0);
+  const { data } = await sb.from('submissions').select('created_at').gte('created_at', since.toISOString());
+  const counts = {}; const labels = [];
+  for(let i=0;i<days;i++){
+    const d = new Date(since); d.setDate(d.getDate()+i);
+    const key = d.toISOString().slice(0,10);
+    counts[key] = 0;
+    labels.push(String(d.getDate()));
+  }
+  (data||[]).forEach(s=>{ const key = s.created_at.slice(0,10); if(counts[key]!=null) counts[key]++; });
+  renderBarChart('trendChartBox', labels, Object.values(counts), { color:'#356f8f' });
+}
 async function loadStats(){
   const el = $('tStats');
   el.innerHTML = emptyState('⏳','در حال بارگذاری آمار...','');
@@ -505,8 +525,10 @@ async function loadStats(){
     statBox(approvedCount,'کار تأییدشده')+
     statBox(lessonCount,'درس ثبت‌شده')+
     '</div>';
+  html += '<div class="section-title">📈 روند ارسال کار (۱۴ روز اخیر)</div><div class="pattern-card" id="trendChartBox"></div>';
   html += '<div class="section-title">📌 وضعیت بر اساس مدرسه و پایه</div><div class="pattern-card" id="statsBySchool"></div>';
   el.innerHTML = html;
+  renderSubmissionTrendChart();
   const { data:studs } = await sb.from('students').select('school, grade, points');
   const box = $('statsBySchool');
   if(!studs || !studs.length){ box.innerHTML = '<div class="empty-state"><div class="d">هنوز دانش‌آموزی ثبت‌نام نکرده</div></div>'; return; }

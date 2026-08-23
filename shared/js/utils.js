@@ -25,6 +25,26 @@ function fileToBase64(file){ return new Promise((res,rej)=>{ const r=new FileRea
 // حذف فیلدهای حساس (پین/هش پین و مشابه) قبل از ذخیره در localStorage —
 // حتی اگه RPC سمت Supabase این فیلدها رو برگردونه، اینجا فیلتر می‌شن تا هیچ‌وقت
 // روی دستگاه کاربر یا در تاریخچه‌ی مرورگر ذخیره نشن.
+// نمودار میله‌ای ساده و سبک (بدون کتابخانه‌ی خارجی) — labels و values هم‌طول
+function renderBarChart(containerId, labels, values, opts={}){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  const w = 700, h = 180, padB = 26, padT = 10, barGap = 4;
+  const maxV = Math.max(1, ...values);
+  const barW = (w / values.length) - barGap;
+  const color = opts.color || '#356f8f';
+  let bars = '';
+  values.forEach((v,i)=>{
+    const bh = Math.round(((h-padB-padT) * v) / maxV);
+    const x = i * (barW+barGap);
+    const y = h - padB - bh;
+    bars += `<rect x="${x}" y="${y}" width="${barW}" height="${Math.max(bh,1)}" rx="3" fill="${color}"><title>${labels[i]}: ${v}</title></rect>`;
+    if(labels[i] && (values.length<=14 || i % Math.ceil(values.length/14)===0)){
+      bars += `<text x="${x+barW/2}" y="${h-8}" font-size="9" fill="#6b6b6b" text-anchor="middle">${labels[i]}</text>`;
+    }
+  });
+  el.innerHTML = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;direction:ltr">${bars}</svg>`;
+}
 function sanitizeStudent(row){
   if(!row || typeof row !== 'object') return row;
   const { pin, pin_hash, password, password_hash, ...safe } = row;

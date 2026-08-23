@@ -128,6 +128,12 @@ async function loadAddStudentPanel(){
       '<div class="field-err" id="biErr" style="margin-top:8px"></div>'+
       '<button class="btn btn-sky btn-sm" style="margin-top:6px" onclick="submitBulkStudents()">وارد کردن گروهی</button>'+
       '<div id="biResult" style="margin-top:12px"></div>'+
+    '</div>'+
+    '<div class="sec-title">📱 QR عضویت سریع کلاس</div>'+
+    '<div class="pattern-card">'+
+      '<div style="font-size:12px;color:var(--sub);margin-bottom:10px">این QR رو نشون بچه‌ها بده — با اسکن، مستقیم می‌رن به فرم ثبت‌نام با مدرسه‌ی از‌پیش‌انتخاب‌شده.</div>'+
+      '<div id="joinQrBox" style="display:flex;justify-content:center;padding:10px"></div>'+
+      '<div style="text-align:center"><button class="btn btn-ghost btn-sm" onclick="generateJoinQr()">ساخت QR برای مدرسه‌ی بالا</button></div>'+
     '</div>';
   // اگه معلم به یه مدرسه‌ی مشخص تعلق داره، پیش‌فرض همونو انتخاب کن
   if(myStaff && myStaff.school_id){
@@ -149,9 +155,23 @@ async function onAddStudentCountyChange(){
   const countyId = $('asCounty').value;
   if(!countyId){ $('asSchool').innerHTML = '<option value="">— ابتدا شهرستان را انتخاب کنید —</option>'; return; }
   const { data } = await sb.from('schools').select('*').eq('county_id', countyId).eq('status','approved').order('name');
+  window._asSchoolsList = data || [];
   $('asSchool').innerHTML = (data&&data.length) ?
     '<option value="">— انتخاب کنید —</option>' + data.map(s=>'<option value="'+esc(s.name)+'">'+esc(s.name)+'</option>').join('') :
     '<option value="">— مدرسه‌ای در این شهرستان تأیید نشده —</option>';
+}
+function generateJoinQr(){
+  const box = $('joinQrBox');
+  const schoolName = $('asSchool').value;
+  const school = (window._asSchoolsList||[]).find(s=>s.name===schoolName);
+  if(!school){ box.innerHTML = '<div style="color:var(--brick);font-size:13px">اول یه مدرسه از فرم بالا انتخاب کن</div>'; return; }
+  const url = location.origin + '/student/index.html?school=' + school.id;
+  box.innerHTML = '';
+  const qr = qrcode(0, 'M');
+  qr.addData(url);
+  qr.make();
+  box.innerHTML = qr.createSvgTag({ cellSize: 5, margin: 4 }) +
+    '<div style="font-size:11px;color:var(--sub);margin-top:8px;word-break:break-all;text-align:center">'+esc(url)+'</div>';
 }
 async function submitAddStudent(){
   const full_name = $('asName').value.trim();

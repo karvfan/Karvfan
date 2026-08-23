@@ -59,7 +59,12 @@ function switchStudentTab(id){
   document.querySelectorAll('#studentApp .tab').forEach(t=>t.classList.toggle('active', t.dataset.p===id));
   document.querySelectorAll('#studentApp .panel').forEach(p=>p.classList.toggle('active', p.id===id));
   if(id==='pAssign') loadAssignmentsPanel();
-  if(id==='pMine'){ loadMySubmissions(); sb.rpc('mark_submissions_seen', { p_student_id: student.id }).then(()=> setStBadge('badgeMine', 0)); }
+  if(id==='pMine'){
+    loadMySubmissions();
+    const badgeEl = $('badgeMine');
+    if(badgeEl && !badgeEl.classList.contains('hidden')) fireConfetti();
+    sb.rpc('mark_submissions_seen', { p_student_id: student.id }).then(()=> setStBadge('badgeMine', 0));
+  }
   if(id==='pProfile') loadProfilePanel();
   if(id==='pGallery') loadGallery();
   if(id==='pBoard') loadLeaderboard();
@@ -267,6 +272,10 @@ async function loadProfilePanel(){
   html += '</div>';
 
   html += await growthTimelineHtml();
+
+  html += '<div class="sec-title">🏆 گواهی من</div><div class="pattern-card">'+
+    '<button class="btn btn-thread btn-sm" onclick="openCertificate(student)">🏆 دریافت و چاپ گواهی</button>'+
+    '</div>';
 
   html += '<div class="sec-title">🔑 تغییر پین ورود</div><div class="pattern-card">'+
     '<div class="field"><label>پین فعلی</label><input id="pcOld" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></div>'+
