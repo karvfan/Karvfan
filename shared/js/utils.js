@@ -45,6 +45,26 @@ function renderBarChart(containerId, labels, values, opts={}){
   });
   el.innerHTML = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;direction:ltr">${bars}</svg>`;
 }
+// اعتبارسنجی کد ملی ایرانی (الگوریتم رقم کنترلی رسمی)
+function isValidNationalCode(code){
+  code = (code||'').trim();
+  if(!/^\d{10}$/.test(code)) return false;
+  if(/^(\d)\1{9}$/.test(code)) return false; // ۱۱۱۱۱۱۱۱۱۱ و مشابه، نامعتبرن
+  const check = parseInt(code[9], 10);
+  let sum = 0;
+  for(let i=0;i<9;i++) sum += parseInt(code[i], 10) * (10-i);
+  const remainder = sum % 11;
+  return (remainder < 2 && check === remainder) || (remainder >= 2 && check === 11 - remainder);
+}
+// ورودی ایمیل یا کد ملی رو به شناسه‌ی قابل‌استفاده برای Supabase Auth تبدیل می‌کنه
+// (کد ملی پشت صحنه به یک ایمیل مصنوعی داخلی نگاشت می‌شه، کاربر هیچ‌وقت اونو نمی‌بینه)
+function resolveLoginIdentifier(input){
+  input = (input||'').trim();
+  if(input.includes('@')) return input;
+  if(/^\d{10}$/.test(input)) return input + '@melli.karvfan.local';
+  return input;
+}
+
 function sanitizeStudent(row){
   if(!row || typeof row !== 'object') return row;
   const { pin, pin_hash, password, password_hash, ...safe } = row;

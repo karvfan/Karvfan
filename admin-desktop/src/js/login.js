@@ -3,6 +3,14 @@
  * initLogin(allowedRoles) را با آرایه‌ای از نقش‌های مجاز برای آن صفحه صدا می‌زنیم؛
  * بعد از ورود موفق، نقش واقعی کاربر از دیتابیس خوانده و با allowedRoles چک می‌شود.
  */
+// ورودی ایمیل یا کد ملی رو به شناسه‌ی قابل‌استفاده برای Supabase Auth تبدیل می‌کنه
+function resolveLoginIdentifier(input){
+  input = (input||'').trim();
+  if(input.includes('@')) return input;
+  if(/^\d{10}$/.test(input)) return input + '@melli.karvfan.local';
+  return input;
+}
+
 function initLogin(allowedRoles){
   const form = document.getElementById('loginForm');
   const errEl = document.getElementById('loginErr');
@@ -11,13 +19,14 @@ function initLogin(allowedRoles){
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
     errEl.textContent = '';
-    const email = document.getElementById('email').value.trim();
+    const raw = document.getElementById('email').value.trim();
     const pass = document.getElementById('pass').value;
-    if(!email || !pass){ errEl.textContent = 'ایمیل و رمز عبور را وارد کنید'; return; }
+    if(!raw || !pass){ errEl.textContent = 'ایمیل یا کد ملی، و رمز عبور را وارد کنید'; return; }
+    const email = resolveLoginIdentifier(raw);
     btn.disabled = true; btn.textContent = 'در حال ورود...';
     try{
       const { error: authErr } = await sb.auth.signInWithPassword({ email, password: pass });
-      if(authErr){ errEl.textContent = 'ایمیل یا رمز عبور اشتباه است'; return; }
+      if(authErr){ errEl.textContent = 'ایمیل/کد ملی یا رمز عبور اشتباه است'; return; }
 
       const { data: scopeRows, error: scopeErr } = await sb.rpc('my_scope');
       if(scopeErr || !scopeRows || !scopeRows.length){
@@ -42,9 +51,14 @@ function initLogin(allowedRoles){
 }
 
 async function forgotPasswordDesktop(){
-  const email = prompt('ایمیل حسابتون رو وارد کنید:');
-  if(!email || !email.trim()) return;
-  const { error } = await sb.auth.resetPasswordForEmail(email.trim(), {
+  const raw = prompt('ایمیل یا کد ملی حسابتون رو وارد کنید:');
+  if(!raw || !raw.trim()) return;
+  const identifier = resolveLoginIdentifier(raw.trim());
+  if(identifier.endsWith('@melli.karvfan.local')){
+    alert('چون با کد ملی وارد می‌شید، امکان ریست خودکار رمز نیست — از سوپرادمین سامانه بخواهید رمزتون رو ریست کنه.');
+    return;
+  }
+  const { error } = await sb.auth.resetPasswordForEmail(identifier, {
     redirectTo: 'https://karvfan.hodaahmadi898.workers.dev/teacher/reset-password.html'
   });
   if(error){ alert('خطا: ' + error.message); return; }

@@ -94,7 +94,7 @@ async function loadStaffAdmin(){
 
   let html = '<div class="sec-title">🧑‍💼 افزودن / تغییر نقش کارمند</div>'+
     '<div class="pattern-card">'+
-    '<div class="field"><label>ایمیل حساب (باید قبلاً از Authentication → Users در Supabase ساخته شده باشد)</label><input id="stfEmail" placeholder="example@gmail.com"></div>'+
+    '<div class="field"><label>ایمیل یا کد ملی حساب (باید قبلاً حساب براش ساخته شده باشد)</label><input id="stfEmail" placeholder="کد ملی یا ایمیل"></div>'+
     '<div class="field"><label>نام و نام خانوادگی</label><input id="stfName" placeholder="نام کارمند"></div>'+
     '<div class="field"><label>نقش</label><select id="stfRole" onchange="updateStaffFieldsWeb()">'+
       roleOpts.map(([v,l])=>'<option value="'+v+'">'+l+'</option>').join('')+
@@ -140,7 +140,7 @@ async function addStaff(){
   if(role==='province_admin' && !$('stfProvince').value){ $('stfErr').textContent='استان رو انتخاب کنید'; return; }
   if(role==='county_admin' && !$('stfCounty').value){ $('stfErr').textContent='شهرستان رو انتخاب کنید'; return; }
   if(['school_admin','teacher'].includes(role) && !$('stfSchool').value){ $('stfErr').textContent='مدرسه رو انتخاب کنید'; return; }
-  const params = { p_email: email, p_full_name: full_name, p_role: role, p_school_id: null, p_county_id: null, p_province_id: null };
+  const params = { p_email: resolveLoginIdentifier(email), p_full_name: full_name, p_role: role, p_school_id: null, p_county_id: null, p_province_id: null };
   if(role==='province_admin') params.p_province_id = Number($('stfProvince').value) || null;
   if(role==='county_admin') params.p_county_id = Number($('stfCounty').value) || null;
   if(['school_admin','teacher'].includes(role)) params.p_school_id = Number($('stfSchool').value) || null;

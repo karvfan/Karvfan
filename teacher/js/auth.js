@@ -5,21 +5,27 @@
  */
 
 async function teacherLogin(){
-  const email = $('taEmail').value.trim(), pass = $('taPass').value;
+  const raw = $('taEmail').value.trim(), pass = $('taPass').value;
   $('taErr').textContent='';
-  if(!email || !pass){ $('taErr').textContent='ایمیل و رمز را وارد کنید'; return; }
+  if(!raw || !pass){ $('taErr').textContent='ایمیل یا کد ملی، و رمز را وارد کنید'; return; }
+  const email = resolveLoginIdentifier(raw);
   $('taBtn').disabled=true; $('taBtn').innerHTML='<span class="spinner"></span> در حال ورود...';
   const { error } = await sb.auth.signInWithPassword({ email, password: pass });
   $('taBtn').disabled=false; $('taBtn').textContent='ورود';
-  if(error){ $('taErr').textContent='ایمیل یا رمز عبور اشتباه است'; return; }
+  if(error){ $('taErr').textContent='ایمیل/کد ملی یا رمز عبور اشتباه است'; return; }
   await enterTeacherApp();
 }
 async function teacherLogout(){ await sb.auth.signOut(); goTo('teacherAuth'); }
 
 async function forgotPassword(){
-  const email = prompt('ایمیل حسابتون رو وارد کنید تا لینک تغییر رمز براتون ارسال بشه:');
-  if(!email || !email.trim()) return;
-  const { error } = await sb.auth.resetPasswordForEmail(email.trim(), {
+  const raw = prompt('ایمیل یا کد ملی حسابتون رو وارد کنید:');
+  if(!raw || !raw.trim()) return;
+  const identifier = resolveLoginIdentifier(raw.trim());
+  if(!identifier.includes('@') || identifier.endsWith('@melli.karvfan.local')){
+    alert('چون با کد ملی وارد می‌شید (نه ایمیل واقعی)، امکان ریست خودکار رمز نیست — از سوپرادمین سامانه بخواهید رمزتون رو ریست کنه.');
+    return;
+  }
+  const { error } = await sb.auth.resetPasswordForEmail(identifier, {
     redirectTo: window.location.origin + window.location.pathname.replace('index.html','') + 'reset-password.html'
   });
   if(error){ alert('خطا: ' + error.message); return; }

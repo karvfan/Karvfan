@@ -4,6 +4,14 @@
 let myScope = null; // {role, school, school_id, county_id, province_id}
 let allProvinces = [], allCounties = [];
 
+// ورودی ایمیل یا کد ملی رو به شناسه‌ی قابل‌استفاده برای Supabase Auth تبدیل می‌کنه
+function resolveLoginIdentifier(input){
+  input = (input||'').trim();
+  if(input.includes('@')) return input;
+  if(/^\d{10}$/.test(input)) return input + '@melli.karvfan.local';
+  return input;
+}
+
 function showToast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
@@ -223,7 +231,7 @@ async function submitStaffForm(){
   if(role==='county_admin' && !document.getElementById('sfCounty').value){ errEl.textContent='شهرستان رو انتخاب کنید'; return; }
   if(['school_admin','teacher'].includes(role) && !document.getElementById('sfSchool').value){ errEl.textContent='مدرسه رو انتخاب کنید'; return; }
 
-  const params = { p_email: email, p_full_name: full_name, p_role: role, p_school_id: null, p_county_id: null, p_province_id: null };
+  const params = { p_email: resolveLoginIdentifier(email), p_full_name: full_name, p_role: role, p_school_id: null, p_county_id: null, p_province_id: null };
   if(role==='province_admin') params.p_province_id = Number(document.getElementById('sfProvince').value) || null;
   if(role==='county_admin') params.p_county_id = Number(document.getElementById('sfCounty').value) || null;
   if(['school_admin','teacher'].includes(role)) params.p_school_id = Number(document.getElementById('sfSchool').value) || null;
@@ -243,7 +251,8 @@ async function loadStaff(){
 
   let html = '<table class="data-table"><thead><tr><th>نام</th><th>ایمیل</th><th>نقش</th><th>مدرسه</th><th>شهرستان</th><th>استان</th></tr></thead><tbody>';
   data.forEach(s=>{
-    html += `<tr><td>${esc(s.full_name)}</td><td>${esc(s.email)}</td><td>${esc(ROLE_LABELS[s.role]||s.role)}</td><td>${esc(s.school_name)||'—'}</td><td>${esc(s.county_name)||'—'}</td><td>${esc(s.province_name)||'—'}</td></tr>`;
+    const idLabel = s.email && s.email.endsWith('@melli.karvfan.local') ? 'کد ملی: '+s.email.split('@')[0] : s.email;
+    html += `<tr><td>${esc(s.full_name)}</td><td>${esc(idLabel)}</td><td>${esc(ROLE_LABELS[s.role]||s.role)}</td><td>${esc(s.school_name)||'—'}</td><td>${esc(s.county_name)||'—'}</td><td>${esc(s.province_name)||'—'}</td></tr>`;
   });
   html += '</tbody></table>';
   el.innerHTML = html;
