@@ -56,12 +56,15 @@ function isValidNationalCode(code){
   const remainder = sum % 11;
   return (remainder < 2 && check === remainder) || (remainder >= 2 && check === 11 - remainder);
 }
-// ورودی ایمیل یا کد ملی رو به شناسه‌ی قابل‌استفاده برای Supabase Auth تبدیل می‌کنه
-// (کد ملی پشت صحنه به یک ایمیل مصنوعی داخلی نگاشت می‌شه، کاربر هیچ‌وقت اونو نمی‌بینه)
-function resolveLoginIdentifier(input){
+// ورودی ایمیل یا کد ملی رو به ایمیل واقعیِ قابل‌استفاده برای Supabase Auth تبدیل می‌کنه.
+// اگه ایمیل باشه همون برمی‌گرده؛ اگه ۱۰ رقمی باشه، از دیتابیس ایمیل واقعیِ متناظرش جست‌وجو می‌شه.
+async function resolveLoginIdentifier(input){
   input = (input||'').trim();
   if(input.includes('@')) return input;
-  if(/^\d{10}$/.test(input)) return input + '@melli.karvfan.local';
+  if(/^\d{10}$/.test(input)){
+    const { data } = await sb.rpc('resolve_national_code_email', { p_national_code: input });
+    return data || input; // اگه پیدا نشد، همون کد رو برمی‌گردونیم تا Supabase خطای معمول بده
+  }
   return input;
 }
 

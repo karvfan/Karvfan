@@ -4,10 +4,14 @@
  * بعد از ورود موفق، نقش واقعی کاربر از دیتابیس خوانده و با allowedRoles چک می‌شود.
  */
 // ورودی ایمیل یا کد ملی رو به شناسه‌ی قابل‌استفاده برای Supabase Auth تبدیل می‌کنه
-function resolveLoginIdentifier(input){
+// ورودی ایمیل یا کد ملی رو به ایمیل واقعی تبدیل می‌کنه (کد ملی از دیتابیس جست‌وجو می‌شه)
+async function resolveLoginIdentifier(input){
   input = (input||'').trim();
   if(input.includes('@')) return input;
-  if(/^\d{10}$/.test(input)) return input + '@melli.karvfan.local';
+  if(/^\d{10}$/.test(input)){
+    const { data } = await sb.rpc('resolve_national_code_email', { p_national_code: input });
+    return data || input;
+  }
   return input;
 }
 
@@ -22,7 +26,7 @@ function initLogin(allowedRoles){
     const raw = document.getElementById('email').value.trim();
     const pass = document.getElementById('pass').value;
     if(!raw || !pass){ errEl.textContent = 'ایمیل یا کد ملی، و رمز عبور را وارد کنید'; return; }
-    const email = resolveLoginIdentifier(raw);
+    const email = await resolveLoginIdentifier(raw);
     btn.disabled = true; btn.textContent = 'در حال ورود...';
     try{
       const { error: authErr } = await sb.auth.signInWithPassword({ email, password: pass });
@@ -53,9 +57,9 @@ function initLogin(allowedRoles){
 async function forgotPasswordDesktop(){
   const raw = prompt('ایمیل یا کد ملی حسابتون رو وارد کنید:');
   if(!raw || !raw.trim()) return;
-  const identifier = resolveLoginIdentifier(raw.trim());
-  if(identifier.endsWith('@melli.karvfan.local')){
-    alert('چون با کد ملی وارد می‌شید، امکان ریست خودکار رمز نیست — از سوپرادمین سامانه بخواهید رمزتون رو ریست کنه.');
+  const identifier = await resolveLoginIdentifier(raw.trim());
+  if(!identifier.includes('@')){
+    alert('کد ملی وارد شده در سامانه پیدا نشد.');
     return;
   }
   const { error } = await sb.auth.resetPasswordForEmail(identifier, {

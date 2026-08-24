@@ -21,6 +21,8 @@ async function refreshBadges(){
   if(myStaff && districtRoles.includes(myStaff.role)){
     const { data } = await sb.rpc('get_pending_schools');
     setBadge('badgeSchools', data ? data.length : 0);
+    const { data: reqs } = await sb.rpc('get_pending_role_requests');
+    setBadge('badgeRoleRequests', reqs ? reqs.length : 0);
   }
 }
 function setBadge(id, n){
@@ -35,6 +37,7 @@ async function loadMyStaffInfo(uid){
   const isDistrictLevel = !myStaff || districtRoles.includes(myStaff.role) || !myStaff.school;
   $('tabDistrict').classList.toggle('hidden', !isDistrictLevel);
   $('tabStaff').classList.toggle('hidden', !isDistrictLevel);
+  $('tabRoleRequests').classList.toggle('hidden', !isDistrictLevel);
 }
 function switchTeacherTab(id){
   document.querySelectorAll('#teacherApp .tab').forEach(t=>t.classList.toggle('active', t.dataset.p===id));
@@ -48,6 +51,7 @@ function switchTeacherTab(id){
   if(id==='tAnn') loadAnnouncementsAdmin();
   if(id==='tStats') loadStats();
   if(id==='tDistrict') loadDistrictDashboard();
+  if(id==='tRoleRequests') loadRoleRequestsPanel();
   if(id==='tStaff') loadStaffAdmin();
 }
 

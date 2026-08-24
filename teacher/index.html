@@ -27,26 +27,57 @@
   <p>۳) مقدار <code>SUPABASE_URL</code> و <code>SUPABASE_ANON_KEY</code> را در ابتدای فایل config.js با مقادیر پروژه‌ی خودتان جایگزین کنید.</p>
 </div>
 
-<!-- ==================== ورود مربی / ادمین ==================== -->
+<!-- ==================== ورود / ثبت‌نام مربی و ادمین‌ها ==================== -->
 <div id="teacherAuth" class="screen hidden auth-wrap">
-  <div class="auth-card">
+  <div class="auth-card" style="max-width:440px">
     <div class="auth-head">
       <div class="ic">👩‍🏫</div>
-      <h2>ورود مربی / ادمین</h2>
-      <p>حساب کاربری از پنل Supabase (Authentication → Users) ساخته می‌شود</p>
+      <h2>مربی / ادمین</h2>
     </div>
-    <div class="field">
-      <label>ایمیل یا کد ملی</label>
-      <input id="taEmail" type="text" placeholder="کد ملی یا ایمیل">
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="taTabLogin" onclick="switchTeacherAuthTab('login')">ورود</button>
+      <button class="auth-tab" id="taTabReg" onclick="switchTeacherAuthTab('register')">ثبت‌نام</button>
     </div>
-    <div class="field">
-      <label>رمز عبور</label>
-      <input id="taPass" type="password" placeholder="••••••••">
+
+    <div id="taLoginForm">
+      <div class="field">
+        <label>ایمیل یا کد ملی</label>
+        <input id="taEmail" type="text" placeholder="کد ملی یا ایمیل">
+      </div>
+      <div class="field">
+        <label>رمز عبور</label>
+        <input id="taPass" type="password" placeholder="••••••••">
+      </div>
+      <div class="field-err" id="taErr"></div>
+      <button class="btn btn-sky btn-block" onclick="teacherLogin()" id="taBtn">ورود</button>
+      <a href="#" onclick="forgotPassword();return false" style="display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--ink-soft)">رمز رو فراموش کردم؟</a>
     </div>
-    <div class="field-err" id="taErr"></div>
-    <button class="btn btn-sky btn-block" onclick="teacherLogin()" id="taBtn">ورود</button>
-    <a href="#" onclick="forgotPassword();return false" style="display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--ink-soft)">رمز رو فراموش کردم؟</a>
-    <a href="../about.html" style="display:block;text-align:center;margin-top:10px;font-size:12px;color:var(--ink-soft)">درباره‌ی ما و حریم خصوصی</a>
+
+    <div id="taRegForm" class="hidden">
+      <p style="font-size:12.5px;color:var(--ink-soft);margin-top:-6px">بعد از ثبت‌نام، یه ایمیل تأیید براتون میاد. بعد از تأیید ایمیل، درخواستتون میره برای تأیید سطح بالاتر (تا وقتی تأیید نشه، دسترسی فعال نمی‌شه).</p>
+      <div class="field"><label>نام و نام‌خانوادگی</label><input id="trName" placeholder="نام کامل"></div>
+      <div class="field"><label>کد ملی</label><input id="trCode" inputmode="numeric" maxlength="10" placeholder="۱۰ رقم"></div>
+      <div class="field"><label>ایمیل واقعی (برای دریافت کد/لینک تأیید)</label><input id="trEmail" type="email" placeholder="you@example.com"></div>
+      <div class="field"><label>رمز عبور</label><input id="trPass" type="password" placeholder="حداقل ۶ کاراکتر"></div>
+      <div class="field"><label>تکرار رمز عبور</label><input id="trPass2" type="password"></div>
+      <div class="field">
+        <label>می‌خوام به‌عنوان... ثبت‌نام کنم</label>
+        <select id="trRole" onchange="onTrRoleChange()">
+          <option value="teacher">معلم</option>
+          <option value="school_admin">مدیر مدرسه</option>
+          <option value="county_admin">ادمین شهرستان</option>
+          <option value="province_admin">ادمین استان</option>
+          <option value="super_admin">سوپرادمین</option>
+        </select>
+      </div>
+      <div class="field" id="trProvinceField"><label>استان</label><select id="trProvince"></select></div>
+      <div class="field" id="trCountyField"><label>شهرستان</label><select id="trCounty"></select></div>
+      <div class="field" id="trSchoolField"><label>مدرسه</label><select id="trSchool"></select></div>
+      <div class="field-err" id="trErr"></div>
+      <button class="btn btn-thread btn-block" onclick="submitStaffRegister()" id="trBtn">ثبت‌نام</button>
+    </div>
+
+    <a href="../about.html" style="display:block;text-align:center;margin-top:14px;font-size:12px;color:var(--ink-soft)">درباره‌ی ما و حریم خصوصی</a>
   </div>
 </div>
 
@@ -74,6 +105,7 @@
     <button class="tab" data-p="tAnn" onclick="switchTeacherTab('tAnn')">📢 اطلاعیه‌ها</button>
     <button class="tab" data-p="tStats" onclick="switchTeacherTab('tStats')">📊 آمار</button>
     <button class="tab hidden" id="tabDistrict" data-p="tDistrict" onclick="switchTeacherTab('tDistrict')">🏛️ آمار کلان</button>
+    <button class="tab hidden" id="tabRoleRequests" data-p="tRoleRequests" onclick="switchTeacherTab('tRoleRequests')">👤 درخواست‌های عضویت<span class="tab-badge hidden" id="badgeRoleRequests"></span></button>
     <button class="tab hidden" id="tabStaff" data-p="tStaff" onclick="switchTeacherTab('tStaff')">🧑‍💼 کارکنان</button>
   </div>
   <div class="main">
@@ -86,6 +118,7 @@
     <div class="panel" id="tAnn"></div>
     <div class="panel" id="tStats"></div>
     <div class="panel" id="tDistrict"></div>
+    <div class="panel" id="tRoleRequests"></div>
     <div class="panel" id="tStaff"></div>
   </div>
 </div>
@@ -243,6 +276,7 @@
 <script src="js/auth.js"></script>
 <script src="js/teacher.js"></script>
 <script src="js/schools.js"></script>
+<script src="js/register.js"></script>
 <script src="js/district.js"></script>
 <script src="js/main.js"></script>
 </body>

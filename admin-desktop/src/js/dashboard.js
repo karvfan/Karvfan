@@ -5,10 +5,14 @@ let myScope = null; // {role, school, school_id, county_id, province_id}
 let allProvinces = [], allCounties = [];
 
 // ورودی ایمیل یا کد ملی رو به شناسه‌ی قابل‌استفاده برای Supabase Auth تبدیل می‌کنه
-function resolveLoginIdentifier(input){
+// ورودی ایمیل یا کد ملی رو به ایمیل واقعی تبدیل می‌کنه (کد ملی از دیتابیس جست‌وجو می‌شه)
+async function resolveLoginIdentifier(input){
   input = (input||'').trim();
   if(input.includes('@')) return input;
-  if(/^\d{10}$/.test(input)) return input + '@melli.karvfan.local';
+  if(/^\d{10}$/.test(input)){
+    const { data } = await sb.rpc('resolve_national_code_email', { p_national_code: input });
+    return data || input;
+  }
   return input;
 }
 
@@ -231,7 +235,7 @@ async function submitStaffForm(){
   if(role==='county_admin' && !document.getElementById('sfCounty').value){ errEl.textContent='شهرستان رو انتخاب کنید'; return; }
   if(['school_admin','teacher'].includes(role) && !document.getElementById('sfSchool').value){ errEl.textContent='مدرسه رو انتخاب کنید'; return; }
 
-  const params = { p_email: resolveLoginIdentifier(email), p_full_name: full_name, p_role: role, p_school_id: null, p_county_id: null, p_province_id: null };
+  const params = { p_email: await resolveLoginIdentifier(email), p_full_name: full_name, p_role: role, p_school_id: null, p_county_id: null, p_province_id: null };
   if(role==='province_admin') params.p_province_id = Number(document.getElementById('sfProvince').value) || null;
   if(role==='county_admin') params.p_county_id = Number(document.getElementById('sfCounty').value) || null;
   if(['school_admin','teacher'].includes(role)) params.p_school_id = Number(document.getElementById('sfSchool').value) || null;

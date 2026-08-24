@@ -140,7 +140,7 @@ async function addStaff(){
   if(role==='province_admin' && !$('stfProvince').value){ $('stfErr').textContent='استان رو انتخاب کنید'; return; }
   if(role==='county_admin' && !$('stfCounty').value){ $('stfErr').textContent='شهرستان رو انتخاب کنید'; return; }
   if(['school_admin','teacher'].includes(role) && !$('stfSchool').value){ $('stfErr').textContent='مدرسه رو انتخاب کنید'; return; }
-  const params = { p_email: resolveLoginIdentifier(email), p_full_name: full_name, p_role: role, p_school_id: null, p_county_id: null, p_province_id: null };
+  const params = { p_email: await resolveLoginIdentifier(email), p_full_name: full_name, p_role: role, p_school_id: null, p_county_id: null, p_province_id: null };
   if(role==='province_admin') params.p_province_id = Number($('stfProvince').value) || null;
   if(role==='county_admin') params.p_county_id = Number($('stfCounty').value) || null;
   if(['school_admin','teacher'].includes(role)) params.p_school_id = Number($('stfSchool').value) || null;
