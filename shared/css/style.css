@@ -374,3 +374,9 @@ html.a11y-contrast .pattern-card{border-width:2px;border-color:#000}
   .cert-actions{display:none}
   .cert-paper{box-shadow:none;max-width:100%;height:100vh}
 }
+
+/* ---------- دکمه‌ی نمایش رمز ---------- */
+.pw-toggle-wrap{position:relative;width:100%}
+.pw-toggle-wrap input{width:100%;padding-left:38px !important}
+.pw-toggle-btn{position:absolute;left:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;font-size:16px;cursor:pointer;padding:4px;line-height:1;opacity:.75}
+.pw-toggle-btn:hover{opacity:1}

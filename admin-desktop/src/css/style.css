@@ -90,3 +90,9 @@ table.data-table tr:hover td{background:#fbf8f0}
 .form-card h3{margin-top:0}
 .filter-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
 .filter-row select,.filter-row input{padding:8px 10px;border:1.5px solid var(--line);border-radius:9px;font-size:13px}
+
+/* ---------- دکمه‌ی نمایش رمز ---------- */
+.pw-toggle-wrap{position:relative;width:100%}
+.pw-toggle-wrap input{width:100%;padding-left:38px !important}
+.pw-toggle-btn{position:absolute;left:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;font-size:16px;cursor:pointer;padding:4px;line-height:1;opacity:.75}
+.pw-toggle-btn:hover{opacity:1}
