@@ -58,6 +58,8 @@ async function refreshPendingBadge(){
   if(!['county_admin','province_admin','super_admin'].includes(myScope.role)) return;
   const { data } = await sb.rpc('get_pending_schools');
   setBadge('badgePending', data ? data.length : 0);
+  const { data: reqs } = await sb.rpc('get_pending_role_requests');
+  setBadge('badgeRoleRequests', reqs ? reqs.length : 0);
 }
 
 function setupNav(){
@@ -65,6 +67,7 @@ function setupNav(){
   const canManageStaff = ['county_admin','province_admin','super_admin'].includes(myScope.role);
   document.getElementById('navPending').classList.toggle('hidden', !canReview);
   document.getElementById('navBulkImport').classList.toggle('hidden', !canReview);
+  document.getElementById('navRoleRequests').classList.toggle('hidden', !canReview);
   document.getElementById('navStaff').classList.toggle('hidden', !canManageStaff);
   document.getElementById('navAudit').classList.toggle('hidden', myScope.role!=='super_admin');
 
@@ -78,6 +81,7 @@ function switchPanel(id){
   document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id===id));
   if(id==='pStats') loadStats();
   if(id==='pPending') loadPending();
+  if(id==='pRoleRequests') loadRoleRequests();
   if(id==='pBulkImport') initBulkImport();
   if(id==='pSchools') loadSchools();
   if(id==='pAddStudent') initAddStudentForm();
@@ -150,6 +154,41 @@ async function reviewSchool(id, approve){
   if(error){ showToast('خطا: ' + error.message); return; }
   showToast(approve ? 'مدرسه تأیید شد ✅' : 'درخواست رد شد');
   loadPending();
+  refreshPendingBadge();
+}
+
+/* ==================================================== درخواست‌های عضویت ==================================================== */
+const ROLE_REQUEST_LABELS = {teacher:'معلم', school_admin:'مدیر مدرسه', county_admin:'ادمین شهرستان', province_admin:'ادمین استان', super_admin:'سوپرادمین'};
+async function loadRoleRequests(){
+  const el = document.getElementById('roleRequestsBody');
+  el.innerHTML = '<div class="empty-state"><div class="ic">⏳</div>در حال بارگذاری...</div>';
+  const { data, error } = await sb.rpc('get_pending_role_requests');
+  if(error){ el.innerHTML = '<div class="empty-state"><div class="ic">⚠️</div>خطا در دریافت لیست</div>'; console.error(error); return; }
+  if(!data || !data.length){ el.innerHTML = '<div class="empty-state"><div class="ic">✅</div>درخواستی در انتظار تأیید نیست</div>'; return; }
+
+  let html = '<table class="data-table"><thead><tr><th>نام</th><th>نقش درخواستی</th><th>کد ملی</th><th>تاریخ درخواست</th><th>اقدام</th></tr></thead><tbody>';
+  data.forEach(r=>{
+    html += `<tr>
+      <td>${esc(r.full_name)}</td>
+      <td>${esc(ROLE_REQUEST_LABELS[r.requested_role]||r.requested_role)}</td>
+      <td>${esc(r.national_code)}</td>
+      <td>${new Date(r.created_at).toLocaleDateString('fa-IR')}</td>
+      <td><div class="row-actions">
+        <button class="act-approve" onclick="reviewRoleRequest(${r.id}, true)">تأیید</button>
+        <button class="act-reject" onclick="reviewRoleRequest(${r.id}, false)">رد</button>
+      </div></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+async function reviewRoleRequest(id, approve){
+  let reason = null;
+  if(!approve){ reason = prompt('دلیل رد درخواست (اختیاری):') || null; }
+  const { error } = await sb.rpc('review_role_request', { p_request_id: id, p_approve: approve, p_reason: reason });
+  if(error){ showToast('خطا: ' + error.message); return; }
+  showToast(approve ? 'درخواست تأیید شد ✅' : 'درخواست رد شد');
+  loadRoleRequests();
   refreshPendingBadge();
 }
 

@@ -13,6 +13,7 @@
     <nav id="navMenu">
       <button data-p="pStats" class="active">📊 آمار</button>
       <button data-p="pPending" id="navPending" class="hidden">✅ تأیید مدرسه‌ها<span class="tab-badge hidden" id="badgePending" style="margin-inline-start:6px"></span></button>
+      <button data-p="pRoleRequests" id="navRoleRequests" class="hidden">👤 درخواست‌های عضویت<span class="tab-badge hidden" id="badgeRoleRequests" style="margin-inline-start:6px"></span></button>
       <button data-p="pBulkImport" id="navBulkImport" class="hidden">📥 وارد کردن گروهی مدرسه</button>
       <button data-p="pSchools">🏫 فهرست مدرسه‌ها</button>
       <button data-p="pAddStudent">➕ ثبت دانش‌آموز</button>
@@ -29,6 +30,10 @@
     <div class="panel" id="pPending">
       <div class="topline"><h2>✅ درخواست‌های تأیید مدرسه</h2></div>
       <div id="pendingBody"></div>
+    </div>
+    <div class="panel" id="pRoleRequests">
+      <div class="topline"><h2>👤 درخواست‌های عضویت</h2></div>
+      <div id="roleRequestsBody"></div>
     </div>
     <div class="panel" id="pBulkImport">
       <div class="topline"><h2>📥 وارد کردن گروهی مدرسه</h2></div>
