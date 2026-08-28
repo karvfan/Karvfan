@@ -40,6 +40,12 @@ jobs:
           # چون اینجا index.html خودش در ریشه‌ی webDir قرار می‌گیره، به "shared/..." تبدیل می‌شن
           grep -rl '\.\./shared/' www-teacher --include="*.html" | xargs -r sed -i 's#\.\./shared/#shared/#g'
 
+      - name: Embed build version (برای هشدار آپدیت داخل اپ)
+        run: |
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
+          echo "const BUILD_VERSION = \"$SHORT_SHA\";" > www-teacher/shared/js/build-version.js
+          echo "$SHORT_SHA" > teacher-version.txt
+
       - name: Use teacher Capacitor config
         run: cp capacitor.config.teacher.json capacitor.config.json
 
@@ -51,6 +57,11 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+
+      - name: Install fixed debug keystore (برای سازگاری امضا بین نسخه‌ها — تا آپدیت جای‌گزین نصب قبلی بشه، نه نیازمند حذف اول)
+        run: |
+          mkdir -p ~/.android
+          cp .github/keystore/karvfan-debug.keystore ~/.android/debug.keystore
 
       - name: Grant execute permission for gradlew
         working-directory: karvfan-android-teacher
@@ -75,6 +86,8 @@ jobs:
           tag_name: latest-builds
           name: "آخرین نسخه‌های ساخته‌شده (خودکار)"
           make_latest: true
-          files: karvfan-teacher.apk
+          files: |
+            karvfan-teacher.apk
+            teacher-version.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

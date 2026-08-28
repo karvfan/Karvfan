@@ -27,6 +27,13 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Embed build version (برای هشدار آپدیت داخل اپ)
+        shell: bash
+        run: |
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
+          echo "const BUILD_VERSION = \"$SHORT_SHA\";" > src/js/build-version.js
+          echo "$SHORT_SHA" > desktop-version.txt
+
       - name: Build Windows installer
         run: npm run dist
 
@@ -44,6 +51,8 @@ jobs:
           tag_name: latest-builds
           name: "آخرین نسخه‌های ساخته‌شده (خودکار)"
           make_latest: true
-          files: admin-desktop/dist/*.exe
+          files: |
+            admin-desktop/dist/*.exe
+            admin-desktop/desktop-version.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
