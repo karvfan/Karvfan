@@ -208,6 +208,11 @@
       <div class="quiz-hint">آرایه‌ی JSON بازی‌های این پودمان — نوع هرکدام یکی از: <code>true_false</code>، <code>matching</code>، <code>memory</code>، <code>fill_blank</code>، <code>ordering</code>. برای نمونه‌ی هر نوع، از تیم فنی سامانه بخواهید یا فایل راهنما را ببینید. اگر خالی بگذارید، دانش‌آموز فقط همان آزمون چهارگزینه‌ی بالا را می‌بیند.</div>
       <textarea id="lmGames" rows="6" placeholder='[{"key":"tf1","type":"true_false","title":"درست یا غلط","points":10,"data":{"statements":[...]}}, ...]'></textarea>
     </div>
+    <div class="field quiz-field">
+      <label>💼 شغل‌های مرتبط با این پودمان (اختیاری — پیشرفته)</label>
+      <div class="quiz-hint">آرایه‌ی JSON مشاغل مرتبط — هر مورد: icon (ایموجی)، name (نام شغل)، workplace (جایگاه/محل کار)، requirements (لازمه‌ها)، description (توضیح کوتاه).</div>
+      <textarea id="lmCareers" rows="6" placeholder='[{"icon":"👷","name":"...","workplace":"...","requirements":"...","description":"..."}, ...]'></textarea>
+    </div>
     <div class="field-err" id="lmErr"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" style="flex:1" onclick="closeModal('lessonModalOv')">انصراف</button>

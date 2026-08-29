@@ -95,6 +95,7 @@ function renderLessonsPanel(){
       (l.sample_image_url? '<img class="sample-img" src="'+esc(l.sample_image_url)+'" onclick="openLightbox(\''+esc(l.sample_image_url)+'\')">':'')+
       (l.pdf_url? '<div class="lesson-meta-row"><a class="chip-link pdf" href="'+esc(l.pdf_url)+'" target="_blank">📄 دانلود جزوه PDF</a></div>':'')+
       quizButtonHtml(l)+
+      careersButtonHtml(l)+
       '<div class="scissor-divider">✂️</div>'+
       '<button class="btn btn-thread btn-sm" onclick="openUploadModal(\''+l.id+'\')">📤 آپلود کار برای این درس</button>'+
       '</div>';
@@ -125,6 +126,12 @@ function quizButtonHtml(l){
     : (doneCount===games.length? '🎮 همه‌ی '+games.length+' بازی رو تموم کردی!' : '🎮 '+doneCount+' از '+games.length+' بازی انجام شده');
   return '<div class="lesson-meta-row"><button class="btn btn-sky btn-sm" onclick="openQuiz(\''+l.id+'\')">'+label+'</button>'+
     (ptsEarned>0? '<span class="quiz-done-badge">✅ +'+ptsEarned+' امتیاز گرفتی</span>' : '')+'</div>';
+}
+function careersButtonHtml(l){
+  let careers = [];
+  try{ careers = l.careers_json ? (typeof l.careers_json==='string'? JSON.parse(l.careers_json) : l.careers_json) : []; }catch(e){ careers=[]; }
+  if(!careers.length) return '';
+  return '<div class="lesson-meta-row"><button class="btn btn-mustard btn-sm" onclick="openCareers(\''+l.id+'\')">💼 با این پودمان چه شغلی می‌شه داشت؟ ('+careers.length+')</button></div>';
 }
 async function refreshStreak(){
   const { data } = await sb.rpc('get_student_profile', { p_student_id: student.id });
