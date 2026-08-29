@@ -29,6 +29,20 @@ const GAME_LABELS = {
   robot_algorithm: '🤖 بازی الگوریتم ربات'
 };
 
+/* بازی‌های عمومی هر پودمان (games_json) — ترتیب پیش‌فرض از ساده به سخت */
+const GENERIC_GAME_TYPES = ['mcq','true_false','matching','memory','fill_blank','ordering'];
+const GENERIC_GAME_META = {
+  true_false: { icon:'✅', label:'درست یا غلط',         diff:1 },
+  matching:   { icon:'🔗', label:'بازی جورچین',          diff:2 },
+  memory:     { icon:'🃏', label:'بازی حافظه',           diff:3 },
+  fill_blank: { icon:'✏️', label:'جای خالی',            diff:4 },
+  ordering:   { icon:'🔢', label:'ترتیب درست',           diff:5 },
+  mcq:        { icon:'🧠', label:'آزمون جمع‌بندی',       diff:6 },
+  invention_match: { icon:'🌿', label:'الهام از طبیعت',  diff:0 },
+  email_detective: { icon:'🕵️', label:'کارآگاه ایمیل',   diff:0 },
+  robot_algorithm: { icon:'🤖', label:'الگوریتم ربات',   diff:0 }
+};
+
 /* ------------------------------------------------------------ بازی و آزمون درس */
 const INVENTION_PAIRS = [
   {n:'🌿', nl:'خار گیاه توت‌فرنگی وحشی', i:'🧷', il:'چسب و صله (ولکرو)'},

@@ -157,7 +157,7 @@ async function duplicateLesson(id){
     grade: l.grade, unit_title: l.unit_title+' (کپی)', order_index: l.order_index,
     content_text: l.content_text, advanced_text: l.advanced_text, video_url: l.video_url,
     pdf_url: l.pdf_url, sample_image_url: l.sample_image_url, is_published: false,
-    is_prescribed: l.is_prescribed, quiz_json: l.quiz_json, quiz_points: l.quiz_points
+    is_prescribed: l.is_prescribed, quiz_json: l.quiz_json, quiz_points: l.quiz_points, games_json: l.games_json
   };
   const { data, error } = await sb.from('lessons').insert(payload).select().single();
   if(error){ showToast('❌ خطا در کپی'); console.error(error); return; }
@@ -195,6 +195,7 @@ function openLessonModal(id){
     $('lmSaferAlt').value = l.safer_alternative||'';
     $('lmLearningMethod').value = l.learning_method||'';
     $('lmQuiz').value = quizJsonToLines(l.quiz_json); $('lmQuizPoints').value = l.quiz_points||10;
+    $('lmGames').value = l.games_json ? (typeof l.games_json==='string'? l.games_json : JSON.stringify(l.games_json, null, 2)) : '';
     if(l.game_type && GAME_LABELS[l.game_type]){
       $('lmGameNote').style.display='block';
       $('lmGameNote').innerHTML = '⚡ این درس یه بازی اختصاصی طراحی‌شده داره: «'+GAME_LABELS[l.game_type]+'». تا وقتی این بازی فعاله، سؤال‌های چهارگزینه‌ای زیر (حتی اگر پر باشن) نمایش داده نمی‌شن.';
@@ -208,7 +209,7 @@ function openLessonModal(id){
     $('lmContent').value=''; $('lmAdvanced').value=''; $('lmVideo').value=''; $('lmPublished').checked=true;
     $('lmPrescribed').checked=true;
     $('lmHomeMaterials').value=''; $('lmAdultHelp').checked=false; $('lmSafetyNote').value=''; $('lmSaferAlt').value=''; $('lmLearningMethod').value='';
-    $('lmQuiz').value=''; $('lmQuizPoints').value=10;
+    $('lmQuiz').value=''; $('lmQuizPoints').value=10; $('lmGames').value='';
   }
   openModal('lessonModalOv');
 }
@@ -246,6 +247,11 @@ async function saveLesson(){
     learning_method: $('lmLearningMethod').value.trim()||null,
     quiz_json: linesToQuizJson($('lmQuiz').value), quiz_points: parseInt($('lmQuizPoints').value)||10
   };
+  const gamesRaw = $('lmGames').value.trim();
+  if(gamesRaw){
+    try{ payload.games_json = JSON.parse(gamesRaw); }
+    catch(e){ $('lmBtn').disabled=false; $('lmBtn').textContent='ذخیره درس'; $('lmErr').textContent='فرمت JSON بازی‌های عمومی درست نیست'; return; }
+  } else { payload.games_json = null; }
   const id = $('lmId').value;
   const { error } = id ? await sb.from('lessons').update(payload).eq('id',id) : await sb.from('lessons').insert(payload);
   $('lmBtn').disabled=false; $('lmBtn').textContent='ذخیره درس';

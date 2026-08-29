@@ -245,6 +245,49 @@ a{color:var(--sky)}
 .robot-btn{padding:12px 0;border-radius:10px;border:1.5px solid var(--line);background:#fff;font-size:20px;cursor:pointer}
 .robot-actions{display:flex;gap:8px}
 .robot-actions .btn{flex:1}
+
+/* ------------------------------------------------------------ لیست انتخاب بازی (پیک‌شده از games_json) */
+.game-picker-list{display:flex;flex-direction:column;gap:9px;margin-top:6px}
+.game-pick-card{display:flex;align-items:center;gap:11px;padding:12px 13px;border-radius:13px;border:1.5px solid var(--line);background:#fff;cursor:pointer;text-align:right;font-family:inherit;width:100%}
+.game-pick-card:hover{border-color:var(--sky)}
+.game-pick-emoji{font-size:22px;flex-shrink:0}
+.game-pick-mid{flex:1;min-width:0}
+.game-pick-title{font-size:13.5px;font-weight:800}
+.game-pick-sub{font-size:11px;color:var(--ink-soft,#6b6155);margin-top:2px}
+.game-pick-diff{display:inline-flex;gap:2px;margin-inline-start:6px}
+.game-pick-diff span{width:5px;height:5px;border-radius:50%;background:var(--line)}
+.game-pick-diff span.on{background:var(--mustard)}
+.game-pick-done{font-size:11px;font-weight:800;color:var(--sage);flex-shrink:0}
+.game-picker-head{font-size:12.5px;color:var(--ink-soft,#6b6155);margin-bottom:4px;line-height:1.8}
+
+/* ------------------------------------------------------------ درست/غلط */
+.tf-actions{display:flex;gap:8px;margin-top:4px}
+.tf-actions .btn{flex:1}
+.tf-feedback{margin-top:10px;padding:10px 12px;border-radius:10px;font-size:12.5px;line-height:1.8}
+
+/* ------------------------------------------------------------ جای خالی */
+.fill-sentence{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;font-size:14.5px;line-height:2.1;font-weight:700}
+.fill-blank-slot{display:inline-block;min-width:64px;border-bottom:2.5px dashed var(--sky);color:var(--sky);font-weight:800;padding:0 4px;text-align:center}
+
+/* ------------------------------------------------------------ بازی حافظه */
+.memory-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:8px}
+.memory-card{aspect-ratio:1;border-radius:10px;border:1.5px solid var(--line);background:var(--sky-bg);display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;font-weight:800;cursor:pointer;padding:4px;line-height:1.35;color:transparent;transition:.15s}
+.memory-card.mem-flip{background:#fff;color:var(--ink);border-color:var(--sky)}
+.memory-card.mem-flip::before{content:none}
+.memory-card:not(.mem-flip)::before{content:'?';color:var(--sky);font-size:20px}
+.memory-card.mem-done{background:var(--sage-bg);border-color:var(--sage);color:var(--sage);opacity:.75}
+
+/* ------------------------------------------------------------ ترتیب درست */
+.order-pool{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.order-chip{padding:9px 12px;border-radius:10px;border:1.5px solid var(--line);background:#fff;font-size:12.5px;font-weight:700;cursor:pointer}
+.order-chip:disabled{opacity:.35;cursor:default}
+.order-seq{display:flex;flex-direction:column;gap:6px;min-height:44px;background:var(--sky-bg);border-radius:10px;padding:8px;margin-bottom:10px}
+.order-seq-item{display:flex;align-items:center;gap:8px;background:#fff;border-radius:8px;padding:7px 10px;font-size:12.5px;font-weight:700}
+.order-seq-num{background:var(--sky);color:#fff;border-radius:50%;width:19px;height:19px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10.5px}
+.order-seq-empty{font-size:11px;color:var(--ink-soft,#6b6155);text-align:center;padding:8px 0}
+.order-result-item{display:flex;align-items:center;gap:8px;border-radius:8px;padding:7px 10px;font-size:12.5px;font-weight:700;margin-bottom:6px}
+.order-result-item.order-ok{background:var(--sage-bg);color:var(--sage)}
+.order-result-item.order-bad{background:var(--brick-bg);color:var(--brick)}
 .lesson-meta-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .chip-link{display:inline-flex;align-items:center;gap:5px;background:var(--sky-bg);color:var(--sky);border-radius:9px;padding:8px 12px;font-size:12px;font-weight:700;text-decoration:none;border:none;cursor:pointer}
 .chip-link.pdf{background:var(--amber-bg);color:#8a621a}

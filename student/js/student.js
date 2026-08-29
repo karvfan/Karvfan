@@ -52,7 +52,7 @@ async function loadDeadlineBanner(){
 async function loadMyQuizResults(){
   const { data } = await sb.rpc('get_my_quiz_results', { p_student_id: student.id });
   myQuizResults = {};
-  (data||[]).forEach(r=>{ myQuizResults[r.lesson_id] = r; });
+  (data||[]).forEach(r=>{ myQuizResults[r.lesson_id+'::'+(r.game_key||'quiz')] = r; });
 }
 
 function switchStudentTab(id){
@@ -116,15 +116,15 @@ function homeMaterialsHtml(l){
   return html;
 }
 function quizButtonHtml(l){
-  const hasGame = !!l.game_type || (l.quiz_json && (()=>{ try{ return JSON.parse(l.quiz_json).length>0; }catch(e){ return false; } })());
-  if(!hasGame) return '';
-  const done = myQuizResults[l.id];
-  const gameLabel = GAME_LABELS[l.game_type] || '🎮 بازی و آزمون این درس';
-  if(done){
-    return '<div class="lesson-meta-row"><button class="btn btn-sky btn-sm" onclick="openQuiz(\''+l.id+'\')">'+gameLabel+' (دوباره بازی کن)</button>'+
-      '<span class="quiz-done-badge">✅ '+done.score+'/'+done.total+' · '+(done.points_awarded>0?'+'+done.points_awarded+' امتیاز گرفتی':'') +'</span></div>';
-  }
-  return '<div class="lesson-meta-row"><button class="btn btn-sky btn-sm" onclick="openQuiz(\''+l.id+'\')">'+gameLabel+' ('+l.quiz_points+'+ امتیاز)</button></div>';
+  const games = buildGameList(l);
+  if(!games.length) return '';
+  let doneCount = 0, ptsEarned = 0;
+  games.forEach(g=>{ const r = myQuizResults[l.id+'::'+g.key]; if(r){ doneCount++; ptsEarned += (r.points_awarded||0); } });
+  const label = doneCount===0
+    ? '🎮 '+games.length+' بازی این پودمان رو شروع کن'
+    : (doneCount===games.length? '🎮 همه‌ی '+games.length+' بازی رو تموم کردی!' : '🎮 '+doneCount+' از '+games.length+' بازی انجام شده');
+  return '<div class="lesson-meta-row"><button class="btn btn-sky btn-sm" onclick="openQuiz(\''+l.id+'\')">'+label+'</button>'+
+    (ptsEarned>0? '<span class="quiz-done-badge">✅ +'+ptsEarned+' امتیاز گرفتی</span>' : '')+'</div>';
 }
 async function refreshStreak(){
   const { data } = await sb.rpc('get_student_profile', { p_student_id: student.id });
