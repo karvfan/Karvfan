@@ -24,6 +24,7 @@ function withTimeout(promise, ms){
     console.error('خطا در اتصال به سرور، ورود به صفحه‌ی ورود:', e);
   }
   goTo('studentAuth');
+  initBioLoginUI('student', 'saBioRow', 'saBioRemember');
   await prefillFromQrLink();
 })();
 async function prefillFromQrLink(){

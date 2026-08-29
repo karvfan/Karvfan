@@ -13,9 +13,17 @@
       <h2>ورود مدیر مدرسه</h2>
       <p>با ایمیل یا کد ملی، و رمز عبور وارد شوید</p>
     </div>
+    <div id="bioRow" class="bio-login-row hidden">
+      <button type="button" class="btn btn-navy btn-block bio-btn" onclick="adminBioLogin('admin_school')">🔓 ورود سریع با اثر انگشت / Windows Hello</button>
+      <button type="button" class="bio-forget-link" onclick="adminBioForget('admin_school')">این دستگاه رو فراموش کن</button>
+      <div class="bio-or">یا با ایمیل و رمز وارد شو</div>
+    </div>
     <form id="loginForm">
       <div class="field"><label>ایمیل یا کد ملی</label><input id="email" type="text" placeholder="کد ملی یا ایمیل"></div>
       <div class="field"><label>رمز عبور</label><input id="pass" type="password" placeholder="••••••••"></div>
+      <label id="bioRemember" class="bio-remember-row hidden">
+        <input type="checkbox" id="bioRememberChk"> این دستگاه رو برای ورود سریع بعدی با اثر انگشت به‌خاطر بسپار
+      </label>
       <div class="field-err" id="loginErr"></div>
       <button class="btn btn-navy btn-block" id="loginBtn" type="submit">ورود</button>
     </form>
@@ -25,8 +33,9 @@
 </div>
 <script src="js/supabase.js"></script>
 <script src="js/config.js"></script>
+<script src="js/biometric.js"></script>
 <script src="js/login.js"></script>
 <script src="js/show-password.js"></script>
-<script>initLogin(['school_admin']);</script>
+<script>initLogin(['school_admin'], 'admin_school');</script>
 </body>
 </html>

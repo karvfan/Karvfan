@@ -18,6 +18,7 @@ function withTimeout(promise, ms){
     console.error('خطا در اتصال به سرور، ورود به صفحه‌ی ورود:', e);
   }
   goTo('teacherAuth');
+  initBioLoginUI('teacher', 'taBioRow', 'taBioRemember');
 })();
 sb && sb.auth.onAuthStateChange((event)=>{ if(event==='SIGNED_OUT') goTo('teacherAuth'); });
 if('serviceWorker' in navigator){

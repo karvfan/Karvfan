@@ -41,6 +41,11 @@
     </div>
 
     <div id="saLoginForm">
+      <div id="saBioRow" class="bio-login-row hidden">
+        <button type="button" class="btn btn-navy btn-block bio-btn" onclick="studentBioLogin()">🔓 ورود سریع با اثر انگشت / Face ID</button>
+        <button type="button" class="bio-forget-link" onclick="studentBioForget()">این دستگاه رو فراموش کن</button>
+        <div class="bio-or">یا با شماره و پین وارد شو</div>
+      </div>
       <div class="field">
         <label>شماره موبایل</label>
         <input id="saLoginPhone" placeholder="09xxxxxxxxx" inputmode="numeric">
@@ -49,6 +54,9 @@
         <label>پین ۴ رقمی</label>
         <input id="saLoginPin" placeholder="••••" inputmode="numeric" maxlength="4" type="password">
       </div>
+      <label id="saBioRemember" class="bio-remember-row hidden">
+        <input type="checkbox" id="saBioRememberChk"> این دستگاه رو برای ورود سریع بعدی با اثر انگشت به‌خاطر بسپار
+      </label>
       <div class="field-err" id="saLoginErr"></div>
       <button class="btn btn-thread btn-block" onclick="studentLogin()" id="saLoginBtn">ورود به سامانه</button>
       <p style="display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--ink-soft)">پینت یادت رفته؟ از معلمت بخواه از پنلش برات ریست کنه.</p>
@@ -227,6 +235,7 @@
 <script src="../shared/js/certificate.js"></script>
 <script src="../shared/js/confetti.js"></script>
 <script src="../shared/js/show-password.js"></script>
+<script src="../shared/js/biometric.js"></script>
 <script src="../shared/js/build-version.js"></script>
 <script src="../shared/js/update-check.js"></script>
 <script>checkForAppUpdate('student', 'اپ دانش‌آموز');</script>

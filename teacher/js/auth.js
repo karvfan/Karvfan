@@ -13,7 +13,28 @@ async function teacherLogin(){
   const { error } = await sb.auth.signInWithPassword({ email, password: pass });
   $('taBtn').disabled=false; $('taBtn').textContent='ورود';
   if(error){ $('taErr').textContent='ایمیل/کد ملی یا رمز عبور اشتباه است'; return; }
+  if($('taBioRememberChk') && $('taBioRememberChk').checked){
+    try{ await bioRegister('teacher', raw, { email: raw, pass }); }
+    catch(e){ console.error('بیومتریک ثبت نشد', e); }
+  }
   await enterTeacherApp();
+}
+async function teacherBioLogin(){
+  try{
+    const secret = await bioVerifyAndLoad('teacher');
+    if(!secret){ return; }
+    $('taEmail').value = secret.email;
+    $('taPass').value = secret.pass;
+    await teacherLogin();
+  }catch(e){
+    console.error(e);
+    $('taErr').textContent = 'تأیید اثر انگشت انجام نشد — با ایمیل و رمز وارد شو';
+  }
+}
+function teacherBioForget(){
+  bioForget('teacher');
+  $('taBioRow').classList.add('hidden');
+  $('taBioRemember').classList.remove('hidden');
 }
 async function teacherLogout(){ await sb.auth.signOut(); goTo('teacherAuth'); }
 

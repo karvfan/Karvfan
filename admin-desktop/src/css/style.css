@@ -7,6 +7,14 @@
 *{box-sizing:border-box}
 body{margin:0;font-family:'Vazirmatn',Tahoma,sans-serif;background:var(--bg);color:var(--ink);direction:rtl}
 .hidden{display:none !important}
+
+/* ------------------------------------------------------------ ورود سریع با اثر انگشت / Windows Hello */
+.bio-login-row{margin-bottom:16px}
+.bio-btn{font-size:14.5px}
+.bio-forget-link{display:block;width:100%;text-align:center;background:none;border:none;color:var(--sub,#6b6155);font-size:12px;margin-top:6px;cursor:pointer;text-decoration:underline}
+.bio-or{text-align:center;font-size:12px;color:var(--sub,#6b6155);margin:14px 0 2px}
+.bio-remember-row{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--sub,#6b6155);margin:2px 0 12px;cursor:pointer;line-height:1.6}
+.bio-remember-row input{flex-shrink:0}
 button{font-family:inherit;cursor:pointer}
 input,select,textarea{font-family:inherit}
 

@@ -51,6 +51,10 @@ async function studentLogin(){
     }
     student = sanitizeStudent(data[0]);
     localStorage.setItem('kf_student', JSON.stringify(student));
+    if($('saBioRememberChk') && $('saBioRememberChk').checked){
+      try{ await bioRegister('student', student.full_name||phone, { phone, pin }); }
+      catch(e){ console.error('بیومتریک ثبت نشد', e); }
+    }
     await enterStudentApp();
   }catch(e){
     $('saLoginErr').textContent = 'خطا در ورود — دوباره تلاش کنید';
@@ -58,6 +62,23 @@ async function studentLogin(){
   }finally{
     $('saLoginBtn').disabled=false; $('saLoginBtn').textContent='ورود به سامانه';
   }
+}
+async function studentBioLogin(){
+  try{
+    const secret = await bioVerifyAndLoad('student');
+    if(!secret){ return; }
+    $('saLoginPhone').value = secret.phone;
+    $('saLoginPin').value = secret.pin;
+    await studentLogin();
+  }catch(e){
+    console.error(e);
+    $('saLoginErr').textContent = 'تأیید اثر انگشت انجام نشد — با شماره و پین وارد شو';
+  }
+}
+function studentBioForget(){
+  bioForget('student');
+  $('saBioRow').classList.add('hidden');
+  $('saBioRemember').classList.remove('hidden');
 }
 async function studentRegister(){
   const full_name = $('saName').value.trim();

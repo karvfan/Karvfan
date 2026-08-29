@@ -40,6 +40,11 @@
     </div>
 
     <div id="taLoginForm">
+      <div id="taBioRow" class="bio-login-row hidden">
+        <button type="button" class="btn btn-navy btn-block bio-btn" onclick="teacherBioLogin()">🔓 ورود سریع با اثر انگشت / Face ID</button>
+        <button type="button" class="bio-forget-link" onclick="teacherBioForget()">این دستگاه رو فراموش کن</button>
+        <div class="bio-or">یا با ایمیل و رمز وارد شو</div>
+      </div>
       <div class="field">
         <label>ایمیل یا کد ملی</label>
         <input id="taEmail" type="text" placeholder="کد ملی یا ایمیل">
@@ -48,6 +53,9 @@
         <label>رمز عبور</label>
         <input id="taPass" type="password" placeholder="••••••••">
       </div>
+      <label id="taBioRemember" class="bio-remember-row hidden">
+        <input type="checkbox" id="taBioRememberChk"> این دستگاه رو برای ورود سریع بعدی با اثر انگشت به‌خاطر بسپار
+      </label>
       <div class="field-err" id="taErr"></div>
       <button class="btn btn-sky btn-block" onclick="teacherLogin()" id="taBtn">ورود</button>
       <a href="#" onclick="forgotPassword();return false" style="display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--ink-soft)">رمز رو فراموش کردم؟</a>
@@ -278,6 +286,7 @@
 <script src="../shared/js/a11y.js"></script>
 <script src="../shared/js/certificate.js"></script>
 <script src="../shared/js/show-password.js"></script>
+<script src="../shared/js/biometric.js"></script>
 <script src="../shared/js/build-version.js"></script>
 <script src="../shared/js/update-check.js"></script>
 <script>checkForAppUpdate('teacher', 'اپ معلم');</script>

@@ -15,10 +15,14 @@ async function resolveLoginIdentifier(input){
   return input;
 }
 
-function initLogin(allowedRoles){
+function initLogin(allowedRoles, bioVault){
   const form = document.getElementById('loginForm');
   const errEl = document.getElementById('loginErr');
   const btn = document.getElementById('loginBtn');
+
+  if(bioVault && document.getElementById('bioRow')){
+    initBioLoginUI(bioVault, 'bioRow', 'bioRemember');
+  }
 
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
@@ -44,6 +48,13 @@ function initLogin(allowedRoles){
         await sb.auth.signOut();
         return;
       }
+      if(bioVault){
+        const chk = document.getElementById('bioRememberChk');
+        if(chk && chk.checked){
+          try{ await bioRegister(bioVault, raw, { email: raw, pass }); }
+          catch(bioErr){ console.error('بیومتریک ثبت نشد', bioErr); }
+        }
+      }
       window.location.href = 'dashboard.html';
     }catch(err){
       console.error(err);
@@ -52,6 +63,24 @@ function initLogin(allowedRoles){
       btn.disabled = false; btn.textContent = 'ورود';
     }
   });
+}
+async function adminBioLogin(bioVault){
+  const errEl = document.getElementById('loginErr');
+  try{
+    const secret = await bioVerifyAndLoad(bioVault);
+    if(!secret) return;
+    document.getElementById('email').value = secret.email;
+    document.getElementById('pass').value = secret.pass;
+    document.getElementById('loginForm').requestSubmit();
+  }catch(e){
+    console.error(e);
+    if(errEl) errEl.textContent = 'تأیید اثر انگشت انجام نشد — با ایمیل و رمز وارد شو';
+  }
+}
+function adminBioForget(bioVault){
+  bioForget(bioVault);
+  document.getElementById('bioRow').classList.add('hidden');
+  document.getElementById('bioRemember').classList.remove('hidden');
 }
 
 async function forgotPasswordDesktop(){
