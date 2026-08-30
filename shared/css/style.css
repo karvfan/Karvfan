@@ -379,6 +379,10 @@ a{color:var(--sky)}
 .stat-box .l{font-size:10.5px;color:var(--ink-soft);margin-top:3px}
 .lesson-admin-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .lesson-admin-row .lbtns{display:flex;gap:6px;flex-shrink:0}
+.activation-hint{background:var(--sky-bg,#eaf5fb);color:var(--sky,#2f8fc0);border-radius:12px;padding:10px 13px;font-size:12px;line-height:1.9;margin-bottom:14px}
+.lesson-toggle{display:flex;align-items:center;gap:8px;margin-top:6px;cursor:pointer;user-select:none}
+.lesson-toggle input{width:34px;height:20px;flex-shrink:0;accent-color:var(--sage,#5b9a6f);cursor:pointer}
+.lesson-toggle-text{font-size:11.5px;font-weight:700;color:var(--ink-soft,#6b6155)}
 .student-row{display:flex;justify-content:space-between;align-items:center;padding:9px 6px;border-bottom:1px solid var(--line);font-size:12.5px}
 .student-row:last-child{border-bottom:none}
 

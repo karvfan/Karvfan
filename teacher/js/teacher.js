@@ -111,10 +111,13 @@ async function saveReview(id){
 async function loadAllLessons(){
   const { data, error } = await sb.from('lessons').select('*').order('grade').order('order_index');
   lessons = error? [] : data;
+  const { data: actData } = await sb.rpc('teacher_get_lesson_activations');
+  myActivations = new Set((actData||[]).map(a=>a.lesson_id));
 }
 function renderLessonsAdmin(){
   const el = $('tLessons');
-  let html = '<button class="btn btn-thread btn-sm" style="margin-bottom:14px" onclick="openLessonModal(null)">➕ درس جدید</button>';
+  let html = '<button class="btn btn-thread btn-sm" style="margin-bottom:14px" onclick="openLessonModal(null)">➕ درس جدید</button>'+
+    '<div class="activation-hint">🔔 پودمان‌های «نیمه‌تجویزی» تا وقتی فعالشون نکنید، برای دانش‌آموزهای مدرسه‌ی شما نمایش داده نمی‌شن — کلید کنار هرکدوم رو بزنید تا فعال بشه.</div>';
 
   const drafts = lessons.filter(l=>l.is_alternative);
   if(drafts.length){
@@ -133,9 +136,14 @@ function renderLessonsAdmin(){
     html += '<div class="section-title">پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[g])+'</div>';
     if(!gl.length){ html += emptyState('📚','درسی ثبت نشده',''); }
     gl.forEach(l=>{
+      const active = myActivations.has(l.id);
+      const activationSwitch = l.is_prescribed
+        ? '<span class="presc-badge presc-yes">✅ تجویزی (همیشه فعال)</span>'
+        : '<label class="lesson-toggle"><input type="checkbox" '+(active?'checked':'')+' onchange="toggleLessonActivation(\''+l.id+'\','+l.grade+',this.checked)"><span class="lesson-toggle-text">'+(active?'🟢 برای مدرسه‌ی شما فعاله':'⚪️ برای مدرسه‌ی شما غیرفعاله')+'</span></label>';
       html += '<div class="pattern-card"><div class="lesson-admin-row">'+
-        '<div><div class="sub-title">'+esc(l.unit_title)+' '+(l.is_prescribed?'<span class="presc-badge presc-yes">تجویزی</span>':'<span class="presc-badge presc-no">قابل‌جایگزینی</span>')+'</div>'+
-        '<div class="sub-lesson">ترتیب: '+l.order_index+' · '+(l.is_published?'✅ نمایش‌داده‌شده':'🚫 آرشیوشده')+'</div></div>'+
+        '<div><div class="sub-title">'+esc(l.unit_title)+' '+(l.is_prescribed?'<span class="presc-badge presc-yes">تجویزی</span>':'<span class="presc-badge presc-no">نیمه‌تجویزی</span>')+'</div>'+
+        '<div class="sub-lesson">ترتیب: '+l.order_index+' · '+(l.is_published?'✅ نمایش‌داده‌شده':'🚫 آرشیوشده')+'</div>'+
+        activationSwitch+'</div>'+
         '<div class="lbtns"><button class="btn btn-ghost btn-sm" onclick="openLessonModal(\''+l.id+'\')">✏️</button>'+
         '<button class="btn btn-ghost btn-sm" onclick="duplicateLesson(\''+l.id+'\')">📋</button>'+
         '<button class="btn btn-sky btn-sm" onclick="toggleArchiveLesson(\''+l.id+'\')">'+(l.is_published?'🗄️':'♻️')+'</button>'+
@@ -143,6 +151,12 @@ function renderLessonsAdmin(){
     });
   });
   el.innerHTML = html;
+}
+async function toggleLessonActivation(lessonId, grade, active){
+  const { error } = await sb.rpc('teacher_set_lesson_activation', { p_lesson_id: lessonId, p_grade: grade, p_active: active });
+  if(error){ showToast('❌ خطا در تغییر وضعیت فعال‌سازی'); console.error(error); await loadAllLessons(); renderLessonsAdmin(); return; }
+  if(active) myActivations.add(lessonId); else myActivations.delete(lessonId);
+  showToast(active? '✅ برای دانش‌آموزهای مدرسه‌ی شما فعال شد' : '⚪️ غیرفعال شد');
 }
 async function activateDraftLesson(id){
   if(!confirm('این پودمان برای دانش‌آموزها فعال و قابل‌مشاهده بشه؟ (می‌تونید بعداً یکی از پودمان‌های قدیمی رو آرشیو کنید)')) return;

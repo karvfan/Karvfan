@@ -9,6 +9,7 @@
 
 let student = null;      // {id, full_name, school, grade, points}
 let lessons = [];        // کش درس‌های پایه‌ی دانش‌آموز فعلی یا همه (برای مربی)
+let myActivations = new Set(); // شناسه‌ی پودمان‌های نیمه‌تجویزیِ فعال‌شده برای مدرسه‌ی معلم/مدیر جاری
 let assignments = [];    // کش تکالیف هفتگی
 let myQuizResults = {};  // lesson_id -> {score,total,points_awarded}
 let uploadFileB64 = null, uploadFileExt = null;

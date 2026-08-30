@@ -73,7 +73,7 @@ function switchStudentTab(id){
 
 /* ------------------------------------------------------------ آموزش (دانش‌آموز) */
 async function loadLessonsFor(grade){
-  const { data, error } = await sb.from('lessons').select('*').eq('grade', grade).order('order_index');
+  const { data, error } = await sb.rpc('get_visible_lessons', { p_grade: grade, p_school: student.school });
   lessons = error? [] : data;
 }
 function renderLessonsPanel(){
