@@ -18,6 +18,7 @@
       <button data-p="pSchools">🏫 فهرست مدرسه‌ها</button>
       <button data-p="pAddStudent">➕ ثبت دانش‌آموز</button>
       <button data-p="pStaff" id="navStaff" class="hidden">🧑‍💼 مدیریت کارکنان</button>
+      <button data-p="pReview">🗂️ بررسی کارهای دانش‌آموزان<span class="tab-badge hidden" id="badgeReviewPending"></span></button>
       <button data-p="pAudit" id="navAudit" class="hidden">📜 گزارش فعالیت‌ها</button>
     </nav>
     <button class="logout" id="logoutBtn">خروج</button>
@@ -89,8 +90,17 @@
       <div class="topline"><h2>📜 گزارش فعالیت‌های مدیریتی</h2></div>
       <div id="auditBody"><div class="empty-state"><div class="ic">⏳</div>در حال بارگذاری...</div></div>
     </div>
+    <div class="panel" id="pReview">
+      <div class="topline"><h2>🗂️ بررسی کارهای دانش‌آموزان</h2></div>
+      <div class="filter-row">
+        <select id="rvStatus"><option value="pending">در انتظار بررسی</option><option value="approved">تأییدشده</option>
+          <option value="needs_fix">نیاز به اصلاح</option><option value="rejected">ردشده</option><option value="all">همه</option></select>
+      </div>
+      <div id="reviewBody"><div class="empty-state"><div class="ic">⏳</div>در حال بارگذاری...</div></div>
+    </div>
   </div>
 </div>
+<div id="lightbox" onclick="closeLightbox()"><img id="lightboxImg" src=""></div>
 <div class="toast" id="toast"></div>
 <script src="js/supabase.js"></script>
 <script src="js/config.js"></script>
@@ -98,5 +108,6 @@
 <script src="js/update-check.js"></script>
 <script>checkForAppUpdate('desktop', 'پنل مدیریت');</script>
 <script src="js/dashboard.js"></script>
+<script src="js/review.js"></script>
 </body>
 </html>

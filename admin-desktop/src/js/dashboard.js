@@ -55,6 +55,8 @@ function setBadge(id, n){
   else { el.classList.add('hidden'); }
 }
 async function refreshPendingBadge(){
+  const { count } = await sb.from('submissions').select('id', { count:'exact', head:true }).eq('status','pending');
+  setBadge('badgeReviewPending', count || 0);
   if(!['county_admin','province_admin','super_admin'].includes(myScope.role)) return;
   const { data } = await sb.rpc('get_pending_schools');
   setBadge('badgePending', data ? data.length : 0);
@@ -87,6 +89,7 @@ function switchPanel(id){
   if(id==='pAddStudent') initAddStudentForm();
   if(id==='pStaff') loadStaff();
   if(id==='pAudit') loadAuditLog();
+  if(id==='pReview') loadReview();
 }
 
 /* ==================================================== آمار ==================================================== */

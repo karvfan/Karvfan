@@ -142,6 +142,30 @@ function fileLinkOrImg(url){
   if(/\.(jpg|jpeg|png|webp|gif)$/i.test(url)) return '<img class="sample-img" style="max-height:200px" src="'+esc(url)+'" onclick="openLightbox(\''+esc(url)+'\')">';
   return '<a class="sub-file-link" href="'+esc(url)+'" target="_blank">📎 مشاهده فایل</a>';
 }
+function designReflectionHtml(json){
+  if(!json) return '';
+  let d; try{ d = JSON.parse(json); }catch(e){ return ''; }
+  if(d.type === 'company'){
+    const rows = [
+      ['💼 محصول', d.product], ['💰 قیمت', d.price], ['📣 فروش/تبلیغ', d.sell_plan], ['🎯 مشتری‌ها', d.customers]
+    ].filter(r=>r[1]);
+    if(!rows.length) return '';
+    return '<div class="home-box"><div class="home-box-title">💼 پروژه‌ی شرکت دانش‌آموزی</div>'+
+      rows.map(r=>'<div class="lesson-body"><b>'+r[0]+':</b> '+esc(r[1])+'</div>').join('')+'</div>';
+  }
+  const rows = [
+    ['🧩 مشکل', d.problem], ['💡 ایده‌ها', d.ideas], ['✅ چرا این انتخاب', d.why_chosen],
+    ['🔨 چطور ساختی', d.how_built], ['🔄 چطور بهترش می‌کردی', d.improvement]
+  ].filter(r=>r[1]);
+  if(!rows.length) return '';
+  return '<div class="home-box"><div class="home-box-title">🎨 فرایند طراحی</div>'+
+    rows.map(r=>'<div class="lesson-body"><b>'+r[0]+':</b> '+esc(r[1])+'</div>').join('')+
+    '</div>';
+}
+function ecoFriendlyHtml(is_eco, note){
+  if(!is_eco) return '';
+  return '<div class="eco-badge">♻️ سازگار با محیط‌زیست'+(note?(' — '+esc(note)):'')+'</div>';
+}
 
 /* ------------------------------------------------------------ پروفایل استعداد و علاقه‌سنجی */
 function emptyState(ic,t,d){
