@@ -33,6 +33,7 @@ async function boot(){
 
   document.getElementById('roleTag').textContent =
     (ROLE_LABELS[myScope.role]||myScope.role) + (myScope.school ? ' — ' + myScope.school : '');
+  showToast('👋 به سامانه‌ی کار و فناوری خوش آمدید');
 
   // بارگذاری استان‌ها/شهرستان‌ها برای فیلترها و فرم‌ها
   const [{ data: provs }, { data: counties }] = await Promise.all([
