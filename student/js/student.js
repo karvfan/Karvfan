@@ -9,6 +9,7 @@ async function enterStudentApp(){
   $('stPoints').textContent = student.points||0;
   if(student.streak>0){ $('streakChip').style.display='flex'; $('stStreak').textContent=student.streak; }
   goTo('studentApp');
+  showToast('👋 به سامانه‌ی کار و فناوری خوش آمدید');
   await loadLessonsFor(student.grade);
   await loadMyQuizResults();
   await loadMyLikes();
