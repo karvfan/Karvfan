@@ -8,6 +8,7 @@ async function enterTeacherApp(){
   if(!session) return;
   $('teEmail').textContent = session.user.email;
   goTo('teacherApp');
+  showToast('👋 به سامانه‌ی کار و فناوری خوش آمدید');
   await loadAllLessons();
   await loadMyStaffInfo(session.user.id);
   switchTeacherTab('tReview');
