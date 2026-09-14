@@ -23,6 +23,17 @@ function showToast(msg){
 }
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
+// پین ۶کاراکتری دانش‌آموز: حداقل یک حرف بزرگ و یک حرف کوچیک انگلیسی، بقیه از حروف/ارقام قابل‌تفکیک
+function generateStudentPin(){
+  const lower = 'abcdefghijkmnpqrstuvwxyz';
+  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const digits = '23456789';
+  const all = lower + upper + digits;
+  let pin = lower[Math.floor(Math.random()*lower.length)] + upper[Math.floor(Math.random()*upper.length)];
+  for(let i=0;i<4;i++) pin += all[Math.floor(Math.random()*all.length)];
+  return pin.split('').sort(()=>Math.random()-0.5).join('');
+}
+
 async function boot(){
   const { data:{ session } } = await sb.auth.getSession();
   if(!session){ window.location.href = 'login-select.html'; return; }
@@ -338,7 +349,7 @@ function initAddStudentForm(){
     if(!full_name || full_name.length<3){ errEl.textContent='نام و نام خانوادگی رو کامل بنویسید'; return; }
     if(!school){ errEl.textContent='مدرسه رو انتخاب کنید'; return; }
     if(!/^0?9\d{9}$/.test(phone.replace(/\s/g,''))){ errEl.textContent='شماره موبایل معتبر نیست'; return; }
-    const pin = String(Math.floor(1000 + Math.random()*9000));
+    const pin = generateStudentPin();
     const { error } = await sb.rpc('student_login_or_register', { p_full_name: full_name, p_school: school, p_grade: grade, p_phone: phone, p_pin: pin, p_class_name: class_name||null });
     if(error){ errEl.textContent = 'خطا: '+error.message; return; }
     document.getElementById('asName').value=''; document.getElementById('asClass').value=''; document.getElementById('asPhone').value='';
