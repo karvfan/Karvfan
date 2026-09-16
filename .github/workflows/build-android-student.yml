@@ -6,6 +6,7 @@ on:
     paths:
       - 'student/**'
       - 'shared/**'
+      - 'about.html'
       - 'karvfan-android-student/**'
       - 'capacitor.config.student.json'
       - 'package.json'
@@ -36,6 +37,7 @@ jobs:
           mkdir -p www-student
           cp -r student/* www-student/
           cp -r shared www-student/shared
+          cp about.html www-student/about.html
           # مسیرهای نسبی "../shared/..." که برای ساختار سایت (student/ زیرپوشه) نوشته شدن،
           # چون اینجا index.html خودش در ریشه‌ی webDir قرار می‌گیره، به "shared/..." تبدیل می‌شن
           grep -rl '\.\./shared/' www-student --include="*.html" | xargs -r sed -i 's#\.\./shared/#shared/#g'
