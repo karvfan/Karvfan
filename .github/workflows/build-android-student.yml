@@ -41,6 +41,7 @@ jobs:
           # مسیرهای نسبی "../shared/..." که برای ساختار سایت (student/ زیرپوشه) نوشته شدن،
           # چون اینجا index.html خودش در ریشه‌ی webDir قرار می‌گیره، به "shared/..." تبدیل می‌شن
           grep -rl '\.\./shared/' www-student --include="*.html" | xargs -r sed -i 's#\.\./shared/#shared/#g'
+          grep -rl '\.\./about\.html' www-student --include="*.html" | xargs -r sed -i 's#\.\./about\.html#about.html#g'
 
       - name: Embed build version (برای هشدار آپدیت داخل اپ)
         run: |
