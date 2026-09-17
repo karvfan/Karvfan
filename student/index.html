@@ -48,11 +48,13 @@
       </div>
       <div class="field">
         <label>شماره موبایل (همون شماره‌ی متصل به شاد)</label>
-        <input id="saLoginPhone" placeholder="09xxxxxxxxx" inputmode="numeric">
+        <input id="saLoginPhone" placeholder="09xxxxxxxxx" inputmode="numeric" oninput="setFieldError('saLoginPhone','')">
+        <div class="field-err-inline" id="saLoginPhoneErr"></div>
       </div>
       <div class="field">
         <label>پین ۶ کاراکتری</label>
-        <input id="saLoginPin" placeholder="Ab12cd" maxlength="6" type="password">
+        <input id="saLoginPin" placeholder="Ab12cd" maxlength="6" type="password" oninput="setFieldError('saLoginPin','')">
+        <div class="field-err-inline" id="saLoginPinErr"></div>
       </div>
       <label id="saBioRemember" class="bio-remember-row hidden">
         <input type="checkbox" id="saBioRememberChk"> این دستگاه رو برای ورود سریع بعدی با اثر انگشت به‌خاطر بسپار
@@ -65,7 +67,8 @@
     <div id="saRegForm" class="hidden">
       <div class="field">
         <label>نام و نام خانوادگی</label>
-        <input id="saName" placeholder="مثلاً: زهرا احمدی">
+        <input id="saName" placeholder="مثلاً: زهرا احمدی" oninput="setFieldError('saName','')">
+        <div class="field-err-inline" id="saNameErr"></div>
       </div>
       <div class="field">
         <label>استان</label>
@@ -77,8 +80,9 @@
       </div>
       <div class="field">
         <label>مدرسه</label>
-        <select id="saSchool"><option value="">— ابتدا شهرستان را انتخاب کنید —</option></select>
+        <select id="saSchool" onchange="setFieldError('saSchool','')"><option value="">— ابتدا شهرستان را انتخاب کنید —</option></select>
         <div style="font-size:11.5px;color:var(--sub);margin-top:4px">مدرسه‌تون تو لیست نیست؟ به معلمتون بگید از پنل خودش درخواست ثبت مدرسه بده.</div>
+        <div class="field-err-inline" id="saSchoolErr"></div>
       </div>
       <div class="field">
         <label>پایه</label>
@@ -94,15 +98,18 @@
       </div>
       <div class="field">
         <label>شماره موبایل (همون شماره‌ی متصل به شاد)</label>
-        <input id="saPhone" placeholder="09xxxxxxxxx" inputmode="numeric">
+        <input id="saPhone" placeholder="09xxxxxxxxx" inputmode="numeric" oninput="setFieldError('saPhone','')">
+        <div class="field-err-inline" id="saPhoneErr"></div>
       </div>
       <div class="field">
         <label>یک پین ۶ کاراکتری بساز (حداقل یک حرف بزرگ و یک حرف کوچیک انگلیسی — برای ورودهای بعدی لازمه، فراموش نکن)</label>
-        <input id="saPin" placeholder="Ab12cd" maxlength="6" type="password">
+        <input id="saPin" placeholder="Ab12cd" maxlength="6" type="password" oninput="setFieldError('saPin','')">
+        <div class="field-err-inline" id="saPinErr"></div>
       </div>
       <div class="field">
         <label>تکرار پین</label>
-        <input id="saPinConfirm" placeholder="Ab12cd" maxlength="6" type="password">
+        <input id="saPinConfirm" placeholder="Ab12cd" maxlength="6" type="password" oninput="setFieldError('saPinConfirm','')">
+        <div class="field-err-inline" id="saPinConfirmErr"></div>
       </div>
       <div class="field-err" id="saErr"></div>
       <button class="btn btn-thread btn-block" onclick="studentRegister()" id="saBtn">ساخت حساب و ورود</button>
@@ -222,10 +229,8 @@
 
 <!-- ==================== مودال: آزمون علاقه‌سنجی ==================== -->
 <div class="modal-ov" id="interestModalOv">
-  <div class="modal">
-    <div class="modal-head"><h3>🧭 آزمون علاقه‌سنجی</h3><button class="modal-close" onclick="closeModal('interestModalOv')">✕</button></div>
+  <div class="modal-head"><h3>🧭 آزمون علاقه‌سنجی</h3><button class="modal-close" onclick="closeModal('interestModalOv')">✕</button></div>
     <div id="interestBody"></div>
-  </div>
 </div>
 
 <!-- ==================== لایت‌باکس تصویر ==================== -->
