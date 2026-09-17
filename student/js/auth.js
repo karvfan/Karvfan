@@ -9,6 +9,17 @@ function switchAuthTab(which){
   $('saRegForm').classList.toggle('hidden', which!=='register');
   if(which==='register' && $('saProvince').options.length<=1) loadRegProvinces();
 }
+
+/* نمایش/پاک‌کردن خطای یک فیلد خاص — فیلد رو قرمز می‌کنه و متن خطا رو زیرش می‌نویسه */
+function setFieldError(inputId, msg){
+  const input = $(inputId);
+  const errEl = $(inputId+'Err');
+  const wrap = input ? input.closest('.field') : null;
+  if(errEl) errEl.textContent = msg || '';
+  if(wrap) wrap.classList.toggle('field-invalid', !!msg);
+}
+function clearFieldErrors(ids){ ids.forEach(id=> setFieldError(id, '')); }
+
 async function loadRegProvinces(){
   const { data } = await sb.from('provinces').select('*').order('name');
   $('saProvince').innerHTML = '<option value="">— انتخاب کنید —</option>' + (data||[]).map(p=>'<option value="'+p.id+'">'+p.name+'</option>').join('');
@@ -34,8 +45,13 @@ async function studentLogin(){
   const phone = $('saLoginPhone').value.trim();
   const pin = $('saLoginPin').value.trim();
   $('saLoginErr').textContent='';
-  if(!/^0?9\d{9}$/.test(phone.replace(/\s/g,''))){ $('saLoginErr').textContent='شماره موبایل معتبر نیست'; return; }
-  if(!/^(?=.*[a-z])(?=.*[A-Z])[A-Za-z0-9]{6}$/.test(pin)){ $('saLoginErr').textContent='پین باید ۶ کاراکتر باشه و شامل حداقل یک حرف بزرگ و یک حرف کوچیک انگلیسی باشه'; return; }
+  clearFieldErrors(['saLoginPhone','saLoginPin']);
+
+  let hasError = false;
+  if(!/^0?9\d{9}$/.test(phone.replace(/\s/g,''))){ setFieldError('saLoginPhone','شماره موبایل معتبر نیست (مثلاً 09123456789)'); hasError = true; }
+  if(!/^(?=.*[a-z])(?=.*[A-Z])[A-Za-z0-9]{6}$/.test(pin)){ setFieldError('saLoginPin','پین باید ۶ کاراکتر باشه و شامل حداقل یک حرف بزرگ و یک حرف کوچیک انگلیسی باشه'); hasError = true; }
+  if(hasError) return;
+
   $('saLoginBtn').disabled=true; $('saLoginBtn').innerHTML='<span class="spinner"></span> در حال ورود...';
   try{
     const { data, error } = await sb.rpc('student_login', { p_phone: phone, p_pin: pin });
@@ -89,11 +105,21 @@ async function studentRegister(){
   const pin = $('saPin').value.trim();
   const pinConfirm = $('saPinConfirm').value.trim();
   $('saErr').textContent='';
-  if(!full_name || full_name.length<3){ $('saErr').textContent='نام و نام خانوادگی رو کامل بنویسید'; return; }
-  if(!school){ $('saErr').textContent='مدرسه رو انتخاب کنید'; return; }
-  if(!/^0?9\d{9}$/.test(phone.replace(/\s/g,''))){ $('saErr').textContent='شماره موبایل معتبر نیست'; return; }
-  if(!/^(?=.*[a-z])(?=.*[A-Z])[A-Za-z0-9]{6}$/.test(pin)){ $('saErr').textContent='پین باید ۶ کاراکتر باشه و شامل حداقل یک حرف بزرگ و یک حرف کوچیک انگلیسی باشه'; return; }
-  if(pin !== pinConfirm){ $('saErr').textContent='دو پین یکی نیستن'; return; }
+  clearFieldErrors(['saName','saSchool','saPhone','saPin','saPinConfirm']);
+
+  let hasError = false;
+  if(!full_name || full_name.length<3){ setFieldError('saName','نام و نام خانوادگی رو کامل بنویس (حداقل ۳ حرف)'); hasError = true; }
+  if(!school){ setFieldError('saSchool','مدرسه رو انتخاب کن'); hasError = true; }
+  if(!/^0?9\d{9}$/.test(phone.replace(/\s/g,''))){ setFieldError('saPhone','شماره موبایل معتبر نیست (مثلاً 09123456789)'); hasError = true; }
+  if(!/^(?=.*[a-z])(?=.*[A-Z])[A-Za-z0-9]{6}$/.test(pin)){
+    setFieldError('saPin','پین باید ۶ کاراکتر باشه و شامل حداقل یک حرف بزرگ و یک حرف کوچیک انگلیسی باشه');
+    hasError = true;
+  } else if(pin !== pinConfirm){
+    setFieldError('saPinConfirm','با پینی که بالا نوشتی یکی نیست');
+    hasError = true;
+  }
+  if(hasError){ $('saErr').textContent = 'لطفاً خطاهای مشخص‌شده رو برطرف کن'; return; }
+
   $('saBtn').disabled=true; $('saBtn').innerHTML='<span class="spinner"></span> در حال ثبت‌نام...';
   try{
     const { data, error } = await sb.rpc('student_login_or_register', { p_full_name: full_name, p_school: school, p_grade: grade, p_phone: phone, p_pin: pin, p_class_name: class_name||null });
