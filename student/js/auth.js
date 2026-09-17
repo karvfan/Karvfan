@@ -128,8 +128,13 @@ async function studentRegister(){
     localStorage.setItem('kf_student', JSON.stringify(student));
     await enterStudentApp();
   }catch(e){
-    $('saErr').textContent = 'خطا در ثبت‌نام — دوباره تلاش کنید';
     console.error(e);
+    const msg = (e && e.message) ? e.message : '';
+    if(/duplicate|already|exist|تکراری|قبلا/i.test(msg)){
+      setFieldError('saPhone', 'این شماره قبلاً ثبت‌نام کرده — از تب «ورود» بالا استفاده کن');
+    } else {
+      $('saErr').textContent = msg ? ('خطا: ' + msg) : 'خطا در ثبت‌نام — دوباره تلاش کنید';
+    }
   }finally{
     $('saBtn').disabled=false; $('saBtn').textContent='ساخت حساب و ورود';
   }
