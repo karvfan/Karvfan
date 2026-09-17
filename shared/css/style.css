@@ -101,6 +101,8 @@ a{color:var(--sky)}
 .field input,.field select,.field textarea{width:100%;border:1.6px solid var(--line);border-radius:10px;padding:11px 13px;font-size:14px;outline:none;color:var(--ink);background:#fff}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--thread)}
 .field-err{color:var(--brick);font-size:11.5px;margin-top:8px;min-height:14px;text-align:center}
+.field-err-inline{color:var(--brick);font-size:11px;margin-top:5px;line-height:1.6}
+.field.field-invalid input,.field.field-invalid select{border-color:var(--brick);background:var(--brick-bg)}
 
 /* ---------- نوار بالا و تب‌ها ---------- */
 .topbar{background:linear-gradient(120deg,var(--ink),#334463);padding:13px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:40;flex-wrap:wrap}
