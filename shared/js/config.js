@@ -6,8 +6,8 @@
  * ⚠️ SUPABASE_URL و SUPABASE_ANON_KEY را بعد از ساخت پروژه در Supabase
  * (از: Project Settings → API) با مقادیر واقعی جایگزین کنید.
  */
-const SUPABASE_URL = 'https://oyjaxppsarypntotlzns.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95amF4cHBzYXJ5cG50b3Rsem5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNTk2OTUsImV4cCI6MjEwMTgzNTY5NX0.kkeJ637G8Eo2lrZol9FLoVG85GCgYU2fbm3CrLQy9ZY';
+const SUPABASE_URL = 'https://nvdhxqmmfkalhzxcuewu.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52ZGh4cW1tZmthbGh6eGN1ZXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4NDE1MjcsImV4cCI6MjEwNTQxNzUyN30.gjeT9Fch8JIYJBXIyfDH1Fn6k5Sj_JXibV_MbtjMpko';
 
 let sb;
 const isConfigured = !SUPABASE_URL.includes('YOUR_') && !SUPABASE_ANON_KEY.includes('YOUR_');
