@@ -21,6 +21,18 @@ function countyOptionsHtml(counties, provinceId){
   return '<option value="">— انتخاب شهرستان —</option>' + filtered.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
 }
 
+// پین ۶کاراکتری دانش‌آموز: حداقل یک حرف بزرگ و یک حرف کوچیک انگلیسی، بقیه از حروف/ارقام قابل‌تفکیک
+// (باید دقیقاً با الگوی اعتبارسنجی سمت کلاینت در student/js/auth.js هماهنگ باشه)
+function generateStudentPin(){
+  const lower = 'abcdefghijkmnpqrstuvwxyz';
+  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const digits = '23456789';
+  const all = lower + upper + digits;
+  let pin = lower[Math.floor(Math.random()*lower.length)] + upper[Math.floor(Math.random()*upper.length)];
+  for(let i=0;i<4;i++) pin += all[Math.floor(Math.random()*all.length)];
+  return pin.split('').sort(()=>Math.random()-0.5).join('');
+}
+
 const DISTRICT_ROLES = ['county_admin','province_admin','super_admin'];
 
 /* ==================================================== تب «مدرسه‌ها» ==================================================== */
@@ -183,7 +195,7 @@ async function submitAddStudent(){
   if(!full_name || full_name.length<3){ $('asErr').textContent='نام و نام خانوادگی رو کامل بنویسید'; return; }
   if(!school){ $('asErr').textContent='مدرسه رو انتخاب کنید'; return; }
   if(!/^0?9\d{9}$/.test(phone.replace(/\s/g,''))){ $('asErr').textContent='شماره موبایل معتبر نیست'; return; }
-  const pin = String(Math.floor(1000 + Math.random()*9000));
+  const pin = generateStudentPin();
   const { error } = await sb.rpc('student_login_or_register', { p_full_name: full_name, p_school: school, p_grade: grade, p_phone: phone, p_pin: pin, p_class_name: class_name||null });
   if(error){ $('asErr').textContent='خطا: '+error.message; return; }
   $('asName').value=''; $('asClass').value=''; $('asPhone').value='';
