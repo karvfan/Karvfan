@@ -1,6 +1,6 @@
 {
   "appId": "com.karvfan.teacher",
-  "appName": "کار و فناوری - معلم",
+  "appName": "کارفن - معلم",
   "webDir": "www-teacher",
   "android": {
     "path": "karvfan-android-teacher"
