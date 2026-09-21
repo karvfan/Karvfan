@@ -1,6 +1,6 @@
 {
   "appId": "com.karvfan.student",
-  "appName": "کار و فناوری - دانش‌آموز",
+  "appName": "کارفن - دانش‌آموز",
   "webDir": "www-student",
   "android": {
     "path": "karvfan-android-student"
