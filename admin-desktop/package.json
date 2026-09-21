@@ -15,7 +15,7 @@
   },
   "build": {
     "appId": "ir.karvfan.admindesktop",
-    "productName": "کار و فناوری — پنل مدیریت",
+    "productName": "کارفن — پنل مدیریت",
     "directories": { "output": "dist" },
     "files": ["main.js", "src/**/*"],
     "win": {
