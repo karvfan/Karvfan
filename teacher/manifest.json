@@ -1,6 +1,6 @@
 {
-  "name": "مربی | سامانه آموزش و ارزیابی کار و فناوری",
-  "short_name": "کار و فناوری مربی",
+  "name": "مربی | کارفن",
+  "short_name": "کارفن مربی",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
