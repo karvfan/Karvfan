@@ -223,8 +223,18 @@ async function loadProfilePanel(){
   Object.keys(CATEGORY_META).forEach(c=>catMap[c]=0);
   (cats||[]).forEach(c=>{ catMap[c.category] = Number(c.total_points)||0; });
   const maxVal = Math.max(1, ...Object.values(catMap));
+  const gradeLabel = ({7:'هفتم',8:'هشتم',9:'نهم'})[student.grade] || student.grade;
 
-  let html = '<div class="sec-title">🧭 نقاط قوت من</div>';
+  let html = '<div class="sec-title">👤 اطلاعات من</div><div class="pattern-card">'+
+    '<div class="student-row"><span>نام و نام‌خانوادگی</span><span>'+esc(student.full_name)+'</span></div>'+
+    '<div class="student-row"><span>مدرسه</span><span>'+esc(student.school)+'</span></div>'+
+    '<div class="student-row"><span>پایه</span><span>پایه '+esc(gradeLabel)+'</span></div>'+
+    (student.class_name? '<div class="student-row"><span>کلاس</span><span>'+esc(student.class_name)+'</span></div>' : '')+
+    (student.phone? '<div class="student-row"><span>شماره موبایل</span><span dir="ltr">'+esc(student.phone)+'</span></div>' : '')+
+    '<div class="student-row"><span>امتیاز کل</span><span>🏅 '+(student.points||0)+'</span></div>'+
+    '</div>';
+
+  html += '<div class="sec-title">🧭 نقاط قوت من</div>';
   html += '<div class="pattern-card">';
   Object.keys(CATEGORY_META).forEach(cat=>{
     const meta = CATEGORY_META[cat];
