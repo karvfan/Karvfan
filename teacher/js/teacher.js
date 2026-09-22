@@ -51,6 +51,7 @@ function switchTeacherTab(id){
   if(id==='tSchools') loadSchoolsPanel();
   if(id==='tAnn') loadAnnouncementsAdmin();
   if(id==='tStats') loadStats();
+  if(id==='tMyInfo') loadMyInfoPanel();
   if(id==='tDistrict') loadDistrictDashboard();
   if(id==='tRoleRequests') loadRoleRequestsPanel();
   if(id==='tStaff') loadStaffAdmin();
@@ -571,4 +572,31 @@ async function loadStats(){
     rows += '<div class="student-row"><span>'+sc+' · پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[g])+'</span><span>'+grp.length+' نفر — مجموع '+pts+' امتیاز</span></div>';
   });});
   box.innerHTML = rows || '<div class="empty-state"><div class="d">داده‌ای نیست</div></div>';
+}
+
+/* ------------------------------------------------------------ حساب من */
+async function loadMyInfoPanel(){
+  const el = $('tMyInfo');
+  el.innerHTML = emptyState('⏳','در حال بارگذاری...','');
+  const { data:{ session } } = await sb.auth.getSession();
+  const roleLabel = {teacher:'معلم', school_admin:'مدیر مدرسه', county_admin:'ادمین شهرستان', province_admin:'ادمین استان', super_admin:'سوپرادمین'};
+  const role = myStaff ? myStaff.role : 'teacher';
+
+  let scopeLine = 'کل کشور';
+  if(myStaff && myStaff.school){
+    scopeLine = '🏫 ' + myStaff.school;
+  } else if(myStaff && (myStaff.county_id || myStaff.province_id)){
+    const { counties, provinces } = await loadRegionsCache();
+    const county = counties.find(c=>c.id===myStaff.county_id);
+    const province = provinces.find(p=>p.id === (myStaff.province_id || (county && county.province_id)));
+    scopeLine = [county? '🏘️ '+county.name : null, province? '🗺️ '+province.name : null].filter(Boolean).join(' — ') || 'کل کشور';
+  }
+
+  let html = '<div class="sec-title">👤 اطلاعات حساب من</div><div class="pattern-card">'+
+    '<div class="student-row"><span>نام و نام‌خانوادگی</span><span>'+esc((myStaff&&myStaff.full_name)||'—')+'</span></div>'+
+    '<div class="student-row"><span>ایمیل ورود</span><span dir="ltr">'+esc(session?session.user.email:'—')+'</span></div>'+
+    '<div class="student-row"><span>نقش</span><span>'+(roleLabel[role]||role)+'</span></div>'+
+    '<div class="student-row"><span>محدوده‌ی دسترسی</span><span>'+esc(scopeLine)+'</span></div>'+
+    '</div>';
+  el.innerHTML = html;
 }
