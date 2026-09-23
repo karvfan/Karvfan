@@ -35,8 +35,60 @@
         <div class="d">بررسی کارها و مدیریت آموزش</div>
       </a>
     </div>
+
+    <div class="downloads-card" id="downloadsCard">
+      <div class="downloads-title">📲 دانلود / آپدیت اپ‌ها</div>
+      <div class="dl-row">
+        <div class="dl-info">
+          <span class="dl-name">🎒 اپ دانش‌آموز (اندروید)</span>
+          <span class="dl-badge hidden" id="dlBadge_student">🆕 نسخه‌ی جدید موجوده</span>
+        </div>
+        <a class="btn btn-thread btn-sm" id="dlBtn_student" href="https://github.com/karvfan/Karvfan/releases/download/latest-builds/karvfan-student.apk">دانلود APK</a>
+      </div>
+      <div class="dl-row">
+        <div class="dl-info">
+          <span class="dl-name">👩‍🏫 اپ معلم (اندروید)</span>
+          <span class="dl-badge hidden" id="dlBadge_teacher">🆕 نسخه‌ی جدید موجوده</span>
+        </div>
+        <a class="btn btn-thread btn-sm" id="dlBtn_teacher" href="https://github.com/karvfan/Karvfan/releases/download/latest-builds/karvfan-teacher.apk">دانلود APK</a>
+      </div>
+      <div class="dl-row">
+        <div class="dl-info">
+          <span class="dl-name">🖥️ پنل مدیریت (ویندوز)</span>
+          <span class="dl-badge hidden" id="dlBadge_desktop">🆕 نسخه‌ی جدید موجوده</span>
+        </div>
+        <a class="btn btn-thread btn-sm" id="dlBtn_desktop" href="https://github.com/karvfan/Karvfan/releases/download/latest-builds/Setup.1.0.0.exe">دانلود نصب‌کننده</a>
+      </div>
+    </div>
   </div>
 </div>
 <script src="shared/js/a11y.js"></script>
+<script>
+/**
+ * بخش دانلود/آپدیت اپ‌ها روی صفحه‌ی اصلی: همیشه لینک آخرین نسخه‌ی هر اپ رو نشون می‌ده.
+ * علاوه بر این، اگه نسخه‌ای که قبلاً از همین مرورگر دانلود شده با آخرین نسخه فرق داشته باشه،
+ * یه نشان «🆕 نسخه‌ی جدید موجوده» کنارش نشون داده می‌شه.
+ */
+(async function(){
+  const versionFiles = { student: 'student-version.txt', teacher: 'teacher-version.txt', desktop: 'desktop-version.txt' };
+  for (const key of Object.keys(versionFiles)) {
+    try {
+      const res = await fetch('https://github.com/karvfan/Karvfan/releases/download/latest-builds/' + versionFiles[key], { cache: 'no-store' });
+      if (!res.ok) continue;
+      const latest = (await res.text()).trim();
+      if (!latest) continue;
+      const seenKey = 'kf_seen_version_' + key;
+      const seen = localStorage.getItem(seenKey);
+      if (seen && seen !== latest) {
+        const badge = document.getElementById('dlBadge_' + key);
+        if (badge) badge.classList.remove('hidden');
+      }
+      const btn = document.getElementById('dlBtn_' + key);
+      if (btn) btn.addEventListener('click', () => { try { localStorage.setItem(seenKey, latest); } catch (e) {} });
+      if (!seen) { try { localStorage.setItem(seenKey, latest); } catch (e) {} }
+    } catch (e) { /* چک آپدیت نباید مانع کارکرد عادی صفحه بشه — بی‌سروصدا رد می‌شیم */ }
+  }
+})();
+</script>
 </body>
 </html>
