@@ -79,6 +79,15 @@ a{color:var(--sky)}
 .role-card .t{font-weight:800;font-size:15px;margin-bottom:4px}
 .role-card .d{font-size:11.5px;color:var(--ink-soft);line-height:1.7}
 
+/* ---------- بخش دانلود/آپدیت اپ‌ها (صفحه‌ی اصلی) ---------- */
+.downloads-card{margin-top:22px;padding-top:18px;border-top:1.5px dashed var(--line);text-align:right}
+.downloads-title{font-weight:800;font-size:13px;margin-bottom:10px;color:var(--ink-soft);text-align:center}
+.dl-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.dl-row:last-child{border-bottom:none}
+.dl-info{display:flex;flex-direction:column;gap:4px;min-width:0}
+.dl-name{font-size:12.5px;font-weight:700}
+.dl-badge{font-size:10px;font-weight:800;color:var(--brick);background:var(--brick-bg);border-radius:20px;padding:2px 9px;display:inline-block;width:fit-content}
+
 /* ---------- بادج مدرسه/پایه ---------- */
 .pill{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:3px 11px;font-size:11px;font-weight:700}
 .pill-school{background:var(--sky-bg);color:var(--sky)}
