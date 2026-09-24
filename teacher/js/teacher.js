@@ -60,10 +60,11 @@ function switchTeacherTab(id){
 /* ------------------------------------------------------------ بررسی کارها */
 async function loadReview(){
   const el = $('tReview');
+  const prevStatus = ($('rvStatus') && $('rvStatus').value) || 'pending';
   el.innerHTML = '<div class="filter-row">'+
     '<select id="rvStatus" onchange="loadReview()">'+
-      '<option value="pending">در انتظار بررسی</option><option value="approved">تأییدشده</option>'+
-      '<option value="needs_fix">نیاز به اصلاح</option><option value="rejected">ردشده</option><option value="all">همه</option>'+
+      '<option value="pending"'+(prevStatus==='pending'?' selected':'')+'>در انتظار بررسی</option><option value="approved"'+(prevStatus==='approved'?' selected':'')+'>تأییدشده</option>'+
+      '<option value="needs_fix"'+(prevStatus==='needs_fix'?' selected':'')+'>نیاز به اصلاح</option><option value="rejected"'+(prevStatus==='rejected'?' selected':'')+'>ردشده</option><option value="all"'+(prevStatus==='all'?' selected':'')+'>همه</option>'+
     '</select></div><div id="rvList"></div>';
   const status = $('rvStatus').value;
   let q = sb.from('submissions').select('*, students(full_name, school, grade), lessons(unit_title), assignments(title)').order('created_at',{ascending:false});
@@ -357,8 +358,8 @@ async function deleteAssignment(id){
 async function loadStudentsAdmin(){
   const el = $('tStudents');
   el.innerHTML = '<div class="filter-row">'+
-    '<select id="stuSchool" onchange="loadStudentsAdmin()"><option value="">همه مدارس</option>'+SCHOOLS.map(s=>'<option value="'+s+'">'+s+'</option>').join('')+'</select>'+
-    '<select id="stuGrade" onchange="loadStudentsAdmin()"><option value="">همه پایه‌ها</option>'+GRADES.map(g=>'<option value="'+g+'">پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[g])+'</option>').join('')+'</select>'+
+    '<select id="stuSchool" onchange="loadStudentsAdmin()"><option value="">همه مدارس</option>'+SCHOOLS.map(s=>'<option '+(($('stuSchool')&&$('stuSchool').value===s)?'selected':'')+' value="'+s+'">'+s+'</option>').join('')+'</select>'+
+    '<select id="stuGrade" onchange="loadStudentsAdmin()"><option value="">همه پایه‌ها</option>'+GRADES.map(g=>'<option '+(($('stuGrade')&&$('stuGrade').value===String(g))?'selected':'')+' value="'+g+'">پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[g])+'</option>').join('')+'</select>'+
     '</div><div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">'+
       '<button class="btn btn-sky btn-sm" onclick="exportStudentsCSV()">📊 خروجی لیست (CSV)</button>'+
       '<button class="btn btn-thread btn-sm" onclick="exportGradebookCSV()">🗂️ خروجی کارنامه‌ی کامل (CSV)</button>'+

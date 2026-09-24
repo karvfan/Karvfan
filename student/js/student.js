@@ -359,7 +359,7 @@ async function loadGallery(){
   const el = $('pGallery');
   el.innerHTML = '<div class="filter-row">'+
     '<select id="galSchool" onchange="loadGallery()"><option value="">همه مدارس</option>'+SCHOOLS.map(s=>'<option '+(($('galSchool')&&$('galSchool').value===s)?'selected':'')+' value="'+s+'">'+s+'</option>').join('')+'</select>'+
-    '<select id="galGrade" onchange="loadGallery()"><option value="">همه پایه‌ها</option>'+GRADES.map(g=>'<option value="'+g+'">پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[g])+'</option>').join('')+'</select>'+
+    '<select id="galGrade" onchange="loadGallery()"><option value="">همه پایه‌ها</option>'+GRADES.map(g=>'<option '+(($('galGrade')&&$('galGrade').value===String(g))?'selected':'')+' value="'+g+'">پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[g])+'</option>').join('')+'</select>'+
     '</div><div id="galGrid" class="gallery-grid"></div>';
   const school = $('galSchool').value || null, grade = $('galGrade').value ? parseInt($('galGrade').value) : null;
   const { data, error } = await sb.rpc('get_gallery', { p_school: school, p_grade: grade });
@@ -417,8 +417,8 @@ async function submitCritique(submissionId){
 async function loadLeaderboard(){
   const el = $('pBoard');
   el.innerHTML = '<div class="filter-row">'+
-    '<select id="lbSchool" onchange="loadLeaderboard()"><option value="">همه مدارس</option>'+SCHOOLS.map(s=>'<option value="'+s+'">'+s+'</option>').join('')+'</select>'+
-    '<select id="lbGrade" onchange="loadLeaderboard()"><option value="">همه پایه‌ها</option>'+GRADES.map(g=>'<option value="'+g+'">پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[g])+'</option>').join('')+'</select>'+
+    '<select id="lbSchool" onchange="loadLeaderboard()"><option value="">همه مدارس</option>'+SCHOOLS.map(s=>'<option '+(($('lbSchool')&&$('lbSchool').value===s)?'selected':'')+' value="'+s+'">'+s+'</option>').join('')+'</select>'+
+    '<select id="lbGrade" onchange="loadLeaderboard()"><option value="">همه پایه‌ها</option>'+GRADES.map(g=>'<option '+(($('lbGrade')&&$('lbGrade').value===String(g))?'selected':'')+' value="'+g+'">پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[g])+'</option>').join('')+'</select>'+
     '</div><div class="pattern-card" id="lbList"></div>';
   const school = $('lbSchool').value||null, grade=$('lbGrade').value?parseInt($('lbGrade').value):null;
   const { data, error } = await sb.rpc('get_leaderboard', { p_school:school, p_grade:grade });
