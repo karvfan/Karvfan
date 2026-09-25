@@ -3,16 +3,19 @@
  * روی خودِ وب‌سایت (Cloudflare) هیچ‌کاری نمی‌کنه، چون BUILD_VERSION همیشه تازه‌ست
  * (کاربر هر بار آخرین نسخه‌ی سایت رو می‌گیره) — این چک فقط برای بسته‌هایی
  * معنا داره که دانلود و نصب می‌شن و ممکنه نسخه‌شون قدیمی بمونه.
+ *
+ * چک نسخه و دانلود آپدیت، هر دو از طریق خودِ دامنه‌ی karvfan.ir انجام می‌شه
+ * (نه مستقیم گیت‌هاب)، چون درخواست‌ها رو Worker سمت کلودفلر واسطه‌گری می‌کنه.
  */
 async function checkForAppUpdate(label, humanName){
   if (typeof BUILD_VERSION === 'undefined' || !BUILD_VERSION) return;
   try {
-    const res = await fetch('https://github.com/karvfan/Karvfan/releases/download/latest-builds/' + label + '-version.txt', { cache: 'no-store' });
+    const res = await fetch('https://karvfan.ir/version/' + label + '.txt', { cache: 'no-store' });
     if(!res.ok) return;
     const latest = (await res.text()).trim();
     if(latest && latest !== BUILD_VERSION){
-      const fileMap = { student: 'karvfan-student.apk', teacher: 'karvfan-teacher.apk', desktop: 'Setup.1.0.0.exe' };
-      showAppUpdateBanner(humanName, 'https://github.com/karvfan/Karvfan/releases/download/latest-builds/' + fileMap[label]);
+      const fileMap = { student: 'student.apk', teacher: 'teacher.apk', desktop: 'desktop.exe' };
+      showAppUpdateBanner(humanName, 'https://karvfan.ir/download/' + fileMap[label]);
     }
   } catch(e){ /* چک آپدیت نباید مانع کارکرد عادی اپ بشه — بی‌سروصدا رد می‌شیم */ }
 }
