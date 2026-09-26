@@ -23,15 +23,10 @@ function showToast(msg){
 }
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-// پین ۶کاراکتری دانش‌آموز: حداقل یک حرف بزرگ و یک حرف کوچیک انگلیسی، بقیه از حروف/ارقام قابل‌تفکیک
+// پین ۴رقمی عددی دانش‌آموز
+// (باید دقیقاً با الگوی اعتبارسنجی سمت کلاینت در student/js/auth.js هماهنگ باشه)
 function generateStudentPin(){
-  const lower = 'abcdefghijkmnpqrstuvwxyz';
-  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-  const digits = '23456789';
-  const all = lower + upper + digits;
-  let pin = lower[Math.floor(Math.random()*lower.length)] + upper[Math.floor(Math.random()*upper.length)];
-  for(let i=0;i<4;i++) pin += all[Math.floor(Math.random()*all.length)];
-  return pin.split('').sort(()=>Math.random()-0.5).join('');
+  return String(Math.floor(Math.random()*10000)).padStart(4,'0');
 }
 
 async function boot(){
