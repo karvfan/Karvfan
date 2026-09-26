@@ -52,8 +52,8 @@
         <div class="field-err-inline" id="saLoginPhoneErr"></div>
       </div>
       <div class="field">
-        <label>پین ۶ کاراکتری</label>
-        <input id="saLoginPin" placeholder="Ab12cd" maxlength="6" type="password" oninput="setFieldError('saLoginPin','')">
+        <label>پین ۴ رقمی</label>
+        <input id="saLoginPin" placeholder="1234" maxlength="4" type="password" inputmode="numeric" pattern="[0-9]*" oninput="setFieldError('saLoginPin','')">
         <div class="field-err-inline" id="saLoginPinErr"></div>
       </div>
       <label id="saBioRemember" class="bio-remember-row hidden">
@@ -102,13 +102,13 @@
         <div class="field-err-inline" id="saPhoneErr"></div>
       </div>
       <div class="field">
-        <label>یک پین ۶ کاراکتری بساز (حداقل یک حرف بزرگ و یک حرف کوچیک انگلیسی — برای ورودهای بعدی لازمه، فراموش نکن)</label>
-        <input id="saPin" placeholder="Ab12cd" maxlength="6" type="password" oninput="setFieldError('saPin','')">
+        <label>یک پین ۴ رقمی بساز (برای ورودهای بعدی لازمه، فراموش نکن)</label>
+        <input id="saPin" placeholder="1234" maxlength="4" type="password" inputmode="numeric" pattern="[0-9]*" oninput="setFieldError('saPin','')">
         <div class="field-err-inline" id="saPinErr"></div>
       </div>
       <div class="field">
         <label>تکرار پین</label>
-        <input id="saPinConfirm" placeholder="Ab12cd" maxlength="6" type="password" oninput="setFieldError('saPinConfirm','')">
+        <input id="saPinConfirm" placeholder="1234" maxlength="4" type="password" inputmode="numeric" pattern="[0-9]*" oninput="setFieldError('saPinConfirm','')">
         <div class="field-err-inline" id="saPinConfirmErr"></div>
       </div>
       <div class="field-err" id="saErr"></div>
