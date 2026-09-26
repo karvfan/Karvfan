@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>نظرسنجی تجربه‌ی استفاده از کارفن — معلمان</title>
+<style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; }
+body {
+  background:#eee;
+  font-family: Tahoma, "Noto Sans Arabic", Arial, sans-serif;
+  color:#263754;
+  direction:rtl;
+}
+.page {
+  width:210mm;
+  height:297mm;
+  margin:0 auto 8mm;
+  background:#fff;
+  padding:13mm 12.5mm 11mm;
+  overflow:hidden;
+  position:relative;
+}
+@media print {
+  body { background:#fff; }
+  .page { margin:0; page-break-after:always; }
+  .page:last-child { page-break-after:auto; }
+}
+h1 {
+  margin:0;
+  text-align:center;
+  font-size:22pt;
+  line-height:1.25;
+  font-weight:800;
+  color:#263754;
+}
+.subtitle {
+  text-align:center;
+  margin-top:2mm;
+  font-size:12.5pt;
+  color:#5e718f;
+}
+.intro {
+  margin-top:6mm;
+  border:1px solid #222;
+  background:#f5efdf;
+  padding:4mm 4mm 3.5mm;
+  font-size:11.2pt;
+  line-height:1.75;
+  text-align:right;
+}
+.section {
+  margin-top:5.2mm;
+}
+.section-title {
+  color:#b3365b;
+  font-size:16pt;
+  font-weight:800;
+  border-bottom:2px solid #c33759;
+  padding-bottom:1.8mm;
+  margin-bottom:2.2mm;
+}
+.info {
+  font-size:11.4pt;
+  line-height:1.95;
+}
+.info .line { margin:0.2mm 0; }
+.bold { font-weight:800; }
+.fill {
+  display:inline-block;
+  min-width:45mm;
+  border-bottom:1px dotted #263754;
+  height:1.1em;
+  vertical-align:bottom;
+}
+.fill.long { min-width:90mm; }
+.inline-checks {
+  display:flex;
+  flex-wrap:wrap;
+  gap:2mm 9mm;
+  align-items:center;
+}
+label { white-space:nowrap; }
+input[type="checkbox"] {
+  width:4mm; height:4mm; vertical-align:-0.8mm;
+  accent-color:#263754;
+}
+input[type="text"], input[type="number"], textarea {
+  font-family:inherit;
+}
+.scale-note {
+  font-size:10.5pt;
+  line-height:1.45;
+  margin-bottom:3mm;
+}
+.scale-note em { color:#5e718f; }
+.survey-table {
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+  direction:ltr;
+  font-size:9.5pt;
+}
+.survey-table th, .survey-table td {
+  border:1px solid #222;
+  padding:1.8mm 1.3mm;
+  vertical-align:middle;
+}
+.survey-table th {
+  background:#263754;
+  color:#fff;
+  font-weight:800;
+  text-align:center;
+  height:8.5mm;
+}
+.survey-table th.statement { width:64%; }
+.survey-table th.score { width:7.2%; }
+.survey-table td.statement {
+  direction:rtl;
+  text-align:right;
+  line-height:1.5;
+}
+.survey-table td.box {
+  text-align:center;
+  direction:ltr;
+}
+.survey-table tbody tr:nth-child(odd) { background:#fffdf7; }
+.survey-table tbody tr:nth-child(even) { background:#f5efdf; }
+.survey-table input[type="checkbox"] {
+  width:3.4mm; height:3.4mm;
+}
+.open-question {
+  margin:3.2mm 0 0;
+  font-size:11.5pt;
+  font-weight:800;
+  line-height:1.6;
+}
+.answer-line {
+  border-bottom:1px solid #e1d2ad;
+  height:9mm;
+  margin-top:1mm;
+}
+.answer-lines {
+  margin-top:1mm;
+}
+.answer-lines .answer-line { height:8.5mm; }
+.footer-note {
+  font-size:9pt;
+  color:#777;
+  text-align:center;
+  margin-top:4mm;
+}
+.small { font-size:10pt; }
+.teacher-intro { padding-top:3.5mm; padding-bottom:3.5mm; }
+.teacher-table { font-size:9.1pt; }
+.teacher-table td.statement { line-height:1.4; }
+
+.line-input {
+  border: none;
+  border-bottom: 1px dotted #263754;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 11.2pt;
+  color: #263754;
+  text-align: center;
+  height: 7mm;
+  padding: 0 1mm;
+}
+.line-input:focus, .answer-area:focus {
+  border-color: #b3365b;
+  background: #fffaf0;
+}
+.line-input.short { width: 24mm; }
+.line-input.year { width: 16mm; }
+.line-input.other-input { width: 28mm; text-align:right; }
+.line-input.medium-input { width: 45mm; }
+.line-input.wide-input { width: 70mm; }
+.line-input.long-input { width: 90mm; text-align:right; }
+.answer-area {
+  display:block;
+  width:100%;
+  min-height:14mm;
+  height:14mm;
+  resize:vertical;
+  border: none;
+  border-bottom: 1px solid #e1d2ad;
+  outline:none;
+  background:transparent;
+  font-family:inherit;
+  font-size:11pt;
+  color:#263754;
+  line-height:1.7;
+}
+.answer-lines .answer-area { margin-top:1mm; }
+textarea.answer-area + .answer-area { margin-top:1mm; }
+</style></head>
+<body>
+<div class="page">
+  <h1>نظرسنجی تجربه‌ی استفاده از «کارفن»</h1>
+  <div class="subtitle">ویژه‌ی معلمان، مدیران مدرسه و ادمین‌ها</div>
+
+  <div class="intro teacher-intro">
+    با سلام و احترام؛ این پرسشنامه بخشی از یک پژوهش علمی درباره‌ی اپلیکیشن «کارفن» است و حدود ۱۰ دقیقه زمان می‌برد.<br>
+    پاسخ‌های شما کاملاً محرمانه خواهند ماند و صرفاً به‌صورت جمعی و بدون افشای هویت فردی در نتایج پژوهش گزارش می‌شوند.<br>
+    از صرف وقت و بازخورد صادقانه‌ی شما بسیار سپاسگزاریم.
+  </div>
+
+  <div class="section">
+    <div class="section-title">بخش اول — اطلاعات کلی</div>
+    <div class="info">
+      <div class="line"><span class="bold">نسخه‌ی این مرحله از پژوهش:</span> پایلوت (مطالعه‌ی مقدماتی)</div>
+      <div class="line"><span class="bold">تاریخ تکمیل:</span> <input class="line-input short" type="text" inputmode="numeric" maxlength="2" aria-label="روز"> / <input class="line-input short" type="text" inputmode="numeric" maxlength="2" aria-label="ماه"> / ۱۴۰<input class="line-input year" type="text" inputmode="numeric" maxlength="1" aria-label="یکان سال"> (روز / ماه / سال شمسی)</div>
+      <div class="line"><span class="bold">نقش شما:</span>
+        <span class="inline-checks" style="display:inline-flex;margin-right:4mm">
+          <label><input type="checkbox"> معلم</label>
+          <label><input type="checkbox"> مدیر مدرسه</label>
+          <label><input type="checkbox"> ادمین شهرستان/استان</label>
+          <label><input type="checkbox"> سایر: <input class="line-input other-input" type="text" aria-label="سایر"></label>
+        </span>
+      </div>
+      <div class="line"><span class="bold">سابقه‌ی تدریس یا فعالیت آموزشی (سال):</span> <input class="line-input medium-input" type="text" inputmode="numeric" aria-label="سابقه تدریس"></div>
+      <div class="line"><span class="bold">مدت زمانی که از اپ استفاده کرده‌اید:</span>
+        <span class="inline-checks" style="display:inline-flex;margin-right:3mm">
+          <label><input type="checkbox"> کمتر از یک هفته</label>
+          <label><input type="checkbox"> یک تا دو هفته</label>
+          <label><input type="checkbox"> بیشتر از دو هفته</label>
+        </span>
+      </div>
+      <div class="line"><span class="bold">تقریباً با چند دانش‌آموز از طریق این اپ کار کرده‌اید؟</span> <input class="line-input wide-input" type="text" inputmode="numeric" aria-label="تعداد دانش‌آموزان"></div>
+      <div class="line"><span class="bold">نام مدرسه (اختیاری، فقط برای دسته‌بندی پژوهش):</span> <input class="line-input long-input" type="text" aria-label="نام مدرسه"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">بخش دوم — سودمندی و سهولت استفاده</div>
+    <div class="scale-note">میزان موافقت خود را با زدن علامت مشخص کنید: &nbsp; مقیاس: ۱ (کاملاً مخالفم) — ۲ (مخالفم) — ۳ (نظری ندارم) — ۴ (موافقم) — ۵ (کاملاً موافقم)</div>
+    
+<table class="survey-table teacher-table">
+  <thead><tr>
+    <th class="statement">گویه</th>
+    <th class="score">۱</th><th class="score">۲</th><th class="score">۳</th><th class="score">۴</th><th class="score">۵</th>
+  </tr></thead>
+  <tbody><tr><td class="statement">استفاده از پنل معلم کارفن برایم آسان بود.</td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td></tr><tr><td class="statement">بررسی و نمره‌دهی به کارهای دانش‌آموزان با این اپ سریع‌تر از روش قبلی‌ام (مثلاً واتساپ یا شاد) بود.</td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td></tr><tr><td class="statement">مدیریت درس‌ها و محتوای آموزشی در اپ ساده و قابل‌فهم بود.</td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td></tr><tr><td class="statement">ثبت‌نام و مدیریت دانش‌آموزان (تکی یا گروهی) برایم راحت بود.</td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td></tr><tr><td class="statement">تعریف و پیگیری تکالیف هفتگی از طریق اپ برایم مفید بود.</td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td></tr><tr><td class="statement">آمار و گزارش‌های اپ به من کمک کرد عملکرد دانش‌آموزانم را بهتر بفهمم.</td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td></tr><tr><td class="statement">استفاده از این اپ در وقتم صرفه‌جویی کرد.</td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td></tr><tr><td class="statement">حس کردم دانش‌آموزانم با استفاده از این اپ انگیزه‌ی بیشتری برای انجام تکالیف داشتند.</td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td></tr><tr><td class="statement">به نظرم کیفیت کارهای ارسالی دانش‌آموزان (نسبت به قبل) بهتر شد.</td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td></tr><tr><td class="statement">در طول استفاده از اپ با مشکل فنی (خطا، کندی، عدم ذخیره‌ی درست اطلاعات) روبه‌رو شدم.</td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td></tr><tr><td class="statement">اطمینان دارم اطلاعات دانش‌آموزانم در این اپ به‌درستی محافظت می‌شود.</td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td></tr><tr><td class="statement">دوست دارم از این اپ در ترم یا سال تحصیلی بعد هم استفاده کنم.</td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td></tr><tr><td class="statement">این اپ را به همکاران دیگرم پیشنهاد می‌کنم.</td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td></tr><tr><td class="statement">به‌طور کلی از این اپ رضایت دارم.</td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td><td class="box"><input type="checkbox" aria-label="امتیاز"></td></tr></tbody>
+</table>
+  </div>
+</div>
+
+<div class="page">
+  <div class="section" style="margin-top:0">
+    <div class="section-title">بخش دوم — سودمندی و سهولت استفاده</div>
+    <div class="scale-note">میزان موافقت خود را با زدن علامت مشخص کنید: &nbsp; مقیاس: ۱ (کاملاً مخالفم) — ۲ (مخالفم) — ۳ (نظری ندارم) — ۴ (موافقم) — ۵ (کاملاً موافقم)</div>
+  </div>
+  <div class="open-question">بخش سوم — سؤالات باز</div>
+  <div class="open-question">۱. به نظر شما بزرگترین نقطه‌قوت این اپ چیست؟</div>
+  <div class="answer-lines"><textarea class="answer-area" aria-label="پاسخ"></textarea><textarea class="answer-area" aria-label="پاسخ"></textarea></div>
+  <div class="open-question">۲. بزرگترین مشکل یا محدودیتی که با آن مواجه شدید چه بود؟</div>
+  <div class="answer-lines"><textarea class="answer-area" aria-label="پاسخ"></textarea><textarea class="answer-area" aria-label="پاسخ"></textarea></div>
+  <div class="open-question">۳. چه امکاناتی را دوست دارید به اپ اضافه شود؟</div>
+  <div class="answer-lines"><textarea class="answer-area" aria-label="پاسخ"></textarea><textarea class="answer-area" aria-label="پاسخ"></textarea></div>
+  <div class="open-question">۴. هر نظر یا پیشنهاد دیگری دارید، لطفاً اینجا بنویسید.</div>
+  <div class="answer-lines"><textarea class="answer-area" aria-label="پاسخ"></textarea><textarea class="answer-area" aria-label="پاسخ"></textarea><textarea class="answer-area" aria-label="پاسخ"></textarea></div>
+  <div class="footer-note">برای اهداف پژوهشی استفاده می‌شود.</div>
+  <div class="footer-note">از همکاری ارزشمند شما سپاسگزاریم — این پرسشنامه صرفاً</div>
+</div>
+<div style="text-align:center;margin:7mm 0"><button id="submitSurvey" type="button" onclick="submitSurvey()" style="background:#b3365b;color:white;border:0;border-radius:8px;padding:4mm 14mm;font-family:inherit;font-size:13pt;font-weight:800;cursor:pointer">ثبت پاسخ</button></div>
+<script>
+const RESPONDENT_TYPE='teacher';
+function collectData(){
+ const checks=[...document.querySelectorAll('input[type="checkbox"]')];
+ const checked=checks.map(x=>x.checked);
+ const inputs=[...document.querySelectorAll('input[type="text"], input[type="number"]')].map(x=>x.value.trim());
+ const texts=[...document.querySelectorAll('textarea')].map(x=>x.value.trim());
+ // Teacher: role(4), duration(3), then 14 Likert rows x 5
+ const scores=[]; for(let i=7;i<checks.length;i+=5){let v=0; for(let j=0;j<5;j++){if(checked[i+j]){v=j+1;break;}} scores.push(v||null);}
+ return {info:inputs, choices:checked.slice(0,7), scores, open:texts};
+}
+async function submitSurvey(){
+ const btn=document.getElementById('submitSurvey'); btn.disabled=true; btn.textContent='در حال ثبت...';
+ try{const r=await fetch('/api/survey/submit',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({respondent_type:RESPONDENT_TYPE,data:collectData()})}); const j=await r.json(); if(!r.ok) throw new Error(j.error||'خطا'); alert('پاسخ شما با موفقیت ثبت شد. سپاسگزاریم 🌷'); btn.textContent='ثبت شد';}catch(e){alert('ثبت پاسخ انجام نشد: '+e.message);btn.disabled=false;btn.textContent='ثبت پاسخ';}}
+</script>
+</body></html>
