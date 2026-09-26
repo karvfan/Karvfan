@@ -12,5 +12,15 @@
       "pattern": "karvfan.ir",
       "custom_domain": true
     }
-  ]
+  ],
+  "d1_databases": [
+    {
+      "binding": "SURVEY_DB",
+      "database_name": "karfan-survey-db",
+      "database_id": "b82a5bf5-590e-47cb-9ef3-6276274e960d"
+    }
+  ],
+  "vars": {
+    "SURVEY_ADMIN_TOKEN": "CLD6haM9cxpJttV9uBrquz7hsK9gEbaB"
+  }
 }
