@@ -273,8 +273,8 @@ async function loadProfilePanel(){
 
   html += '<div class="sec-title">🔑 تغییر پین ورود</div><div class="pattern-card">'+
     '<div class="field"><label>پین فعلی</label><input id="pcOld" type="password" placeholder="پین فعلی‌ت"></div>'+
-    '<div class="field"><label>پین جدید (۶ کاراکتر، حداقل یک حرف بزرگ و یک حرف کوچیک)</label><input id="pcNew" type="password" maxlength="6" placeholder="Ab12cd"></div>'+
-    '<div class="field"><label>تکرار پین جدید</label><input id="pcNew2" type="password" maxlength="6" placeholder="Ab12cd"></div>'+
+    '<div class="field"><label>پین جدید (۴ رقم عددی)</label><input id="pcNew" type="password" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="1234"></div>'+
+    '<div class="field"><label>تکرار پین جدید</label><input id="pcNew2" type="password" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="1234"></div>'+
     '<div class="field-err" id="pcErr"></div>'+
     '<button class="btn btn-thread btn-sm" onclick="changeOwnPin()">ذخیره‌ی پین جدید</button>'+
     '</div>';
@@ -285,7 +285,7 @@ async function changeOwnPin(){
   const oldPin = $('pcOld').value.trim(), newPin = $('pcNew').value.trim(), newPin2 = $('pcNew2').value.trim();
   const errEl = $('pcErr'); errEl.textContent='';
   if(!oldPin){ errEl.textContent='پین فعلی رو وارد کن'; return; }
-  if(!/^(?=.*[a-z])(?=.*[A-Z])[A-Za-z0-9]{6}$/.test(newPin)){ errEl.textContent='پین جدید باید ۶ کاراکتر باشه و شامل حداقل یک حرف بزرگ و یک حرف کوچیک انگلیسی باشه'; return; }
+  if(!/^\d{4}$/.test(newPin)){ errEl.textContent='پین جدید باید ۴ رقم باشه'; return; }
   if(newPin !== newPin2){ errEl.textContent='دو پین جدید یکی نیستن'; return; }
   const { error } = await sb.rpc('student_change_own_pin', { p_student_id: student.id, p_old_pin: oldPin, p_new_pin: newPin });
   if(error){ errEl.textContent = 'خطا: ' + error.message; return; }
