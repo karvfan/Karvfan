@@ -65,16 +65,46 @@ async function loadReview(){
     '<select id="rvStatus" onchange="loadReview()">'+
       '<option value="pending"'+(prevStatus==='pending'?' selected':'')+'>در انتظار بررسی</option><option value="approved"'+(prevStatus==='approved'?' selected':'')+'>تأییدشده</option>'+
       '<option value="needs_fix"'+(prevStatus==='needs_fix'?' selected':'')+'>نیاز به اصلاح</option><option value="rejected"'+(prevStatus==='rejected'?' selected':'')+'>ردشده</option><option value="all"'+(prevStatus==='all'?' selected':'')+'>همه</option>'+
-    '</select></div><div id="rvList"></div>';
+    '</select></div><div id="rvList">'+emptyState('⏳','در حال بارگذاری...','')+'</div>';
   const status = $('rvStatus').value;
-  let q = sb.from('submissions').select('*, students(full_name, school, grade), lessons(unit_title), assignments(title)').order('created_at',{ascending:false});
+
+  // توجه: عمداً از Embed مستقیم (select با join ضمنی روی FK) استفاده نمی‌کنیم.
+  // اگه رابطه‌ی foreign key بین submissions و یکی از جدول‌های students/lessons/assignments
+  // در کش اسکیمای Supabase به‌درستی شناخته نشه، یا RLS جدول مرتبط برای نقش «معلم»
+  // محدودتر از submissions باشه، کل کوئری embed شده fail می‌کنه و لیست کاملاً خالی
+  // می‌مونه (درحالی‌که badge تعداد pending که بدون join محاسبه می‌شه درست کار می‌کنه).
+  // برای همین این اطلاعات رو جدا می‌گیریم و خودمون merge می‌کنیم.
+  let q = sb.from('submissions').select('*').order('created_at',{ascending:false});
   if(status!=='all') q = q.eq('status', status);
   const { data, error } = await q;
-  teacherAllSubs = data||[];
+
   const list = $('rvList');
-  if(error || !data || !data.length){ list.innerHTML = emptyState('🗂️','چیزی برای نمایش نیست',''); return; }
-  list.innerHTML = data.map(s=>{
-    const st = s.students||{}; const ls = s.lessons||{}; const asg = s.assignments||{};
+  if(error){
+    console.error('loadReview: خطا در دریافت کارها', error);
+    list.innerHTML = emptyState('⚠️','خطا در بارگذاری کارها', esc(error.message||'') + ' — جزئیات بیشتر رو در کنسول مرورگر (F12) ببینید');
+    teacherAllSubs = [];
+    return;
+  }
+  teacherAllSubs = data || [];
+  if(!teacherAllSubs.length){ list.innerHTML = emptyState('🗂️','چیزی برای نمایش نیست',''); return; }
+
+  const studentIds = [...new Set(teacherAllSubs.map(s=>s.student_id).filter(Boolean))];
+  const lessonIds = [...new Set(teacherAllSubs.map(s=>s.lesson_id).filter(Boolean))];
+  const assignmentIds = [...new Set(teacherAllSubs.map(s=>s.assignment_id).filter(Boolean))];
+  const [studentsRes, lessonsRes, assignmentsRes] = await Promise.all([
+    studentIds.length ? sb.from('students').select('id, full_name, school, grade').in('id', studentIds) : Promise.resolve({data:[]}),
+    lessonIds.length ? sb.from('lessons').select('id, unit_title').in('id', lessonIds) : Promise.resolve({data:[]}),
+    assignmentIds.length ? sb.from('assignments').select('id, title').in('id', assignmentIds) : Promise.resolve({data:[]})
+  ]);
+  if(studentsRes.error) console.error('loadReview: خطا در دریافت دانش‌آموزان مرتبط', studentsRes.error);
+  if(lessonsRes.error) console.error('loadReview: خطا در دریافت درس‌های مرتبط', lessonsRes.error);
+  if(assignmentsRes.error) console.error('loadReview: خطا در دریافت تکالیف مرتبط', assignmentsRes.error);
+  const studentMap = Object.fromEntries((studentsRes.data||[]).map(x=>[x.id,x]));
+  const lessonMap = Object.fromEntries((lessonsRes.data||[]).map(x=>[x.id,x]));
+  const assignmentMap = Object.fromEntries((assignmentsRes.data||[]).map(x=>[x.id,x]));
+
+  list.innerHTML = teacherAllSubs.map(s=>{
+    const st = studentMap[s.student_id]||{}; const ls = lessonMap[s.lesson_id]||{}; const asg = assignmentMap[s.assignment_id]||{};
     return '<div class="pattern-card">'+
       '<div class="sub-card-head"><div><div class="sub-title">'+(asg.title?'📅 ':'')+esc(s.title)+'</div>'+
       '<div class="sub-lesson">'+esc(st.full_name||'؟')+' — '+esc(st.school||'')+' · پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[st.grade]||'؟')+
