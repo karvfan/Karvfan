@@ -585,7 +585,7 @@ async function submitUpload(){
     const { error } = await sb.from('submissions').insert({
       student_id: student.id, lesson_id: lessonId, assignment_id: uploadAssignmentId||null, title,
       description: $('upDesc').value.trim() || null, file_url: fileUrl, design_reflection,
-      is_eco_friendly, eco_note
+      is_eco_friendly, eco_note, status: 'pending'
     });
     if(error) throw error;
     closeModal('uploadModalOv');
