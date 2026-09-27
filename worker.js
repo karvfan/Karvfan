@@ -32,17 +32,44 @@ function adminOK(request, env) {
 
 async function handleSurveySubmit(request, env) {
   if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
-  const body = await request.json();
+
+  let body;
+  try {
+    body = await request.json();
+  } catch (e) {
+    return json({ error: "قالب داده‌ی ارسالی نامعتبر است (JSON غیرمعتبر)." }, 400);
+  }
   if (!body || !["student", "teacher"].includes(body.respondent_type)) return json({ error: "نوع پرسشنامه نامعتبر است." }, 400);
   if (!body.data || typeof body.data !== "object") return json({ error: "اطلاعات فرم ناقص است." }, 400);
+
+  // اگه دیتابیس D1 به این Worker متصل نشده باشه (مثلاً هنوز deploy نشده یا binding درست تنظیم نشده)،
+  // به‌جای کرش خام Worker (که سمت کاربر معمولاً به‌شکل «Failed to fetch» یا خطای مبهم دیده می‌شه)،
+  // یه پیام JSON روشن برمی‌گردونیم که مشکل رو دقیق مشخص می‌کنه.
+  if (!env.SURVEY_DB) {
+    return json({ error: "پایگاه‌داده‌ی نظرسنجی (SURVEY_DB) به این Worker متصل نیست — نیاز به deploy یا تنظیم binding در Cloudflare دارد." }, 500);
+  }
+
   const payload = JSON.stringify(body.data);
-  await env.SURVEY_DB.prepare("INSERT INTO responses (respondent_type, payload_json) VALUES (?, ?)").bind(body.respondent_type, payload).run();
+  try {
+    await env.SURVEY_DB.prepare("INSERT INTO responses (respondent_type, payload_json) VALUES (?, ?)").bind(body.respondent_type, payload).run();
+  } catch (e) {
+    // معمولاً یعنی جدول responses هنوز روی D1 ساخته نشده یا اسکیمای دیتابیس ناقصه
+    return json({ error: "خطا در ذخیره در پایگاه‌داده: " + (e && e.message ? e.message : String(e)) }, 500);
+  }
   return json({ ok: true, message: "پاسخ شما با موفقیت ثبت شد." });
 }
 
 async function handleSurveyStats(request, env) {
   if (!adminOK(request, env)) return json({ error: "Unauthorized" }, 401);
-  const rows = await env.SURVEY_DB.prepare("SELECT id, respondent_type, payload_json, created_at FROM responses ORDER BY id DESC").all();
+  if (!env.SURVEY_DB) {
+    return json({ error: "پایگاه‌داده‌ی نظرسنجی (SURVEY_DB) به این Worker متصل نیست — نیاز به deploy یا تنظیم binding در Cloudflare دارد." }, 500);
+  }
+  let rows;
+  try {
+    rows = await env.SURVEY_DB.prepare("SELECT id, respondent_type, payload_json, created_at FROM responses ORDER BY id DESC").all();
+  } catch (e) {
+    return json({ error: "خطا در خواندن از پایگاه‌داده: " + (e && e.message ? e.message : String(e)) }, 500);
+  }
   const items = rows.results.map((r) => ({ ...r, data: JSON.parse(r.payload_json) }));
   const stats = {
     total: items.length,
@@ -77,8 +104,14 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    if (url.pathname === "/api/survey/submit") return handleSurveySubmit(request, env);
-    if (url.pathname === "/api/survey/admin/data") return handleSurveyStats(request, env);
+    try {
+      if (url.pathname === "/api/survey/submit") return await handleSurveySubmit(request, env);
+      if (url.pathname === "/api/survey/admin/data") return await handleSurveyStats(request, env);
+    } catch (e) {
+      // محافظ نهایی: اگه هر خطای پیش‌بینی‌نشده‌ای توی مسیرهای بالا رخ بده، به‌جای کرش خام Worker
+      // (که سمت کاربر به‌شکل خطای مبهم شبکه دیده می‌شه)، یه پاسخ JSON با جزئیات خطا برمی‌گردونیم.
+      return json({ error: "خطای غیرمنتظره: " + (e && e.message ? e.message : String(e)) }, 500);
+    }
 
     if (url.pathname.startsWith("/download/")) {
       const key = url.pathname.slice("/download/".length);
