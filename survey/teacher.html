@@ -276,6 +276,18 @@ function collectData(){
 }
 async function submitSurvey(){
  const btn=document.getElementById('submitSurvey'); btn.disabled=true; btn.textContent='در حال ثبت...';
- try{const r=await fetch('/api/survey/submit',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({respondent_type:RESPONDENT_TYPE,data:collectData()})}); const j=await r.json(); if(!r.ok) throw new Error(j.error||'خطا'); alert('پاسخ شما با موفقیت ثبت شد. سپاسگزاریم 🌷'); btn.textContent='ثبت شد';}catch(e){alert('ثبت پاسخ انجام نشد: '+e.message);btn.disabled=false;btn.textContent='ثبت پاسخ';}}
+ try{
+   const r=await fetch('/api/survey/submit',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({respondent_type:RESPONDENT_TYPE,data:collectData()})});
+   let j={};
+   try{ j=await r.json(); }
+   catch(parseErr){ throw new Error('پاسخ نامعتبری از سرور دریافت شد (کد '+r.status+') — ممکنه سرویس نظرسنجی موقتاً در دسترس نباشه.'); }
+   if(!r.ok) throw new Error(j.error || ('خطای سرور (کد '+r.status+')'));
+   alert('پاسخ شما با موفقیت ثبت شد. سپاسگزاریم 🌷'); btn.textContent='ثبت شد';
+ }catch(e){
+   const msg = (e && e.message==='Failed to fetch') ? 'اتصال به سرور برقرار نشد — لطفاً اتصال اینترنتت رو چک کن و دوباره امتحان کن.' : ((e && e.message) || 'خطای نامشخص');
+   alert('ثبت پاسخ انجام نشد: '+msg);
+   btn.disabled=false; btn.textContent='ثبت پاسخ';
+ }
+}
 </script>
 </body></html>
