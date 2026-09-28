@@ -2,32 +2,65 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>ورود مدیر مدرسه</title>
+<title>ورود / ثبت‌نام مدیر مدرسه</title>
 <link rel="stylesheet" href="css/style.css">
+<style>
+  .auth-tabs{display:flex;gap:6px;margin-bottom:18px;background:#f0ead9;border-radius:10px;padding:4px}
+  .auth-tab{flex:1;border:none;background:transparent;padding:9px 0;border-radius:8px;font-size:14px;font-weight:600;color:var(--sub)}
+  .auth-tab.active{background:#fff;color:var(--navy);box-shadow:var(--shadow)}
+  .reg-note{font-size:12.5px;color:var(--sub);line-height:1.9;margin:-4px 0 14px}
+</style>
 </head>
 <body>
 <div class="auth-wrap">
   <div class="auth-card">
     <div class="auth-head">
       <div class="ic">🏫</div>
-      <h2>ورود مدیر مدرسه</h2>
-      <p>با ایمیل یا کد ملی، و رمز عبور وارد شوید</p>
+      <h2>مدیر مدرسه</h2>
+      <p>وارد شوید یا برای اولین بار ثبت‌نام کنید</p>
     </div>
-    <div id="bioRow" class="bio-login-row hidden">
-      <button type="button" class="btn btn-navy btn-block bio-btn" onclick="adminBioLogin('admin_school')">🔓 ورود سریع با اثر انگشت / Windows Hello</button>
-      <button type="button" class="bio-forget-link" onclick="adminBioForget('admin_school')">این دستگاه رو فراموش کن</button>
-      <div class="bio-or">یا با ایمیل و رمز وارد شو</div>
+
+    <div class="auth-tabs">
+      <button type="button" class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">ورود</button>
+      <button type="button" class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">ثبت‌نام</button>
     </div>
-    <form id="loginForm">
-      <div class="field"><label>ایمیل یا کد ملی</label><input id="email" type="text" placeholder="کد ملی یا ایمیل"></div>
-      <div class="field"><label>رمز عبور</label><input id="pass" type="password" placeholder="••••••••"></div>
-      <label id="bioRemember" class="bio-remember-row hidden">
-        <input type="checkbox" id="bioRememberChk"> این دستگاه رو برای ورود سریع بعدی با اثر انگشت به‌خاطر بسپار
-      </label>
-      <div class="field-err" id="loginErr"></div>
-      <button class="btn btn-navy btn-block" id="loginBtn" type="submit">ورود</button>
-    </form>
-    <a href="#" onclick="forgotPasswordDesktop();return false" style="display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--sub)">رمز رو فراموش کردم؟</a>
+
+    <!-- ==================== ورود ==================== -->
+    <div id="loginPane">
+      <div id="bioRow" class="bio-login-row hidden">
+        <button type="button" class="btn btn-navy btn-block bio-btn" onclick="adminBioLogin('admin_school')">🔓 ورود سریع با اثر انگشت / Windows Hello</button>
+        <button type="button" class="bio-forget-link" onclick="adminBioForget('admin_school')">این دستگاه رو فراموش کن</button>
+        <div class="bio-or">یا با ایمیل و رمز وارد شو</div>
+      </div>
+      <form id="loginForm">
+        <div class="field"><label>ایمیل یا کد ملی</label><input id="email" type="text" placeholder="کد ملی یا ایمیل"></div>
+        <div class="field"><label>رمز عبور</label><input id="pass" type="password" placeholder="••••••••"></div>
+        <label id="bioRemember" class="bio-remember-row hidden">
+          <input type="checkbox" id="bioRememberChk"> این دستگاه رو برای ورود سریع بعدی با اثر انگشت به‌خاطر بسپار
+        </label>
+        <div class="field-err" id="loginErr"></div>
+        <button class="btn btn-navy btn-block" id="loginBtn" type="submit">ورود</button>
+      </form>
+      <a href="#" onclick="forgotPasswordDesktop();return false" style="display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--sub)">رمز رو فراموش کردم؟</a>
+    </div>
+
+    <!-- ==================== ثبت‌نام ==================== -->
+    <div id="registerPane" class="hidden">
+      <p class="reg-note">بعد از ثبت‌نام یک ایمیل تأیید برایتان می‌آید. بعد از تأیید ایمیل، درخواست شما برای تأیید ادمین شهرستان/استان ارسال می‌شود و تا زمان تأیید، دسترسی فعال نیست.</p>
+      <form id="registerForm">
+        <div class="field"><label>نام و نام‌خانوادگی</label><input id="regName" type="text" placeholder="نام کامل"></div>
+        <div class="field"><label>کد ملی</label><input id="regCode" type="text" inputmode="numeric" maxlength="10" placeholder="۱۰ رقم"></div>
+        <div class="field"><label>ایمیل واقعی (برای دریافت لینک تأیید)</label><input id="regEmail" type="email" placeholder="you@example.com"></div>
+        <div class="field"><label>رمز عبور</label><input id="regPass" type="password" placeholder="حداقل ۶ کاراکتر"></div>
+        <div class="field"><label>تکرار رمز عبور</label><input id="regPass2" type="password"></div>
+        <div class="field"><label>استان</label><select id="regProvince"><option value="">— انتخاب کنید —</option></select></div>
+        <div class="field"><label>شهرستان</label><select id="regCounty"><option value="">— ابتدا استان را انتخاب کنید —</option></select></div>
+        <div class="field"><label>مدرسه</label><select id="regSchool"><option value="">— ابتدا شهرستان را انتخاب کنید —</option></select></div>
+        <div class="field-err" id="regErr"></div>
+        <button class="btn btn-navy btn-block" id="regBtn" type="submit">ثبت‌نام مدیر مدرسه</button>
+      </form>
+    </div>
+
     <a class="back-link" href="login-select.html">← بازگشت به انتخاب سطح دسترسی</a>
   </div>
 </div>
@@ -35,6 +68,7 @@
 <script src="js/config.js"></script>
 <script src="js/biometric.js"></script>
 <script src="js/login.js"></script>
+<script src="js/register-school.js"></script>
 <script src="js/show-password.js"></script>
 <script>initLogin(['school_admin'], 'admin_school');</script>
 </body>
