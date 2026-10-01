@@ -1,5 +1,6 @@
 /**
  * register.js — ثبت‌نام خودکار معلم تا سوپرادمین با تأیید ایمیل واقعی و سپس تأیید سطح بالاتر.
+ * معلم می‌تونه چند مدرسه انتخاب کنه (school_ids)؛ مدیر مدرسه فقط یک مدرسه.
  */
 function switchTeacherAuthTab(which){
   $('taTabLogin').classList.toggle('active', which==='login');
@@ -10,7 +11,55 @@ function switchTeacherAuthTab(which){
 }
 
 let _trWired = false;
+let _trSchools = [];          // مدرسه‌های تأییدشده‌ی شهرستان انتخاب‌شده
+const _trPicked = new Set();  // شناسه‌ی مدرسه‌های انتخاب‌شده توسط معلم
+
+/* یکسان‌سازی حروف عربی/فارسی برای جستجو */
+function trNorm(s){
+  return String(s||'').replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/[ً-ٟ]/g,'').toLowerCase();
+}
+
+/* بخش انتخاب چندتایی مدرسه (فقط برای نقش معلم) — از داخل JS ساخته می‌شه */
+function ensureTrSchoolMulti(){
+  if($('trSchoolMulti')) return;
+  const box = document.createElement('div');
+  box.id = 'trSchoolMulti';
+  box.className = 'hidden';
+  box.innerHTML =
+    '<input id="trSchoolFilter" type="text" placeholder="جستجوی مدرسه..." oninput="renderTrSchoolList()">' +
+    '<div id="trSchoolList" style="max-height:220px;overflow:auto;border:1px solid #d7dde6;border-radius:10px;padding:6px;margin-top:6px"></div>' +
+    '<div id="trSchoolCount" style="font-size:12.5px;margin-top:6px;color:var(--ink-soft)"></div>';
+  $('trSchoolField').appendChild(box);
+}
+function updateTrSchoolCount(){
+  const el = $('trSchoolCount'); if(!el) return;
+  const n = _trPicked.size;
+  el.textContent = n ? (n + ' مدرسه انتخاب شده') : 'هنوز مدرسه‌ای انتخاب نشده';
+}
+function renderTrSchoolList(){
+  const list = $('trSchoolList'); if(!list) return;
+  const q = trNorm(($('trSchoolFilter')||{}).value||'').trim();
+  const items = _trSchools.filter(s=>!q || trNorm(s.name).includes(q));
+  if(!_trSchools.length){
+    list.innerHTML = '<div style="padding:8px;font-size:13px">— ابتدا شهرستان را انتخاب کنید —</div>';
+  }else if(!items.length){
+    list.innerHTML = '<div style="padding:8px;font-size:13px">مدرسه‌ای با این نام پیدا نشد</div>';
+  }else{
+    list.innerHTML = items.map(s=>
+      '<label style="display:flex;align-items:center;gap:8px;padding:6px 4px;cursor:pointer">'+
+      '<input type="checkbox" style="width:auto" value="'+s.id+'"'+(_trPicked.has(String(s.id))?' checked':'')+' onchange="onTrSchoolToggle(this)">'+
+      '<span>'+esc(s.name)+'</span></label>'
+    ).join('');
+  }
+  updateTrSchoolCount();
+}
+function onTrSchoolToggle(cb){
+  if(cb.checked) _trPicked.add(String(cb.value)); else _trPicked.delete(String(cb.value));
+  updateTrSchoolCount();
+}
+
 async function initStaffRegisterForm(){
+  ensureTrSchoolMulti();
   const { provinces } = await loadRegionsCache();
   if(!$('trProvince').options.length){
     $('trProvince').innerHTML = provinceOptionsHtml(provinces);
@@ -19,22 +68,38 @@ async function initStaffRegisterForm(){
   $('trProvince').addEventListener('change', ()=>{
     $('trCounty').innerHTML = countyOptionsHtml(_regionsCache.counties, $('trProvince').value);
     $('trSchool').innerHTML = '<option value="">— ابتدا شهرستان را انتخاب کنید —</option>';
+    _trSchools = []; _trPicked.clear(); renderTrSchoolList();
   });
   $('trCounty').addEventListener('change', fillTrSchoolOptions);
   onTrRoleChange();
 }
 async function fillTrSchoolOptions(){
   const countyId = $('trCounty').value;
-  if(!countyId){ $('trSchool').innerHTML = '<option value="">— ابتدا شهرستان را انتخاب کنید —</option>'; return; }
+  _trSchools = []; _trPicked.clear();
+  if(!countyId){
+    $('trSchool').innerHTML = '<option value="">— ابتدا شهرستان را انتخاب کنید —</option>';
+    renderTrSchoolList();
+    return;
+  }
   const { data } = await sb.from('schools').select('id,name').eq('county_id', countyId).eq('status','approved').order('name');
-  $('trSchool').innerHTML = (data&&data.length) ? '<option value="">— انتخاب کنید —</option>' + data.map(s=>'<option value="'+s.id+'">'+esc(s.name)+'</option>').join('')
+  _trSchools = data || [];
+  $('trSchool').innerHTML = _trSchools.length ? '<option value="">— انتخاب کنید —</option>' + _trSchools.map(s=>'<option value="'+s.id+'">'+esc(s.name)+'</option>').join('')
     : '<option value="">— مدرسه‌ای در این شهرستان تأیید نشده —</option>';
+  renderTrSchoolList();
 }
 function onTrRoleChange(){
+  ensureTrSchoolMulti();
   const role = $('trRole').value;
+  const isTeacher = role==='teacher';
   $('trProvinceField').classList.toggle('hidden', role==='super_admin');
   $('trCountyField').classList.toggle('hidden', !['county_admin','school_admin','teacher'].includes(role));
   $('trSchoolField').classList.toggle('hidden', !['school_admin','teacher'].includes(role));
+  /* معلم: چندانتخابی — مدیر مدرسه: تک‌انتخابی */
+  $('trSchool').classList.toggle('hidden', isTeacher);
+  $('trSchoolMulti').classList.toggle('hidden', !isTeacher);
+  const lbl = $('trSchoolField').querySelector('label');
+  if(lbl) lbl.textContent = isTeacher ? 'مدرسه‌ها (اگه در چند مدرسه تدریس می‌کنید، همه رو انتخاب کنید)' : 'مدرسه';
+  renderTrSchoolList();
 }
 
 /* ارقام فارسی/عربی → لاتین (برای کد پرسنلی) */
@@ -62,7 +127,12 @@ async function submitStaffRegister(){
   if(pass!==pass2){ errEl.textContent='دو رمز یکی نیستن'; return; }
   if(role==='province_admin' && !$('trProvince').value){ errEl.textContent='استان رو انتخاب کنید'; return; }
   if(role==='county_admin' && !$('trCounty').value){ errEl.textContent='شهرستان رو انتخاب کنید'; return; }
-  if(['school_admin','teacher'].includes(role) && !$('trSchool').value){ errEl.textContent='مدرسه رو انتخاب کنید'; return; }
+  if(role==='teacher' && !_trPicked.size){ errEl.textContent='حداقل یک مدرسه رو انتخاب کنید'; return; }
+  if(role==='school_admin' && !$('trSchool').value){ errEl.textContent='مدرسه رو انتخاب کنید'; return; }
+
+  /* معلم: چند مدرسه — مدیر مدرسه: یک مدرسه — بقیه: هیچ */
+  const schoolIds = role==='teacher' ? Array.from(_trPicked)
+                  : role==='school_admin' ? [String($('trSchool').value)] : [];
 
   $('trBtn').disabled = true; $('trBtn').textContent = 'در حال ثبت‌نام...';
   let error = null;
@@ -76,7 +146,8 @@ async function submitStaffRegister(){
         data: {
           pending_role_request: 'true',
           full_name, national_code, personnel_code, requested_role: role,
-          school_id: role==='school_admin'||role==='teacher' ? String($('trSchool').value) : '',
+          school_id: schoolIds.length ? schoolIds[0] : '',
+          school_ids: schoolIds.join(','),
           county_id: role==='county_admin' ? String($('trCounty').value) : '',
           province_id: role==='province_admin' ? String($('trProvince').value) : ''
         }
