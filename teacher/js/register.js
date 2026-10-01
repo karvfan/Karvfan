@@ -171,13 +171,23 @@ async function loadRoleRequestsPanel(){
   const { data, error } = await sb.rpc('get_pending_role_requests');
   if(error){ el.innerHTML = emptyState('⚠️','خطا در دریافت لیست',''); console.error(error); return; }
   if(!data || !data.length){ el.innerHTML = emptyState('✅','درخواستی در انتظار تأیید نیست',''); return; }
-  el.innerHTML = data.map(r=>
-    '<div class="student-row"><span>👤 '+esc(r.full_name)+' — '+REQ_ROLE_LABELS[r.requested_role]+' · کد ملی: '+esc(r.national_code)+(r.personnel_code ? ' · کد پرسنلی: '+esc(r.personnel_code) : '')+'</span>'+
+
+  /* اسم مدرسه‌های درخواست‌شده (برای معلم‌های چندمدرسه‌ای) */
+  const allIds = [...new Set(data.flatMap(r=>r.school_ids||[]))];
+  let schoolName = {};
+  if(allIds.length){
+    const { data: sc } = await sb.from('schools').select('id,name').in('id', allIds);
+    schoolName = Object.fromEntries((sc||[]).map(s=>[s.id, s.name]));
+  }
+  el.innerHTML = data.map(r=>{
+    const schools = (r.school_ids||[]).map(id=>schoolName[id]).filter(Boolean);
+    return '<div class="student-row"><span>👤 '+esc(r.full_name)+' — '+REQ_ROLE_LABELS[r.requested_role]+' · کد ملی: '+esc(r.national_code)+(r.personnel_code ? ' · کد پرسنلی: '+esc(r.personnel_code) : '')+
+    (schools.length ? '<br><small>🏫 '+schools.map(esc).join('، ')+'</small>' : '')+'</span>'+
     '<span class="row-actions" style="display:inline-flex;gap:6px">'+
     '<button class="btn btn-thread btn-sm" onclick="reviewRoleRequest('+r.id+', true)">تأیید</button>'+
     '<button class="btn btn-ghost btn-sm" onclick="reviewRoleRequest('+r.id+', false)">رد</button>'+
-    '</span></div>'
-  ).join('');
+    '</span></div>';
+  }).join('');
 }
 async function reviewRoleRequest(id, approve){
   let reason = null;
