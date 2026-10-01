@@ -37,10 +37,18 @@ function onTrRoleChange(){
   $('trSchoolField').classList.toggle('hidden', !['school_admin','teacher'].includes(role));
 }
 
+/* ارقام فارسی/عربی → لاتین (برای کد پرسنلی) */
+function toLatinDigits(s){
+  return String(s||'')
+    .replace(/[۰-۹]/g, d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+    .replace(/[٠-٩]/g, d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+}
+
 async function submitStaffRegister(){
   const errEl = $('trErr'); errEl.textContent='';
   const full_name = $('trName').value.trim();
   const national_code = $('trCode').value.trim();
+  const personnel_code = toLatinDigits($('trPersonnel').value.trim());
   const email = $('trEmail').value.trim();
   const pass = $('trPass').value;
   const pass2 = $('trPass2').value;
@@ -48,6 +56,7 @@ async function submitStaffRegister(){
 
   if(!full_name || full_name.length<3){ errEl.textContent='نام و نام‌خانوادگی رو کامل بنویسید'; return; }
   if(!isValidNationalCode(national_code)){ errEl.textContent='کد ملی معتبر نیست'; return; }
+  if(!/^\d{3,15}$/.test(personnel_code)){ errEl.textContent='کد پرسنلی رو به‌صورت عدد وارد کنید'; return; }
   if(!email || !email.includes('@')){ errEl.textContent='یک ایمیل معتبر وارد کنید'; return; }
   if(!pass || pass.length<6){ errEl.textContent='رمز باید حداقل ۶ کاراکتر باشه'; return; }
   if(pass!==pass2){ errEl.textContent='دو رمز یکی نیستن'; return; }
@@ -66,7 +75,7 @@ async function submitStaffRegister(){
         emailRedirectTo: SITE_ORIGIN + '/teacher/',
         data: {
           pending_role_request: 'true',
-          full_name, national_code, requested_role: role,
+          full_name, national_code, personnel_code, requested_role: role,
           school_id: role==='school_admin'||role==='teacher' ? String($('trSchool').value) : '',
           county_id: role==='county_admin' ? String($('trCounty').value) : '',
           province_id: role==='province_admin' ? String($('trProvince').value) : ''
@@ -92,7 +101,7 @@ async function loadRoleRequestsPanel(){
   if(error){ el.innerHTML = emptyState('⚠️','خطا در دریافت لیست',''); console.error(error); return; }
   if(!data || !data.length){ el.innerHTML = emptyState('✅','درخواستی در انتظار تأیید نیست',''); return; }
   el.innerHTML = data.map(r=>
-    '<div class="student-row"><span>👤 '+esc(r.full_name)+' — '+REQ_ROLE_LABELS[r.requested_role]+' · کد ملی: '+esc(r.national_code)+'</span>'+
+    '<div class="student-row"><span>👤 '+esc(r.full_name)+' — '+REQ_ROLE_LABELS[r.requested_role]+' · کد ملی: '+esc(r.national_code)+(r.personnel_code ? ' · کد پرسنلی: '+esc(r.personnel_code) : '')+'</span>'+
     '<span class="row-actions" style="display:inline-flex;gap:6px">'+
     '<button class="btn btn-thread btn-sm" onclick="reviewRoleRequest('+r.id+', true)">تأیید</button>'+
     '<button class="btn btn-ghost btn-sm" onclick="reviewRoleRequest('+r.id+', false)">رد</button>'+
