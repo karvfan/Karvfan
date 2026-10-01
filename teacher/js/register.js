@@ -56,19 +56,28 @@ async function submitStaffRegister(){
   if(['school_admin','teacher'].includes(role) && !$('trSchool').value){ errEl.textContent='مدرسه رو انتخاب کنید'; return; }
 
   $('trBtn').disabled = true; $('trBtn').textContent = 'در حال ثبت‌نام...';
-  const { error } = await sb.auth.signUp({
-    email, password: pass,
-    options: {
-      emailRedirectTo: window.location.origin + window.location.pathname,
-      data: {
-        pending_role_request: 'true',
-        full_name, national_code, requested_role: role,
-        school_id: role==='school_admin'||role==='teacher' ? String($('trSchool').value) : '',
-        county_id: role==='county_admin' ? String($('trCounty').value) : '',
-        province_id: role==='province_admin' ? String($('trProvince').value) : ''
+  let error = null;
+  try{
+    /* لینک تأیید ایمیل باید همیشه به سایت واقعی برگرده — داخل اپ اندروید location.origin
+       برابر https://localhost هست که توی مرورگر باز نمی‌شه */
+    const res = await sb.auth.signUp({
+      email, password: pass,
+      options: {
+        emailRedirectTo: SITE_ORIGIN + '/teacher/',
+        data: {
+          pending_role_request: 'true',
+          full_name, national_code, requested_role: role,
+          school_id: role==='school_admin'||role==='teacher' ? String($('trSchool').value) : '',
+          county_id: role==='county_admin' ? String($('trCounty').value) : '',
+          province_id: role==='province_admin' ? String($('trProvince').value) : ''
+        }
       }
-    }
-  });
+    });
+    error = res.error;
+  }catch(e){
+    console.error(e);
+    error = { message: 'اتصال به سرور برقرار نشد — اینترنت خودتون رو چک کنید و دوباره تلاش کنید' };
+  }
   $('trBtn').disabled = false; $('trBtn').textContent = 'ثبت‌نام';
   if(error){ errEl.textContent = 'خطا: ' + error.message; return; }
   $('taRegForm').innerHTML = '<div class="pattern-card" style="text-align:center;padding:24px">✅ ثبت‌نام انجام شد!<br><br>یه ایمیل تأیید به <b>'+esc(email)+'</b> ارسال شد. روی لینک توش بزنید تا ایمیلتون تأیید بشه؛ بعدش درخواست شما برای تأیید سطح بالاتر ارسال می‌شه.</div>';
