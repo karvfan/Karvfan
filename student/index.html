@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>دانش‌آموز | کارفن</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#26334a">
@@ -16,6 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="../shared/js/vendor/supabase.js"></script>
 <link rel="stylesheet" href="../shared/css/style.css">
+<link rel="stylesheet" href="../shared/css/app-ui.css">
 </head>
 <body>
 
@@ -135,14 +136,14 @@
     </div>
   </div>
   <div id="deadlineBanner"></div>
-  <div class="tabs">
-    <button class="tab active" data-p="pLessons" onclick="switchStudentTab('pLessons')">📚 آموزش</button>
-    <button class="tab" data-p="pAssign" onclick="switchStudentTab('pAssign')">📅 تکالیف هفته</button>
-    <button class="tab" data-p="pMine" onclick="switchStudentTab('pMine')">📤 کارهای من<span class="tab-badge hidden" id="badgeMine"></span></button>
-    <button class="tab" data-p="pProfile" onclick="switchStudentTab('pProfile')">🧭 پروفایل من</button>
-    <button class="tab" data-p="pGallery" onclick="switchStudentTab('pGallery')">🖼️ گالری</button>
-    <button class="tab" data-p="pBoard" onclick="switchStudentTab('pBoard')">🏆 رتبه‌بندی</button>
-    <button class="tab" data-p="pAnn" onclick="switchStudentTab('pAnn')">📢 اطلاعیه‌ها</button>
+  <div class="tabs app-nav">
+    <button class="tab active" data-p="pLessons" onclick="switchStudentTab('pLessons')"><span class="ti">📚</span><span class="tl">آموزش</span></button>
+    <button class="tab" data-p="pAssign" onclick="switchStudentTab('pAssign')"><span class="ti">📅</span><span class="tl">تکالیف</span></button>
+    <button class="tab" data-p="pMine" onclick="switchStudentTab('pMine')"><span class="ti">📤</span><span class="tl">کارهای من</span><span class="tab-badge hidden" id="badgeMine"></span></button>
+    <button class="tab" data-p="pProfile" onclick="switchStudentTab('pProfile')"><span class="ti">🧭</span><span class="tl">پروفایل</span></button>
+    <button class="tab" data-p="pGallery" onclick="switchStudentTab('pGallery')"><span class="ti">🖼️</span><span class="tl">گالری</span></button>
+    <button class="tab" data-p="pBoard" onclick="switchStudentTab('pBoard')"><span class="ti">🏆</span><span class="tl">رتبه‌بندی</span></button>
+    <button class="tab" data-p="pAnn" onclick="switchStudentTab('pAnn')"><span class="ti">📢</span><span class="tl">اطلاعیه‌ها</span></button>
   </div>
   <div class="main">
     <div class="panel active" id="pLessons"></div>
