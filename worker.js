@@ -1,10 +1,10 @@
 // این Worker فایل‌های سایت رو عادی سرو می‌کنه، به‌علاوه چند مسیر ویژه:
 //  - /download/<file>    دانلود نصب‌فایل‌ها از طریق خودِ دامنه‌ی karvfan.ir (نه مستقیم گیت‌هاب)
-//  - /version/<name>.txt چک نسخه از طریق همین دامنه
+//  - /version/<n>.txt چک نسخه از طریق همین دامنه
 //  - /api/survey/submit         ثبت پاسخ نظرسنجی (POST)
 //  - /api/survey/admin/data     خواندن پاسخ‌های نظرسنجی برای پنل مدیریت (نیازمند x-admin-token)
 // این کار باعث می‌شه اگه دسترسی مستقیم کاربر به github.com محدود باشه،
-// چون درخواست از سمت سرور کلودفلر به گیت‌هاب می‌ره (نه از مرورگر/اپ کاربر)، آپدیت و دانلود بازم کار کنه.
+// چون درخواست از سمت سرور کلودفلر به گیت‌هاب می‌ره (نه مرورگر/اپ کاربر)، آپدیت و دانلود بازم کار می‌کنه.
 
 const RELEASE_BASE = "https://github.com/karvfan/Karvfan/releases/download/latest-builds/";
 
@@ -129,14 +129,18 @@ export default {
     if (url.pathname.startsWith("/version/")) {
       const key = url.pathname.slice("/version/".length).replace(/\.txt$/, "");
       const target = VERSION_FILES[key];
-      if (!target) return new Response("Not found", { status: 404 });
+      // اپ‌های اندروید (Capacitor) و دسکتاپ از origin متفاوتی (https://localhost یا file://) این مسیر رو fetch می‌کنن؛
+      // بدون هدر CORS مرورگر جواب رو بلاک می‌کنه و چک آپدیت بی‌صدا شکست می‌خوره. شماره‌ی نسخه محرمانه نیست.
+      const cors = { "access-control-allow-origin": "*" };
+      if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: { ...cors, "access-control-allow-methods": "GET, OPTIONS", "access-control-max-age": "86400" } });
+      if (!target) return new Response("Not found", { status: 404, headers: cors });
       const upstream = await fetch(RELEASE_BASE + target, {
         cf: { cacheTtl: 60, cacheEverything: true },
       });
-      if (!upstream.ok) return new Response("Upstream error", { status: 502 });
+      if (!upstream.ok) return new Response("Upstream error", { status: 502, headers: cors });
       return new Response(upstream.body, {
         status: 200,
-        headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" },
+        headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store", ...cors },
       });
     }
 
