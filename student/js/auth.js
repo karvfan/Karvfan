@@ -130,7 +130,8 @@ async function studentRegister(){
   }catch(e){
     console.error(e);
     const msg = (e && e.message) ? e.message : '';
-    if(/duplicate|already|exist|تکراری|قبلا/i.test(msg)){
+    /* فقط خطای «شماره تکراری» واقعی — قبلاً regex خیلی گسترده بود (مثلاً «does not exist» هم می‌گرفت) و خطاهای دیگه رو اشتباهی «شماره قبلاً ثبت شده» نشون می‌داد */
+    if(e && (e.code === '23505' || /already registered|duplicate key|unique constraint|این شماره قبلاً/i.test(msg))){
       setFieldError('saPhone', 'این شماره قبلاً ثبت‌نام کرده — از تب «ورود» بالا استفاده کن');
     } else {
       $('saErr').textContent = msg ? ('خطا: ' + msg) : 'خطا در ثبت‌نام — دوباره تلاش کنید';
