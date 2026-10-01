@@ -1,7 +1,68 @@
 /**
  * teacher.js — پنل مربی: بررسی کارها، مدیریت درس‌ها/تکالیف/دانش‌آموزان/
  * اطلاعیه‌ها، و آمار مدرسه.
+ *
+ * معلم می‌تونه در چند مدرسه تدریس کنه: همه‌ی بخش‌ها اطلاعات «همه‌ی مدرسه‌های من» رو
+ * نشون می‌دن و بالای صفحه یه انتخابگر مدرسه هست تا فقط یه مدرسه‌ی مشخص دیده بشه.
  */
+
+/* ------------------------------------------------------------ مدرسه‌های من */
+let _mySchools = [];       // [{id,name}] — خالی = بدون محدودیت مدرسه (ادمین‌های سطح بالا / حساب قدیمی)
+let _schoolPick = '';      // '' = همه‌ی مدرسه‌های من، وگرنه نام یه مدرسه
+let _allSchoolNames = [];  // برای حساب‌های بدون محدودیت: مدرسه‌های تأییدشده
+
+function activeSchoolNames(){
+  if(!_mySchools.length) return null;
+  return _schoolPick ? [_schoolPick] : _mySchools.map(s=>s.name);
+}
+function schoolOptionNames(){ return _mySchools.length ? _mySchools.map(s=>s.name) : _allSchoolNames; }
+function schoolScopeLabel(){
+  if(!_mySchools.length) return 'مدرسه‌ی شما';
+  if(_schoolPick) return 'مدرسه‌ی «'+_schoolPick+'»';
+  return _mySchools.length>1 ? 'همه‌ی مدرسه‌های شما' : 'مدرسه‌ی شما';
+}
+async function loadMySchools(){
+  _mySchools = []; _schoolPick = ''; _allSchoolNames = [];
+  const districtRoles = ['county_admin','province_admin','super_admin'];
+  if(myStaff && !districtRoles.includes(myStaff.role)){
+    const { data, error } = await sb.rpc('my_schools');
+    if(!error && data && data.length) _mySchools = data.map(s=>({ id:s.id, name:s.name }));
+    else if(myStaff.school) _mySchools = [{ id: myStaff.school_id || null, name: myStaff.school }];
+  }
+  if(!_mySchools.length){
+    const { data } = await sb.from('schools').select('name').eq('status','approved').order('name');
+    _allSchoolNames = (data||[]).map(s=>s.name);
+  }
+}
+function renderSchoolSwitcher(){
+  let bar = $('schoolSwitchBar');
+  if(_mySchools.length < 2){ if(bar) bar.remove(); return; }
+  if(!bar){
+    bar = document.createElement('div');
+    bar.id = 'schoolSwitchBar';
+    bar.className = 'filter-row';
+    bar.style.cssText = 'padding:8px 14px;display:flex;align-items:center;gap:8px';
+    const main = document.querySelector('#teacherApp .main');
+    main.parentNode.insertBefore(bar, main);
+  }
+  bar.innerHTML = '<span style="font-size:13px;white-space:nowrap">🏫 مدرسه:</span>'+
+    '<select id="schoolSwitchSel" onchange="onSchoolSwitch(this.value)" style="flex:1">'+
+    '<option value="">همه‌ی مدرسه‌های من ('+_mySchools.length+')</option>'+
+    _mySchools.map(s=>'<option value="'+esc(s.name)+'"'+(_schoolPick===s.name?' selected':'')+'>'+esc(s.name)+'</option>').join('')+
+    '</select>';
+}
+async function onSchoolSwitch(v){
+  _schoolPick = v || '';
+  await loadAllLessons();
+  const act = document.querySelector('#teacherApp .tab.active');
+  switchTeacherTab(act ? act.dataset.p : 'tReview');
+  refreshBadges();
+}
+function fillSchoolSuggestions(){
+  const dl = $('schoolSuggestions'); if(!dl) return;
+  const names = schoolOptionNames();
+  if(names.length) dl.innerHTML = names.map(n=>'<option value="'+esc(n)+'"></option>').join('');
+}
 
 async function enterTeacherApp(){
   const { data:{ session } } = await sb.auth.getSession();
@@ -9,14 +70,14 @@ async function enterTeacherApp(){
   $('teEmail').textContent = session.user.email;
   goTo('teacherApp');
   showToast('👋 به سامانه‌ی کار و فناوری خوش آمدید');
-  await loadAllLessons();
   await loadMyStaffInfo(session.user.id);
+  await loadAllLessons();
   switchTeacherTab('tReview');
   refreshBadges();
 }
 async function refreshBadges(){
-  const { count } = await sb.from('submissions').select('id', { count:'exact', head:true }).eq('status','pending');
-  setBadge('badgeReview', count);
+  const r = await sb.rpc('count_submissions_for_schools', { p_status:'pending', p_schools: activeSchoolNames() });
+  setBadge('badgeReview', r.error ? 0 : r.data);
 
   const districtRoles = ['county_admin','province_admin','super_admin'];
   if(myStaff && districtRoles.includes(myStaff.role)){
@@ -39,6 +100,9 @@ async function loadMyStaffInfo(uid){
   $('tabDistrict').classList.toggle('hidden', !isDistrictLevel);
   $('tabStaff').classList.toggle('hidden', !isDistrictLevel);
   $('tabRoleRequests').classList.toggle('hidden', !isDistrictLevel);
+  await loadMySchools();
+  renderSchoolSwitcher();
+  fillSchoolSuggestions();
 }
 function switchTeacherTab(id){
   document.querySelectorAll('#teacherApp .tab').forEach(t=>t.classList.toggle('active', t.dataset.p===id));
@@ -74,9 +138,8 @@ async function loadReview(){
   // محدودتر از submissions باشه، کل کوئری embed شده fail می‌کنه و لیست کاملاً خالی
   // می‌مونه (درحالی‌که badge تعداد pending که بدون join محاسبه می‌شه درست کار می‌کنه).
   // برای همین این اطلاعات رو جدا می‌گیریم و خودمون merge می‌کنیم.
-  let q = sb.from('submissions').select('*').order('created_at',{ascending:false});
-  if(status!=='all') q = q.eq('status', status);
-  const { data, error } = await q;
+  // فیلتر مدرسه هم داخل تابع دیتابیس (get_submissions_for_schools) انجام می‌شه.
+  const { data, error } = await sb.rpc('get_submissions_for_schools', { p_status: status, p_schools: activeSchoolNames() });
 
   const list = $('rvList');
   if(error){
@@ -144,13 +207,13 @@ async function saveReview(id){
 async function loadAllLessons(){
   const { data, error } = await sb.from('lessons').select('*').order('grade').order('order_index');
   lessons = error? [] : data;
-  const { data: actData } = await sb.rpc('teacher_get_lesson_activations');
+  const { data: actData } = await sb.rpc('teacher_get_lesson_activations', { p_school: _schoolPick || null });
   myActivations = new Set((actData||[]).map(a=>a.lesson_id));
 }
 function renderLessonsAdmin(){
   const el = $('tLessons');
   let html = '<button class="btn btn-thread btn-sm" style="margin-bottom:14px" onclick="openLessonModal(null)">➕ درس جدید</button>'+
-    '<div class="activation-hint">🔔 پودمان‌های «نیمه‌تجویزی» تا وقتی فعالشون نکنید، برای دانش‌آموزهای مدرسه‌ی شما نمایش داده نمی‌شن — کلید کنار هرکدوم رو بزنید تا فعال بشه.</div>';
+    '<div class="activation-hint">🔔 پودمان‌های «نیمه‌تجویزی» تا وقتی فعالشون نکنید، برای دانش‌آموزهای '+schoolScopeLabel()+' نمایش داده نمی‌شن — کلید کنار هرکدوم رو بزنید تا فعال بشه.</div>';
 
   const drafts = lessons.filter(l=>l.is_alternative);
   if(drafts.length){
@@ -172,7 +235,7 @@ function renderLessonsAdmin(){
       const active = myActivations.has(l.id);
       const activationSwitch = l.is_prescribed
         ? '<span class="presc-badge presc-yes">✅ تجویزی (همیشه فعال)</span>'
-        : '<label class="lesson-toggle"><input type="checkbox" '+(active?'checked':'')+' onchange="toggleLessonActivation(\''+l.id+'\','+l.grade+',this.checked)"><span class="lesson-toggle-text">'+(active?'🟢 برای مدرسه‌ی شما فعاله':'⚪️ برای مدرسه‌ی شما غیرفعاله')+'</span></label>';
+        : '<label class="lesson-toggle"><input type="checkbox" '+(active?'checked':'')+' onchange="toggleLessonActivation(\''+l.id+'\','+l.grade+',this.checked)"><span class="lesson-toggle-text">'+(active?'🟢 برای '+schoolScopeLabel()+' فعاله':'⚪️ برای '+schoolScopeLabel()+' غیرفعاله')+'</span></label>';
       html += '<div class="pattern-card"><div class="lesson-admin-row">'+
         '<div><div class="sub-title">'+esc(l.unit_title)+' '+(l.is_prescribed?'<span class="presc-badge presc-yes">تجویزی</span>':'<span class="presc-badge presc-no">نیمه‌تجویزی</span>')+'</div>'+
         '<div class="sub-lesson">ترتیب: '+l.order_index+' · '+(l.is_published?'✅ نمایش‌داده‌شده':'🚫 آرشیوشده')+'</div>'+
@@ -186,10 +249,11 @@ function renderLessonsAdmin(){
   el.innerHTML = html;
 }
 async function toggleLessonActivation(lessonId, grade, active){
-  const { error } = await sb.rpc('teacher_set_lesson_activation', { p_lesson_id: lessonId, p_grade: grade, p_active: active });
+  const { error } = await sb.rpc('teacher_set_lesson_activation', { p_lesson_id: lessonId, p_grade: grade, p_active: active, p_school: _schoolPick || null });
   if(error){ showToast('❌ خطا در تغییر وضعیت فعال‌سازی'); console.error(error); await loadAllLessons(); renderLessonsAdmin(); return; }
   if(active) myActivations.add(lessonId); else myActivations.delete(lessonId);
-  showToast(active? '✅ برای دانش‌آموزهای مدرسه‌ی شما فعال شد' : '⚪️ غیرفعال شد');
+  showToast(active? '✅ برای دانش‌آموزهای '+schoolScopeLabel()+' فعال شد' : '⚪️ غیرفعال شد');
+  renderLessonsAdmin();
 }
 async function activateDraftLesson(id){
   if(!confirm('این پودمان برای دانش‌آموزها فعال و قابل‌مشاهده بشه؟ (می‌تونید بعداً یکی از پودمان‌های قدیمی رو آرشیو کنید)')) return;
@@ -323,14 +387,17 @@ async function deleteLesson(id){
 /* ------------------------------------------------------------ تکالیف هفتگی (مربی) */
 async function loadAssignmentsAdmin(){
   const el = $('tAssign');
-  const { data, error } = await sb.from('assignments').select('*').order('created_at',{ascending:false});
+  let q = sb.from('assignments').select('*').order('created_at',{ascending:false});
+  const names = activeSchoolNames();
+  if(names) q = q.or('school.is.null,school.in.('+names.map(n=>'"'+n+'"').join(',')+')');
+  const { data, error } = await q;
   const list = error? [] : (data||[]);
   let html = '<button class="btn btn-thread btn-sm" style="margin-bottom:14px" onclick="openAssignmentModal(null)">➕ تکلیف جدید</button>';
   if(!list.length){ html += emptyState('📅','هنوز تکلیفی ثبت نشده',''); }
   list.forEach(a=>{
     html += '<div class="pattern-card"><div class="lesson-admin-row">'+
       '<div><div class="sub-title">'+(a.is_open_challenge?(a.challenge_type==='company'?'💼 ':'🎨 '):'')+esc(a.title)+'</div>'+
-      '<div class="sub-lesson">'+(a.grade?'پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[a.grade]):'همه‌ی پایه‌ها')+' · '+(a.school?esc(a.school):'هر دو مدرسه')+
+      '<div class="sub-lesson">'+(a.grade?'پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[a.grade]):'همه‌ی پایه‌ها')+' · '+(a.school?esc(a.school):'همه‌ی مدارس')+
       (a.due_date? ' · مهلت: '+toJalali(a.due_date):'')+' · '+(a.is_active?'✅ فعال':'🚫 غیرفعال')+(a.is_open_challenge?(a.challenge_type==='company'?' · 💼 شرکت مصغر':' · 🎨 چالش باز'):'')+'</div></div>'+
       '<div class="lbtns"><button class="btn btn-ghost btn-sm" onclick="openAssignmentModal(\''+a.id+'\')">✏️</button>'+
       '<button class="btn btn-brick btn-sm" onclick="deleteAssignment(\''+a.id+'\')">🗑️</button></div></div></div>';
@@ -353,7 +420,7 @@ function openAssignmentModal(id){
   } else {
     $('amTitle').textContent='➕ تکلیف جدید';
     $('amId').value=''; $('amTitleInput').value=''; $('amDesc').value='';
-    $('amGrade').value=''; $('amSchool').value=''; $('amDue').value=''; $('amPoints').value=10; $('amActive').checked=true;
+    $('amGrade').value=''; $('amSchool').value=_schoolPick||''; $('amDue').value=''; $('amPoints').value=10; $('amActive').checked=true;
     $('amChallenge').checked=false;
     $('amChallengeType').value='design'; $('amChallengeTypeField').classList.add('hidden');
   }
@@ -362,10 +429,12 @@ function openAssignmentModal(id){
 async function saveAssignment(){
   const title = $('amTitleInput').value.trim();
   if(!title){ $('amErr').textContent='عنوان تکلیف را بنویسید'; return; }
+  const names = activeSchoolNames();
+  const school = $('amSchool').value.trim();
+  if(names && school && !_mySchools.some(s=>s.name===school)){ $('amErr').textContent='مدرسه باید یکی از مدرسه‌های خودتان باشد'; return; }
   const payload = {
     title, description: $('amDesc').value.trim()||null,
     grade: $('amGrade').value?parseInt($('amGrade').value):null,
-    school: $('amSchool').value||null,
     due_date: $('amDue').value||null,
     points_hint: parseInt($('amPoints').value)||10,
     is_active: $('amActive').checked,
@@ -373,7 +442,15 @@ async function saveAssignment(){
     challenge_type: $('amChallengeType').value
   };
   const id = $('amId').value;
-  const { error } = id ? await sb.from('assignments').update(payload).eq('id',id) : await sb.from('assignments').insert(payload);
+  let error;
+  if(id){
+    ({ error } = await sb.from('assignments').update({ ...payload, school: school||null }).eq('id',id));
+  } else if(names && !school){
+    // مدرسه‌ای انتخاب نشده → برای هرکدوم از مدرسه‌های من یه تکلیف جدا ثبت می‌شه
+    ({ error } = await sb.from('assignments').insert(names.map(n=>({ ...payload, school:n }))));
+  } else {
+    ({ error } = await sb.from('assignments').insert({ ...payload, school: school||null }));
+  }
   if(error){ $('amErr').textContent='خطا در ذخیره'; console.error(error); return; }
   closeModal('assignModalOv'); showToast('✅ تکلیف ذخیره شد'); loadAssignmentsAdmin();
 }
@@ -387,8 +464,10 @@ async function deleteAssignment(id){
 /* ------------------------------------------------------------ دانش‌آموزان (مربی) */
 async function loadStudentsAdmin(){
   const el = $('tStudents');
+  const act = activeSchoolNames();
+  const optNames = act || schoolOptionNames();
   el.innerHTML = '<div class="filter-row">'+
-    '<select id="stuSchool" onchange="loadStudentsAdmin()"><option value="">همه مدارس</option>'+SCHOOLS.map(s=>'<option '+(($('stuSchool')&&$('stuSchool').value===s)?'selected':'')+' value="'+s+'">'+s+'</option>').join('')+'</select>'+
+    '<select id="stuSchool" onchange="loadStudentsAdmin()"><option value="">'+(_mySchools.length>1 && !_schoolPick?'همه‌ی مدرسه‌های من':'همه مدارس')+'</option>'+optNames.map(s=>'<option '+(($('stuSchool')&&$('stuSchool').value===s)?'selected':'')+' value="'+esc(s)+'">'+esc(s)+'</option>').join('')+'</select>'+
     '<select id="stuGrade" onchange="loadStudentsAdmin()"><option value="">همه پایه‌ها</option>'+GRADES.map(g=>'<option '+(($('stuGrade')&&$('stuGrade').value===String(g))?'selected':'')+' value="'+g+'">پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[g])+'</option>').join('')+'</select>'+
     '</div><div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">'+
       '<button class="btn btn-sky btn-sm" onclick="exportStudentsCSV()">📊 خروجی لیست (CSV)</button>'+
@@ -397,6 +476,7 @@ async function loadStudentsAdmin(){
     '<div class="pattern-card" id="stuList"></div>';
   let q = sb.from('students').select('*').order('full_name');
   if($('stuSchool').value) q = q.eq('school', $('stuSchool').value);
+  else if(act) q = q.in('school', act);
   if($('stuGrade').value) q = q.eq('grade', parseInt($('stuGrade').value));
   const { data, error } = await q;
   window._stuAdminList = data||[];
@@ -530,24 +610,34 @@ async function openReportCard(studentId){
 }
 
 /* ------------------------------------------------------------ اطلاعیه‌ها (مربی) */
+function openAnnouncementModal(){
+  $('anSchool').value = _schoolPick || '';
+  openModal('annModalOv');
+}
 async function loadAnnouncementsAdmin(){
   const el = $('tAnn');
-  el.innerHTML = '<button class="btn btn-thread btn-sm" style="margin-bottom:14px" onclick="openModal(\'annModalOv\')">➕ اطلاعیه جدید</button><div id="anList"></div>';
-  const { data, error } = await sb.from('announcements').select('*').order('created_at',{ascending:false});
+  el.innerHTML = '<button class="btn btn-thread btn-sm" style="margin-bottom:14px" onclick="openAnnouncementModal()">➕ اطلاعیه جدید</button><div id="anList"></div>';
+  let q = sb.from('announcements').select('*').order('created_at',{ascending:false});
+  const names = activeSchoolNames();
+  if(names) q = q.or('school.is.null,school.in.('+names.map(n=>'"'+n+'"').join(',')+')');
+  const { data, error } = await q;
   const list = $('anList');
   if(error || !data || !data.length){ list.innerHTML = emptyState('📢','اطلاعیه‌ای ثبت نشده',''); return; }
   list.innerHTML = data.map(a=>'<div class="pattern-card ann-card"><div class="sub-card-head"><div><div class="ann-title">'+esc(a.title)+'</div>'+
-    '<div class="sub-lesson">'+(a.school||'هر دو مدرسه')+' · '+(a.grade?('پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[a.grade])):'همه پایه‌ها')+'</div></div>'+
+    '<div class="sub-lesson">'+esc(a.school||'همه‌ی مدارس')+' · '+(a.grade?('پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[a.grade])):'همه پایه‌ها')+'</div></div>'+
     '<button class="btn btn-brick btn-sm" onclick="deleteAnnouncement(\''+a.id+'\')">🗑️</button></div>'+
     (a.body?'<div class="ann-body">'+esc(a.body)+'</div>':'')+'<div class="ann-date">'+toJalali(a.created_at)+'</div></div>').join('');
 }
 async function saveAnnouncement(){
   const title = $('anTitle').value.trim();
   if(!title){ $('anErr').textContent='عنوان را بنویسید'; return; }
-  const { error } = await sb.from('announcements').insert({
-    title, body: $('anBody').value.trim()||null,
-    school: $('anSchool').value||null, grade: $('anGrade').value?parseInt($('anGrade').value):null
-  });
+  const names = activeSchoolNames();
+  const school = $('anSchool').value.trim();
+  if(names && school && !_mySchools.some(s=>s.name===school)){ $('anErr').textContent='مدرسه باید یکی از مدرسه‌های خودتان باشد'; return; }
+  const base = { title, body: $('anBody').value.trim()||null, grade: $('anGrade').value?parseInt($('anGrade').value):null };
+  // مدرسه‌ای انتخاب نشده → برای هرکدوم از مدرسه‌های من یه اطلاعیه جدا ثبت می‌شه
+  const rows = (names && !school) ? names.map(n=>({ ...base, school:n })) : [{ ...base, school: school||null }];
+  const { error } = await sb.from('announcements').insert(rows);
   if(error){ $('anErr').textContent='خطا در ثبت'; return; }
   $('anTitle').value=''; $('anBody').value=''; $('anErr').textContent='';
   closeModal('annModalOv'); showToast('✅ اطلاعیه منتشر شد'); loadAnnouncementsAdmin();
@@ -562,7 +652,7 @@ async function deleteAnnouncement(id){
 async function renderSubmissionTrendChart(){
   const days = 14;
   const since = new Date(); since.setDate(since.getDate() - (days-1)); since.setHours(0,0,0,0);
-  const { data } = await sb.from('submissions').select('created_at').gte('created_at', since.toISOString());
+  const { data } = await sb.rpc('get_submissions_for_schools', { p_status:'all', p_schools: activeSchoolNames(), p_since: since.toISOString() });
   const counts = {}; const labels = [];
   for(let i=0;i<days;i++){
     const d = new Date(since); d.setDate(d.getDate()+i);
@@ -576,12 +666,17 @@ async function renderSubmissionTrendChart(){
 async function loadStats(){
   const el = $('tStats');
   el.innerHTML = emptyState('⏳','در حال بارگذاری آمار...','');
-  const [{count:studentCount}, {count:pendingCount}, {count:approvedCount}, {count:lessonCount}] = await Promise.all([
-    sb.from('students').select('*', {count:'exact', head:true}),
-    sb.from('submissions').select('*', {count:'exact', head:true}).eq('status','pending'),
-    sb.from('submissions').select('*', {count:'exact', head:true}).eq('status','approved'),
+  const names = activeSchoolNames();
+  let studQ = sb.from('students').select('*', {count:'exact', head:true});
+  if(names) studQ = studQ.in('school', names);
+  const [{count:studentCount}, pendRes, apprRes, {count:lessonCount}] = await Promise.all([
+    studQ,
+    sb.rpc('count_submissions_for_schools', { p_status:'pending', p_schools: names }),
+    sb.rpc('count_submissions_for_schools', { p_status:'approved', p_schools: names }),
     sb.from('lessons').select('*', {count:'exact', head:true})
   ]);
+  const pendingCount = pendRes.error ? 0 : pendRes.data;
+  const approvedCount = apprRes.error ? 0 : apprRes.data;
   let html = '<div class="stat-grid">'+
     statBox(studentCount,'دانش‌آموز ثبت‌نامی')+
     statBox(pendingCount,'کار در انتظار بررسی')+
@@ -592,15 +687,18 @@ async function loadStats(){
   html += '<div class="section-title">📌 وضعیت بر اساس مدرسه و پایه</div><div class="pattern-card" id="statsBySchool"></div>';
   el.innerHTML = html;
   renderSubmissionTrendChart();
-  const { data:studs } = await sb.from('students').select('school, grade, points');
+  let studsQ = sb.from('students').select('school, grade, points');
+  if(names) studsQ = studsQ.in('school', names);
+  const { data:studs } = await studsQ;
   const box = $('statsBySchool');
   if(!studs || !studs.length){ box.innerHTML = '<div class="empty-state"><div class="d">هنوز دانش‌آموزی ثبت‌نام نکرده</div></div>'; return; }
+  const schoolList = names || [...new Set(studs.map(s=>s.school))].sort();
   let rows='';
-  SCHOOLS.forEach(sc=>{ GRADES.forEach(g=>{
+  schoolList.forEach(sc=>{ GRADES.forEach(g=>{
     const grp = studs.filter(s=>s.school===sc && s.grade===g);
     if(!grp.length) return;
     const pts = grp.reduce((a,b)=>a+(b.points||0),0);
-    rows += '<div class="student-row"><span>'+sc+' · پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[g])+'</span><span>'+grp.length+' نفر — مجموع '+pts+' امتیاز</span></div>';
+    rows += '<div class="student-row"><span>'+esc(sc)+' · پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[g])+'</span><span>'+grp.length+' نفر — مجموع '+pts+' امتیاز</span></div>';
   });});
   box.innerHTML = rows || '<div class="empty-state"><div class="d">داده‌ای نیست</div></div>';
 }
@@ -614,7 +712,9 @@ async function loadMyInfoPanel(){
   const role = myStaff ? myStaff.role : 'teacher';
 
   let scopeLine = 'کل کشور';
-  if(myStaff && myStaff.school){
+  if(_mySchools.length){
+    scopeLine = '🏫 ' + _mySchools.map(s=>s.name).join('، ');
+  } else if(myStaff && myStaff.school){
     scopeLine = '🏫 ' + myStaff.school;
   } else if(myStaff && (myStaff.county_id || myStaff.province_id)){
     const { counties, provinces } = await loadRegionsCache();
