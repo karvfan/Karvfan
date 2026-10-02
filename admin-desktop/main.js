@@ -1,4 +1,4 @@
-const { app, BrowserWindow, session } = require('electron');
+const { app, BrowserWindow, session, shell } = require('electron');
 const path = require('path');
 
 function createWindow() {
@@ -15,6 +15,14 @@ function createWindow() {
       contextIsolation: false,
       spellcheck: false
     }
+  });
+  const isWeb = (u) => /^https?:/i.test(u);
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (isWeb(url)) shell.openExternal(url);
+    return { action: 'deny' };
+  });
+  win.webContents.on('will-navigate', (e, url) => {
+    if (isWeb(url)) { e.preventDefault(); shell.openExternal(url); }
   });
   win.loadFile(path.join(__dirname, 'src', 'login-select.html'));
 }
