@@ -12,7 +12,15 @@ async function teacherLogin(){
   try{
     const email = await resolveLoginIdentifier(raw);
     const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-    if(error){ $('taErr').textContent='ایمیل/کد ملی یا رمز عبور اشتباه است'; return; }
+    if(error){
+      /* ایمیل هنوز تأیید نشده: به‌جای «رمز اشتباه» پیام درست نشون بده */
+      if(/not confirmed|email_not_confirmed/i.test(String(error.message||'') + ' ' + String(error.code||''))){
+        $('taErr').textContent='ایمیل شما هنوز تأیید نشده — ایمیل «تأیید ایمیل شما در کارفن» رو باز کنید و روی دکمه‌ی تأیید بزنید (پوشه‌ی اسپم رو هم ببینید).';
+      }else{
+        $('taErr').textContent='ایمیل/کد ملی یا رمز عبور اشتباه است';
+      }
+      return;
+    }
     if($('taBioRememberChk') && $('taBioRememberChk').checked){
       try{ await bioRegister('teacher', raw, { email: raw, pass }); }
       catch(e){ console.error('بیومتریک ثبت نشد', e); }
