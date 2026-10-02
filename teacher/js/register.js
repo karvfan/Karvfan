@@ -22,6 +22,64 @@ function getSiteOrigin(){
   return (typeof SITE_ORIGIN !== 'undefined' && SITE_ORIGIN) ? SITE_ORIGIN : TR_FALLBACK_SITE_ORIGIN;
 }
 
+/* ---------- نمایش خطا دقیقاً زیر خودِ فیلد ---------- */
+const _trErrFields = new Set();   // شناسه‌ی فیلدهایی که الان خطا دارن
+/* anchorId: عنصری که پیام زیرش میاد — borderId: عنصری که قرمز می‌شه (پیش‌فرض همون anchor) */
+function trFieldErr(anchorId, msg, borderId){
+  const el = $(anchorId); if(!el) return null;
+  let box = $('trErr_'+anchorId);
+  if(!box){
+    box = document.createElement('div');
+    box.id = 'trErr_'+anchorId;
+    box.className = 'tr-field-err';
+    box.setAttribute('role','alert');
+    box.style.cssText = 'color:#b3261e;font-size:12.5px;margin-top:4px;line-height:1.7';
+    el.insertAdjacentElement('afterend', box);
+  }
+  box.textContent = msg;
+  const b = $(borderId || anchorId);
+  if(b){ b.style.borderColor = '#b3261e'; b.setAttribute('aria-invalid','true'); }
+  box.dataset.border = borderId || anchorId;
+  _trErrFields.add(anchorId);
+  return el;
+}
+function trClearFieldErr(anchorId){
+  const box = $('trErr_'+anchorId);
+  if(box){
+    const b = $(box.dataset.border || anchorId);
+    if(b){ b.style.borderColor = ''; b.removeAttribute('aria-invalid'); }
+    box.remove();
+  }
+  _trErrFields.delete(anchorId);
+}
+function trClearAllErrors(){
+  Array.from(_trErrFields).forEach(trClearFieldErr);
+  const g = $('trErr'); if(g) g.textContent = '';
+}
+function trFocusFirst(el){
+  if(!el) return;
+  const target = (el.id==='trSchoolMulti') ? $('trSchoolFilter') : el;
+  try{ el.scrollIntoView({ behavior:'smooth', block:'center' }); }catch(_){}
+  try{ target && target.focus && target.focus({ preventScroll:true }); }catch(_){}
+}
+/* خطای سرور رو به فیلد مربوط نسبت بده؛ اگه فیلدی مشخص نبود، همون خطای عمومی پایین فرم */
+function trMapServerError(message){
+  const m = String(message||'');
+  if(/already registered|already been registered|already exists|user_already_exists/i.test(m))
+    return { field:'trEmail', text:'این ایمیل قبلاً ثبت‌نام شده؛ وارد شوید یا ایمیل دیگری بنویسید' };
+  if(/password/i.test(m))
+    return { field:'trPass', text:/least|short|weak|6/i.test(m) ? 'رمز باید حداقل ۶ کاراکتر باشه' : 'رمز پذیرفته نشد؛ رمز دیگری انتخاب کنید' };
+  if(/rate limit|too many/i.test(m))
+    return { field:null, text:'تعداد تلاش‌ها زیاد بوده؛ چند دقیقه بعد دوباره امتحان کنید' };
+  if(/email/i.test(m) && /invalid|valid|format/i.test(m))
+    return { field:'trEmail', text:'قالب ایمیل درست نیست' };
+  if(/national|کد ملی/i.test(m))
+    return { field:'trCode', text:'این کد ملی قبلاً ثبت شده یا معتبر نیست' };
+  if(/personnel|کد پرسنلی/i.test(m))
+    return { field:'trPersonnel', text:'این کد پرسنلی قبلاً ثبت شده یا معتبر نیست' };
+  return { field:null, text:m };
+}
+
 /* یکسان‌سازی حروف عربی/فارسی برای جستجو */
 function trNorm(s){
   return String(s||'').replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/[\u064B-\u065F]/g,'').toLowerCase();
@@ -64,6 +122,7 @@ function renderTrSchoolList(){
 function onTrSchoolToggle(cb){
   if(cb.checked) _trPicked.add(String(cb.value)); else _trPicked.delete(String(cb.value));
   updateTrSchoolCount();
+  trClearFieldErr('trSchoolMulti');
 }
 
 async function initStaffRegisterForm(){
@@ -79,6 +138,12 @@ async function initStaffRegisterForm(){
     _trSchools = []; _trPicked.clear(); renderTrSchoolList();
   });
   $('trCounty').addEventListener('change', fillTrSchoolOptions);
+  /* با شروع اصلاح هر فیلد، خطای همون فیلد پاک می‌شه */
+  ['trName','trCode','trPersonnel','trEmail','trPass','trPass2','trRole','trProvince','trCounty','trSchool'].forEach(id=>{
+    const el = $(id); if(!el) return;
+    el.addEventListener('input',  ()=>trClearFieldErr(id));
+    el.addEventListener('change', ()=>trClearFieldErr(id));
+  });
   onTrRoleChange();
 }
 async function fillTrSchoolOptions(){
@@ -107,6 +172,8 @@ function onTrRoleChange(){
   $('trSchoolMulti').classList.toggle('hidden', !isTeacher);
   const lbl = $('trSchoolField').querySelector('label');
   if(lbl) lbl.textContent = isTeacher ? 'مدرسه‌ها (اگه در چند مدرسه تدریس می‌کنید، همه رو انتخاب کنید)' : 'مدرسه';
+  /* خطاهای مربوط به فیلدهایی که با تغییر نقش مخفی می‌شن پاک بشن */
+  ['trProvince','trCounty','trSchool','trSchoolMulti'].forEach(trClearFieldErr);
   renderTrSchoolList();
 }
 
@@ -118,25 +185,31 @@ function toLatinDigits(s){
 }
 
 async function submitStaffRegister(){
-  const errEl = $('trErr'); errEl.textContent='';
+  const errEl = $('trErr');
+  trClearAllErrors();
   const full_name = $('trName').value.trim();
-  const national_code = $('trCode').value.trim();
+  const national_code = toLatinDigits($('trCode').value.trim());
   const personnel_code = toLatinDigits($('trPersonnel').value.trim());
   const email = $('trEmail').value.trim();
   const pass = $('trPass').value;
   const pass2 = $('trPass2').value;
   const role = $('trRole').value;
 
-  if(!full_name || full_name.length<3){ errEl.textContent='نام و نام‌خانوادگی رو کامل بنویسید'; return; }
-  if(!isValidNationalCode(national_code)){ errEl.textContent='کد ملی معتبر نیست'; return; }
-  if(!/^\d{3,15}$/.test(personnel_code)){ errEl.textContent='کد پرسنلی رو به‌صورت عدد وارد کنید'; return; }
-  if(!email || !email.includes('@')){ errEl.textContent='یک ایمیل معتبر وارد کنید'; return; }
-  if(!pass || pass.length<6){ errEl.textContent='رمز باید حداقل ۶ کاراکتر باشه'; return; }
-  if(pass!==pass2){ errEl.textContent='دو رمز یکی نیستن'; return; }
-  if(role==='province_admin' && !$('trProvince').value){ errEl.textContent='استان رو انتخاب کنید'; return; }
-  if(role==='county_admin' && !$('trCounty').value){ errEl.textContent='شهرستان رو انتخاب کنید'; return; }
-  if(role==='teacher' && !_trPicked.size){ errEl.textContent='حداقل یک مدرسه رو انتخاب کنید'; return; }
-  if(role==='school_admin' && !$('trSchool').value){ errEl.textContent='مدرسه رو انتخاب کنید'; return; }
+  /* همه‌ی خطاها یک‌جا زیر فیلد خودشون نشون داده می‌شن؛ اولین خطا فوکوس می‌گیره */
+  let firstErrEl = null;
+  const fail = (anchorId, msg, borderId)=>{ const el = trFieldErr(anchorId, msg, borderId); if(!firstErrEl) firstErrEl = el; };
+
+  if(!full_name || full_name.length<3) fail('trName','نام و نام‌خانوادگی رو کامل بنویسید');
+  if(!isValidNationalCode(national_code)) fail('trCode','کد ملی معتبر نیست');
+  if(!/^\d{3,15}$/.test(personnel_code)) fail('trPersonnel','کد پرسنلی رو به‌صورت عدد وارد کنید');
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) fail('trEmail','یک ایمیل معتبر وارد کنید');
+  if(!pass || pass.length<6) fail('trPass','رمز باید حداقل ۶ کاراکتر باشه');
+  if(pass2 !== pass || !pass2) fail('trPass2','دو رمز یکی نیستن');
+  if(role==='province_admin' && !$('trProvince').value) fail('trProvince','استان رو انتخاب کنید');
+  if(['county_admin','school_admin','teacher'].includes(role) && !$('trCounty').value) fail('trCounty','شهرستان رو انتخاب کنید');
+  if(role==='teacher' && $('trCounty').value && !_trPicked.size) fail('trSchoolMulti','حداقل یک مدرسه رو انتخاب کنید','trSchoolList');
+  if(role==='school_admin' && $('trCounty').value && !$('trSchool').value) fail('trSchool','مدرسه رو انتخاب کنید');
+  if(firstErrEl){ trFocusFirst(firstErrEl); return; }
 
   /* معلم: چند مدرسه — مدیر مدرسه: یک مدرسه — بقیه: هیچ */
   const schoolIds = role==='teacher' ? Array.from(_trPicked)
@@ -171,7 +244,15 @@ async function submitStaffRegister(){
       : 'مشکل داخلی در ثبت‌نام رخ داد (' + ((e && e.message) || 'نامشخص') + ')' };
   }
   $('trBtn').disabled = false; $('trBtn').textContent = 'ثبت‌نام';
-  if(error){ errEl.textContent = 'خطا: ' + error.message; return; }
+  if(error){
+    const mapped = trMapServerError(error.message);
+    if(mapped.field){
+      trFocusFirst(trFieldErr(mapped.field, mapped.text));
+    }else{
+      errEl.textContent = 'خطا: ' + mapped.text;
+    }
+    return;
+  }
   $('taRegForm').innerHTML = '<div class="pattern-card" style="text-align:center;padding:24px">✅ ثبت‌نام انجام شد!<br><br>یه ایمیل تأیید به <b>'+esc(email)+'</b> ارسال شد. روی لینک توش بزنید تا ایمیلتون تأیید بشه؛ بعدش درخواست شما برای تأیید سطح بالاتر ارسال می‌شه.</div>';
 }
 
