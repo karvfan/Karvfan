@@ -20,6 +20,21 @@ function setFieldError(inputId, msg){
 }
 function clearFieldErrors(ids){ ids.forEach(id=> setFieldError(id, '')); }
 
+/* پین پیش‌فرض ۱۲۳۴ (دانش‌آموزی که معلم ثبتش کرده): تا وقتی با همین پین وارد می‌شه، بعد از ورود یادآوری می‌کنیم پینش رو عوض کنه */
+function promptDefaultPinChange(){
+  const goChange = confirm('⚠️ پین ورود تو هنوز پین پیش‌فرض (۱۲۳۴) است و هر کسی که شماره‌ی تو رو بدونه می‌تونه وارد حسابت بشه.\n\nالان پین خودت رو عوض می‌کنی؟');
+  if(!goChange){ showToast('⚠️ یادت نره پینت رو از «پروفایل ← تغییر پین ورود» عوض کنی'); return; }
+  switchStudentTab('pProfile');
+  let tries = 0;
+  const timer = setInterval(()=>{
+    const el = $('pcOld');
+    if(el || ++tries > 25){
+      clearInterval(timer);
+      if(el){ el.scrollIntoView({ behavior:'smooth', block:'center' }); el.focus(); }
+    }
+  }, 200);
+}
+
 async function loadRegProvinces(){
   const { data } = await sb.from('provinces').select('*').order('name');
   $('saProvince').innerHTML = '<option value="">— انتخاب کنید —</option>' + (data||[]).map(p=>'<option value="'+p.id+'">'+p.name+'</option>').join('');
@@ -72,6 +87,7 @@ async function studentLogin(){
       catch(e){ console.error('بیومتریک ثبت نشد', e); }
     }
     await enterStudentApp();
+    if(pin === '1234') setTimeout(promptDefaultPinChange, 500);
   }catch(e){
     $('saLoginErr').textContent = 'خطا در ورود — دوباره تلاش کنید';
     console.error(e);
@@ -127,6 +143,7 @@ async function studentRegister(){
     student = sanitizeStudent(data[0]);
     localStorage.setItem('kf_student', JSON.stringify(student));
     await enterStudentApp();
+    if(pin === '1234') setTimeout(promptDefaultPinChange, 500);
   }catch(e){
     console.error(e);
     const msg = (e && e.message) ? e.message : '';

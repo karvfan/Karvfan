@@ -21,10 +21,11 @@ function countyOptionsHtml(counties, provinceId){
   return '<option value="">— انتخاب شهرستان —</option>' + filtered.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
 }
 
-// پین ۴رقمی عددی دانش‌آموز
-// (باید دقیقاً با الگوی اعتبارسنجی سمت کلاینت در student/js/auth.js هماهنگ باشه)
+// پین پیش‌فرض دانش‌آموزی که معلم ثبتش می‌کنه: همیشه 1234
+// دانش‌آموز موقع اولین ورود (student/js/auth.js) پیام «پینت رو عوض کن» می‌بینه.
+// (باید دقیقاً با الگوی اعتبارسنجی سمت کلاینت در student/js/auth.js هماهنگ باشه: ۴ رقم عددی)
 function generateStudentPin(){
-  return String(Math.floor(Math.random()*10000)).padStart(4,'0');
+  return '1234';
 }
 
 const DISTRICT_ROLES = ['county_admin','province_admin','super_admin'];
@@ -195,7 +196,8 @@ async function submitAddStudent(){
   $('asName').value=''; $('asClass').value=''; $('asPhone').value='';
   $('tAddStudent').insertAdjacentHTML('afterbegin',
     '<div class="pattern-card" style="border:1.5px solid var(--sky);margin-bottom:14px">'+
-    '✅ دانش‌آموز ثبت شد. پین ورودش رو بهش بده: <b style="font-size:18px;letter-spacing:2px">'+pin+'</b>'+
+    '✅ دانش‌آموز ثبت شد. پین پیش‌فرض ورودش: <b style="font-size:18px;letter-spacing:2px">'+pin+'</b>'+
+    '<div style="font-size:12px;color:var(--sub);margin-top:6px">بهش بگو بعد از اولین ورود، پین خودش رو عوض کنه.</div>'+
     '</div>');
 }
 async function submitBulkStudents(){
