@@ -19,7 +19,11 @@ textarea{min-height:70px}
 .likert label{display:flex;flex-direction:column;align-items:center;font-size:11px;gap:3px;color:#5e718f}
 .likert input{width:20px;height:20px}
 .qrow{border-top:1px solid #eee;padding-top:10px;margin-top:10px}
+.qrow.missing{outline:2px solid #c53030;outline-offset:2px;border-radius:8px}
 .qtext{font-size:13.5px;font-weight:700;margin-bottom:2px}
+.err{background:#fff5f5;color:#c53030;border:1px solid #feb2b2;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.8;margin-top:10px}
+.err[hidden]{display:none}
+.field-missing{border-color:#c53030 !important}
 .btn{border:0;border-radius:8px;padding:12px 18px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;background:#b3365b;color:#fff;width:100%;margin-top:8px}
 .btn:disabled{opacity:.6}
 </style>
@@ -38,11 +42,11 @@ textarea{min-height:70px}
     <option>سایر</option>
   </select>
   <label class="field">سابقه‌ی تدریس یا فعالیت آموزشی (سال)</label>
-  <input type="number" id="i1" inputmode="numeric">
+  <input type="text" id="i1" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="مثلاً ۱۰">
 </div>
 
 <div class="card">
-<form id="f">
+<form id="f" novalidate>
 <div class="qrow"><div class="qtext">استفاده از پنل معلم کارفن برایم آسان بود.</div><div class="likert"><label><input type="radio" name="q0" value="1" required>۱</label><label><input type="radio" name="q0" value="2">۲</label><label><input type="radio" name="q0" value="3">۳</label><label><input type="radio" name="q0" value="4">۴</label><label><input type="radio" name="q0" value="5">۵</label></div></div>
 <div class="qrow"><div class="qtext">بررسی و نمره‌دهی به کارهای دانش‌آموزان با این اپ سریع‌تر از روش قبلی‌ام بود.</div><div class="likert"><label><input type="radio" name="q1" value="1" required>۱</label><label><input type="radio" name="q1" value="2">۲</label><label><input type="radio" name="q1" value="3">۳</label><label><input type="radio" name="q1" value="4">۴</label><label><input type="radio" name="q1" value="5">۵</label></div></div>
 <div class="qrow"><div class="qtext">مدیریت درس‌ها و محتوای آموزشی در اپ ساده و قابل‌فهم بود.</div><div class="likert"><label><input type="radio" name="q2" value="1" required>۱</label><label><input type="radio" name="q2" value="2">۲</label><label><input type="radio" name="q2" value="3">۳</label><label><input type="radio" name="q2" value="4">۴</label><label><input type="radio" name="q2" value="5">۵</label></div></div>
@@ -63,29 +67,90 @@ textarea{min-height:70px}
 <textarea id="open1"></textarea>
 <label class="field">پیشنهاد یا نظر دیگه‌ای دارید؟ (اختیاری)</label>
 <textarea id="open2"></textarea>
+<div class="err" id="err" role="alert" hidden></div>
 <button class="btn" id="btn" type="submit">ثبت پاسخ</button>
 </form>
 </div>
 </div>
 <script>
 const RESPONDENT_TYPE='teacher';
+const NUM_QUESTIONS=14;
+
+// تبدیل ارقام فارسی/عربی به انگلیسی (کیبورد فارسی ارقام ۰-۹ تولید می‌کنه)
+function normDigits(s){
+  return String(s||'')
+    .replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+    .replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+}
+
+const errBox=document.getElementById('err');
+function showError(msg){
+  // به‌جای alert() (که تو بعضی مرورگرهای داخل پیام‌رسان‌ها یا وب‌ویو بلاک می‌شه) پیام داخل خودِ صفحه نشون داده می‌شه
+  errBox.textContent=msg; errBox.hidden=false;
+  errBox.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function clearError(){ errBox.hidden=true; errBox.textContent=''; }
+
 document.getElementById('f').addEventListener('submit', async (e) => {
   e.preventDefault();
+  clearError();
+  document.querySelectorAll('.qrow.missing').forEach(el=>el.classList.remove('missing'));
+  document.getElementById('i0').classList.remove('field-missing');
+  document.getElementById('i1').classList.remove('field-missing');
+
+  // ---- اعتبارسنجی سمت کاربر (به‌جای تکیه روی required مرورگر که تو بعضی وب‌ویوها پیام نشون نمی‌ده) ----
+  const role=document.getElementById('i0').value.trim();
+  const yearsRaw=document.getElementById('i1').value.trim();
+  const years=normDigits(yearsRaw).replace(/\D/g,'');
+  if(!role){
+    const el=document.getElementById('i0'); el.classList.add('field-missing');
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    showError('لطفاً نقش خودتان را انتخاب کنید.');
+    return;
+  }
+  if(yearsRaw && (!years || Number(years)>60)){
+    const el=document.getElementById('i1'); el.classList.add('field-missing');
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    showError('سابقه را به‌صورت یک عدد (حداکثر ۶۰ سال) وارد کنید.');
+    return;
+  }
+
+  const scores=[]; const missing=[];
+  for(let i=0;i<NUM_QUESTIONS;i++){
+    const el=document.querySelector('input[name="q'+i+'"]:checked');
+    scores.push(el?Number(el.value):null);
+    if(!el) missing.push(i);
+  }
+  if(missing.length){
+    missing.forEach(i=>{ const row=document.querySelector('input[name="q'+i+'"]').closest('.qrow'); if(row) row.classList.add('missing'); });
+    const first=document.querySelector('input[name="q'+missing[0]+'"]').closest('.qrow');
+    if(first) first.scrollIntoView({behavior:'smooth',block:'center'});
+    showError('به '+missing.length+' سؤال هنوز پاسخ نداده‌اید (سؤال‌های قرمز‌شده). لطفاً پاسخ دهید و دوباره «ثبت پاسخ» را بزنید.');
+    return;
+  }
+
   const btn=document.getElementById('btn'); btn.disabled=true; btn.textContent='در حال ثبت...';
-  const info=[document.getElementById('i0').value.trim(), document.getElementById('i1').value.trim()];
-  const scores=[]; for(let i=0;i<14;i++){ const el=document.querySelector('input[name="q'+i+'"]:checked'); scores.push(el?Number(el.value):null); }
+  const info=[role, years];
   const open=[document.getElementById('open0').value.trim(), document.getElementById('open1').value.trim(), document.getElementById('open2').value.trim()];
+
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(),20000);
   try{
-    const r=await fetch('/api/survey/submit',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({respondent_type:RESPONDENT_TYPE,data:{info,scores,open}})});
+    const r=await fetch('/api/survey/submit',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({respondent_type:RESPONDENT_TYPE,data:{info,scores,open}}),signal:ctrl.signal});
     let j={};
     try{ j=await r.json(); }
     catch(parseErr){ throw new Error('پاسخ نامعتبری از سرور دریافت شد (کد '+r.status+') — ممکنه سرویس نظرسنجی موقتاً در دسترس نباشه.'); }
     if(!r.ok) throw new Error(j.error || ('خطای سرور (کد '+r.status+')'));
     document.querySelector('.wrap').innerHTML='<div class="card"><h1>سپاسگزاریم 🌷</h1><div class="muted">پاسخ شما با موفقیت ثبت شد.</div></div>';
   }catch(err){
-    const msg = (err && err.message==='Failed to fetch') ? 'اتصال به سرور برقرار نشد — لطفاً اتصال اینترنتت رو چک کن و دوباره امتحان کن.' : ((err && err.message) || 'خطای نامشخص');
-    alert('ثبت پاسخ انجام نشد: '+msg);
+    let msg;
+    if(err && err.name==='AbortError') msg='پاسخ سرور دیر رسید — اینترنتت رو چک کن و دوباره «ثبت پاسخ» رو بزن (پاسخ‌هات حفظ شده).';
+    else if(err && err.message==='Failed to fetch') msg='اتصال به سرور برقرار نشد — لطفاً اتصال اینترنتت رو چک کن و دوباره امتحان کن (پاسخ‌هات حفظ شده).';
+    else msg=(err && err.message) || 'خطای نامشخص';
+    showError('ثبت پاسخ انجام نشد: '+msg);
     btn.disabled=false; btn.textContent='ثبت پاسخ';
+  }finally{
+    clearTimeout(timer);
   }
 });
 </script>
