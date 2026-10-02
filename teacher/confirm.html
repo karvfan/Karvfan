@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>تأیید ایمیل | کارفن</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f6f8;color:#263754;font-family:Tahoma,Arial,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:20px}
+.card{background:#fff;border-radius:16px;padding:28px 22px;max-width:440px;width:100%;box-shadow:0 2px 12px #00000010;text-align:center;line-height:2}
+h1{font-size:20px;margin:0 0 8px}
+p{margin:6px 0;font-size:14px}
+.muted{color:#718096;font-size:13px}
+.btn{display:block;width:100%;border:0;border-radius:10px;padding:14px;margin-top:16px;font-family:inherit;font-size:15px;font-weight:800;background:#b3365b;color:#fff;cursor:pointer;text-decoration:none}
+.btn:disabled{opacity:.6}
+.ok{color:#2f855a}.bad{color:#c53030}
+</style>
+</head>
+<body>
+<div class="card" id="box">
+  <h1>تأیید ایمیل 👩‍🏫</h1>
+  <p id="msg">برای تکمیل ثبت‌نام، روی دکمه‌ی زیر بزنید.</p>
+  <button class="btn" id="btn" type="button">تأیید ایمیل</button>
+</div>
+
+<script src="../shared/js/vendor/supabase.js"></script>
+<script src="../shared/js/config.js"></script>
+<script>
+/* چرا این صفحه؟ لینک مستقیم Supabase «یک‌بار مصرف» است و اسکنر ایمیل/پیش‌نمایش لینک (Gmail و ...)
+   ممکنه قبل از کاربر بازش کنه و بسوزونتش. این صفحه توکن رو فقط وقتی کاربر خودش دکمه رو بزنه مصرف می‌کنه. */
+(function(){
+  const $ = id => document.getElementById(id);
+  const params = new URLSearchParams(location.search);
+  const token_hash = params.get('token_hash');
+  const type = params.get('type') || 'email';
+  const btn = $('btn'), msg = $('msg');
+
+  function done(html, cls){
+    msg.className = cls || '';
+    msg.innerHTML = html;
+  }
+  function showLoginLink(){
+    btn.outerHTML = '<a class="btn" href="./">رفتن به صفحه‌ی ورود</a>';
+  }
+
+  if(!token_hash){
+    done('لینک ناقص است. لطفاً دوباره روی دکمه‌ی داخل ایمیل بزنید.', 'bad');
+    btn.disabled = true;
+    return;
+  }
+  if(typeof isConfigured === 'undefined' || !isConfigured || !sb){
+    done('اتصال به سامانه برقرار نیست. چند دقیقه بعد دوباره امتحان کنید.', 'bad');
+    btn.disabled = true;
+    return;
+  }
+
+  btn.addEventListener('click', async () => {
+    btn.disabled = true; btn.textContent = 'در حال تأیید...';
+    try{
+      const { error } = await sb.auth.verifyOtp({ token_hash, type });
+      if(error){
+        const m = String(error.message || '');
+        if(/expired|invalid/i.test(m)){
+          done('این لینک منقضی شده یا قبلاً استفاده شده است.<br><span class="muted">اگه قبلاً ایمیلت رو تأیید کردی، فقط وارد شو. در غیر این صورت دوباره ثبت‌نام کن.</span>', 'bad');
+          showLoginLink();
+        }else{
+          done('تأیید انجام نشد: ' + m, 'bad');
+          btn.disabled = false; btn.textContent = 'تأیید ایمیل';
+        }
+        return;
+      }
+      /* verifyOtp کاربر رو لاگین می‌کنه؛ چون معلم باید اول توسط ادمین تأیید بشه، بیرونش می‌کنیم */
+      try{ await sb.auth.signOut(); }catch(_){}
+      done('✅ ایمیل شما تأیید شد.<br>درخواست عضویت شما برای ادمین بالادستی ارسال شد؛ بعد از تأیید او می‌توانید وارد شوید.', 'ok');
+      showLoginLink();
+    }catch(e){
+      console.error(e);
+      done('اتصال به سرور برقرار نشد — اینترنت خود را بررسی کنید و دوباره امتحان کنید.', 'bad');
+      btn.disabled = false; btn.textContent = 'تأیید ایمیل';
+    }
+  });
+})();
+</script>
+</body>
+</html>
