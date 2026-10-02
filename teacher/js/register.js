@@ -14,9 +14,17 @@ let _trWired = false;
 let _trSchools = [];          // مدرسه‌های تأییدشده‌ی شهرستان انتخاب‌شده
 const _trPicked = new Set();  // شناسه‌ی مدرسه‌های انتخاب‌شده توسط معلم
 
+/* آدرس سایت واقعی برای لینک تأیید ایمیل.
+   قبلاً SITE_ORIGIN هیچ‌جا تعریف نشده بود و ReferenceError می‌داد؛ چون داخل try/catch بود،
+   به‌اشتباه به‌صورت «اتصال به سرور برقرار نشد» نمایش داده می‌شد. */
+const TR_FALLBACK_SITE_ORIGIN = 'https://karvfan.ir';
+function getSiteOrigin(){
+  return (typeof SITE_ORIGIN !== 'undefined' && SITE_ORIGIN) ? SITE_ORIGIN : TR_FALLBACK_SITE_ORIGIN;
+}
+
 /* یکسان‌سازی حروف عربی/فارسی برای جستجو */
 function trNorm(s){
-  return String(s||'').replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/[ً-ٟ]/g,'').toLowerCase();
+  return String(s||'').replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/[\u064B-\u065F]/g,'').toLowerCase();
 }
 
 /* بخش انتخاب چندتایی مدرسه (فقط برای نقش معلم) — از داخل JS ساخته می‌شه */
@@ -142,7 +150,7 @@ async function submitStaffRegister(){
     const res = await sb.auth.signUp({
       email, password: pass,
       options: {
-        emailRedirectTo: SITE_ORIGIN + '/teacher/',
+        emailRedirectTo: getSiteOrigin() + '/teacher/',
         data: {
           pending_role_request: 'true',
           full_name, national_code, personnel_code, requested_role: role,
@@ -155,8 +163,12 @@ async function submitStaffRegister(){
     });
     error = res.error;
   }catch(e){
-    console.error(e);
-    error = { message: 'اتصال به سرور برقرار نشد — اینترنت خودتون رو چک کنید و دوباره تلاش کنید' };
+    console.error('submitStaffRegister failed:', e);
+    /* فقط خطاهای واقعاً شبکه‌ای پیام «اتصال» می‌گیرن؛ خطای برنامه‌نویسی رو مخفی نکنیم */
+    const isNetwork = (e instanceof TypeError) || /fetch|network|load failed/i.test(String(e && e.message));
+    error = { message: isNetwork
+      ? 'اتصال به سرور برقرار نشد — اینترنت خودتون رو چک کنید و دوباره تلاش کنید'
+      : 'مشکل داخلی در ثبت‌نام رخ داد (' + ((e && e.message) || 'نامشخص') + ')' };
   }
   $('trBtn').disabled = false; $('trBtn').textContent = 'ثبت‌نام';
   if(error){ errEl.textContent = 'خطا: ' + error.message; return; }
