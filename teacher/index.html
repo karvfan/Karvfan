@@ -58,7 +58,7 @@
         <input type="checkbox" id="taBioRememberChk"> این دستگاه رو برای ورود سریع بعدی با اثر انگشت به‌خاطر بسپار
       </label>
       <div class="field-err" id="taErr"></div>
-      <button class="btn btn-sky btn-block" onclick="teacherLogin()" id="taBtn">ورود</button>
+      <button class="btn btn-thread btn-block" onclick="teacherLogin()" id="taBtn">ورود</button>
       <a href="#" onclick="forgotPassword();return false" style="display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--ink-soft)">رمز رو فراموش کردم؟</a>
     </div>
 
@@ -105,19 +105,19 @@
       <button class="logout-btn" onclick="teacherLogout()">خروج</button>
     </div>
   </div>
-  <div class="tabs">
-    <button class="tab active" data-p="tReview" onclick="switchTeacherTab('tReview')">🗂️ بررسی کارها<span class="tab-badge hidden" id="badgeReview"></span></button>
-    <button class="tab" data-p="tLessons" onclick="switchTeacherTab('tLessons')">📚 آموزش‌ها</button>
-    <button class="tab" data-p="tAssign" onclick="switchTeacherTab('tAssign')">📅 تکالیف هفتگی</button>
-    <button class="tab" data-p="tStudents" onclick="switchTeacherTab('tStudents')">👩‍🎓 دانش‌آموزان</button>
-    <button class="tab" data-p="tAddStudent" onclick="switchTeacherTab('tAddStudent')">➕ ثبت دانش‌آموز</button>
-    <button class="tab" data-p="tSchools" onclick="switchTeacherTab('tSchools')">🏫 مدرسه‌ها<span class="tab-badge hidden" id="badgeSchools"></span></button>
-    <button class="tab" data-p="tAnn" onclick="switchTeacherTab('tAnn')">📢 اطلاعیه‌ها</button>
-    <button class="tab" data-p="tStats" onclick="switchTeacherTab('tStats')">📊 آمار</button>
-    <button class="tab" data-p="tMyInfo" onclick="switchTeacherTab('tMyInfo')">👤 حساب من</button>
-    <button class="tab hidden" id="tabDistrict" data-p="tDistrict" onclick="switchTeacherTab('tDistrict')">🏛️ آمار کلان</button>
-    <button class="tab hidden" id="tabRoleRequests" data-p="tRoleRequests" onclick="switchTeacherTab('tRoleRequests')">👤 درخواست‌های عضویت<span class="tab-badge hidden" id="badgeRoleRequests"></span></button>
-    <button class="tab hidden" id="tabStaff" data-p="tStaff" onclick="switchTeacherTab('tStaff')">🧑‍💼 کارکنان</button>
+  <div class="tabs app-nav">
+    <button class="tab active" data-p="tReview" onclick="switchTeacherTab('tReview')"><span class="ti">🗂️</span><span class="tl">بررسی کارها</span><span class="tab-badge hidden" id="badgeReview"></span></button>
+    <button class="tab" data-p="tLessons" onclick="switchTeacherTab('tLessons')"><span class="ti">📚</span><span class="tl">آموزش‌ها</span></button>
+    <button class="tab" data-p="tAssign" onclick="switchTeacherTab('tAssign')"><span class="ti">📅</span><span class="tl">تکالیف</span></button>
+    <button class="tab" data-p="tStudents" onclick="switchTeacherTab('tStudents')"><span class="ti">👩‍🎓</span><span class="tl">دانش‌آموزان</span></button>
+    <button class="tab" data-p="tAddStudent" onclick="switchTeacherTab('tAddStudent')"><span class="ti">➕</span><span class="tl">ثبت دانش‌آموز</span></button>
+    <button class="tab" data-p="tSchools" onclick="switchTeacherTab('tSchools')"><span class="ti">🏫</span><span class="tl">مدرسه‌ها</span><span class="tab-badge hidden" id="badgeSchools"></span></button>
+    <button class="tab" data-p="tAnn" onclick="switchTeacherTab('tAnn')"><span class="ti">📢</span><span class="tl">اطلاعیه‌ها</span></button>
+    <button class="tab" data-p="tStats" onclick="switchTeacherTab('tStats')"><span class="ti">📊</span><span class="tl">آمار</span></button>
+    <button class="tab" data-p="tMyInfo" onclick="switchTeacherTab('tMyInfo')"><span class="ti">👤</span><span class="tl">حساب من</span></button>
+    <button class="tab hidden" id="tabDistrict" data-p="tDistrict" onclick="switchTeacherTab('tDistrict')"><span class="ti">🏛️</span><span class="tl">آمار کلان</span></button>
+    <button class="tab hidden" id="tabRoleRequests" data-p="tRoleRequests" onclick="switchTeacherTab('tRoleRequests')"><span class="ti">📥</span><span class="tl">عضویت‌ها</span><span class="tab-badge hidden" id="badgeRoleRequests"></span></button>
+    <button class="tab hidden" id="tabStaff" data-p="tStaff" onclick="switchTeacherTab('tStaff')"><span class="ti">🧑‍💼</span><span class="tl">کارکنان</span></button>
   </div>
   <div class="main">
     <div class="panel active" id="tReview"></div>
