@@ -2,6 +2,20 @@
  * main.js — نقطه‌ی شروع اپ دانش‌آموز. باید همیشه آخرین اسکریپت بارگذاری‌شده باشد.
  */
 
+/* نوتیفیکیشن push (فقط اپ اندروید): push.js بارگذاری می‌شه و بعد از هر ورود موفق دانش‌آموز، دستگاه ثبت می‌شه */
+const pushScriptReady = new Promise((resolve)=>{
+  const s = document.createElement('script');
+  s.src = 'js/push.js';
+  s.onload = resolve;
+  s.onerror = resolve;
+  document.head.appendChild(s);
+});
+const enterStudentAppOriginal = window.enterStudentApp;
+window.enterStudentApp = async function(){
+  await enterStudentAppOriginal.apply(this, arguments);
+  pushScriptReady.then(()=>{ if(typeof initStudentPush === 'function') initStudentPush(); });
+};
+
 function withTimeout(promise, ms){
   return Promise.race([
     promise,
