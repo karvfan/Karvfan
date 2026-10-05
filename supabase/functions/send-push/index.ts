@@ -1,15 +1,20 @@
 // Edge Function: ارسال نوتیفیکیشن FCM به دانش‌آموزان وقتی اطلاعیه یا تکلیف جدید ثبت می‌شه.
-// دیپلوی: supabase functions deploy send-push --no-verify-jwt
-// Secretهای لازم: PUSH_WEBHOOK_SECRET ، FCM_SERVICE_ACCOUNT_JSON (محتوای کامل فایل Service Account فایربیس)
+// احراز هویت: هدر x-webhook-secret باید با مقدار جدول push_config (کلید webhook_secret) یکی باشه.
+// Secret لازم: FCM_SERVICE_ACCOUNT_JSON (محتوای کامل فایل Service Account فایربیس)
+// دیپلوی: verify_jwt خاموش (چون خود تابع هدر رو چک می‌کنه)
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const WEBHOOK_SECRET = Deno.env.get('PUSH_WEBHOOK_SECRET') ?? '';
 const SERVICE_ACCOUNT = JSON.parse(Deno.env.get('FCM_SERVICE_ACCOUNT_JSON') ?? '{}');
 
 const sb = createClient(SUPABASE_URL, SERVICE_KEY);
+
+async function getWebhookSecret(): Promise<string> {
+  const { data } = await sb.from('push_config').select('value').eq('key', 'webhook_secret').maybeSingle();
+  return data?.value ?? '';
+}
 
 function b64url(input: ArrayBuffer | string): string {
   const bytes = typeof input === 'string' ? new TextEncoder().encode(input) : new Uint8Array(input);
@@ -76,7 +81,8 @@ async function sendOne(accessToken: string, token: string, title: string, body: 
 }
 
 Deno.serve(async (req) => {
-  if (!WEBHOOK_SECRET || req.headers.get('x-webhook-secret') !== WEBHOOK_SECRET) {
+  const expected = await getWebhookSecret();
+  if (!expected || req.headers.get('x-webhook-secret') !== expected) {
     return new Response('unauthorized', { status: 401 });
   }
   const payload = await req.json().catch(() => null);
