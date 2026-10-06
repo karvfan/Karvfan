@@ -13,6 +13,7 @@ function switchTeacherAuthTab(which){
 let _trWired = false;
 let _trSchools = [];          // مدرسه‌های تأییدشده‌ی شهرستان انتخاب‌شده
 const _trPicked = new Set();  // شناسه‌ی مدرسه‌های انتخاب‌شده توسط معلم
+let _trPendingEmail = '';     // ایمیلی که تأییدیه براش فرستاده شده (برای «ارسال دوباره»)
 
 /* آدرس سایت واقعی برای لینک تأیید ایمیل.
    قبلاً SITE_ORIGIN هیچ‌جا تعریف نشده بود و ReferenceError می‌داد؛ چون داخل try/catch بود،
@@ -20,6 +21,25 @@ const _trPicked = new Set();  // شناسه‌ی مدرسه‌های انتخا�
 const TR_FALLBACK_SITE_ORIGIN = 'https://karvfan.ir';
 function getSiteOrigin(){
   return (typeof SITE_ORIGIN !== 'undefined' && SITE_ORIGIN) ? SITE_ORIGIN : TR_FALLBACK_SITE_ORIGIN;
+}
+
+/* اشتباه‌های تایپی رایج در دامنه‌ی ایمیل (مثلاً gmil.com به‌جای gmail.com).
+   Supabase ایمیل تأیید رو بدون خطا به این دامنه‌های ناموجود «ارسال» می‌کنه و هیچ‌وقت نمی‌رسه،
+   پس باید قبل از ثبت‌نام جلوشون رو گرفت. */
+const TR_EMAIL_DOMAIN_FIXES = {
+  'gmil.com':'gmail.com', 'gmial.com':'gmail.com', 'gamil.com':'gmail.com', 'gnail.com':'gmail.com',
+  'gmai.com':'gmail.com', 'gmaill.com':'gmail.com', 'gmeil.com':'gmail.com', 'gmal.com':'gmail.com',
+  'gemail.com':'gmail.com', 'gail.com':'gmail.com', 'gmail.co':'gmail.com', 'gmail.con':'gmail.com',
+  'gmail.cm':'gmail.com', 'gmail.om':'gmail.com',
+  'yahooo.com':'yahoo.com', 'yaho.com':'yahoo.com', 'yahho.com':'yahoo.com', 'yhoo.com':'yahoo.com', 'yahoo.co':'yahoo.com',
+  'hotmial.com':'hotmail.com', 'hotmal.com':'hotmail.com', 'hotmail.co':'hotmail.com',
+  'outlok.com':'outlook.com', 'outloook.com':'outlook.com'
+};
+function trSuggestEmail(email){
+  const at = email.lastIndexOf('@');
+  if(at < 0) return null;
+  const fix = TR_EMAIL_DOMAIN_FIXES[email.slice(at+1).toLowerCase()];
+  return fix ? email.slice(0, at+1) + fix : null;
 }
 
 /* ---------- نمایش خطا دقیقاً زیر خودِ فیلد ---------- */
@@ -203,6 +223,11 @@ async function submitStaffRegister(){
   if(!isValidNationalCode(national_code)) fail('trCode','کد ملی معتبر نیست');
   if(!/^\d{3,15}$/.test(personnel_code)) fail('trPersonnel','کد پرسنلی رو به‌صورت عدد وارد کنید');
   if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) fail('trEmail','یک ایمیل معتبر وارد کنید');
+  else{
+    /* اشتباه تایپی دامنه (مثلاً gmil.com): ایمیل تأیید هیچ‌وقت نمی‌رسه، پس همین‌جا جلوش رو می‌گیریم */
+    const suggestion = trSuggestEmail(email);
+    if(suggestion) fail('trEmail','آدرس ایمیل اشتباه تایپی داره و ایمیل تأیید به اون نمی‌رسه. منظورتون «'+suggestion+'» بود؟ ایمیل رو اصلاح کنید');
+  }
   if(!pass || pass.length<6) fail('trPass','رمز باید حداقل ۶ کاراکتر باشه');
   if(pass2 !== pass || !pass2) fail('trPass2','دو رمز یکی نیستن');
   if(role==='province_admin' && !$('trProvince').value) fail('trProvince','استان رو انتخاب کنید');
@@ -235,6 +260,13 @@ async function submitStaffRegister(){
       }
     });
     error = res.error;
+    /* ایمیلی که قبلاً ثبت و تأیید شده: Supabase (برای جلوگیری از لو رفتن ایمیل‌های ثبت‌شده) بدون خطا
+       و بدون ارسال هیچ ایمیلی جواب می‌ده، ولی user.identities خالیه. بدون این چک، به کاربر
+       «ایمیل تأیید ارسال شد» نشون داده می‌شد و ایمیلی هم نمی‌رسید. */
+    const u = res.data && res.data.user;
+    if(!error && u && Array.isArray(u.identities) && u.identities.length === 0){
+      error = { message: 'User already registered' };
+    }
   }catch(e){
     console.error('submitStaffRegister failed:', e);
     /* فقط خطاهای واقعاً شبکه‌ای پیام «اتصال» می‌گیرن. هر TypeError نشانه‌ی قطعی شبکه نیست
@@ -257,7 +289,44 @@ async function submitStaffRegister(){
     }
     return;
   }
-  $('taRegForm').innerHTML = '<div class="pattern-card" style="text-align:center;padding:24px">✅ ثبت‌نام انجام شد!<br><br>یه ایمیل تأیید به <b>'+esc(email)+'</b> ارسال شد. روی لینک توش بزنید تا ایمیلتون تأیید بشه؛ بعدش درخواست شما برای تأیید سطح بالاتر ارسال می‌شه.</div>';
+  _trPendingEmail = email;
+  $('taRegForm').innerHTML = '<div class="pattern-card" style="text-align:center;padding:24px">✅ ثبت‌نام انجام شد!<br><br>یه ایمیل تأیید به <b dir="ltr">'+esc(email)+'</b> ارسال شد. روی لینک توش بزنید تا ایمیلتون تأیید بشه؛ بعدش درخواست شما برای تأیید سطح بالاتر ارسال می‌شه.'+
+    '<br><br><small>ایمیل نرسید؟ پوشه‌ی اسپم (Spam) رو هم نگاه کنید و مطمئن بشید آدرس رو درست نوشتید.</small>'+
+    '<div id="trResendMsg" style="font-size:12.5px;margin-top:10px;min-height:18px" role="status"></div>'+
+    '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:8px">'+
+    '<button id="trResendBtn" class="btn btn-ghost btn-sm" type="button" onclick="resendStaffConfirm()">ارسال دوباره‌ی ایمیل تأیید</button>'+
+    '<button class="btn btn-ghost btn-sm" type="button" onclick="location.reload()">ثبت‌نام با ایمیل دیگر</button>'+
+    '</div></div>';
+}
+
+/* ارسال دوباره‌ی ایمیل تأیید برای ایمیلی که همین الان ثبت‌نام کرده */
+async function resendStaffConfirm(){
+  const msg = $('trResendMsg'), btn = $('trResendBtn');
+  if(!_trPendingEmail || !sb || !msg || !btn) return;
+  btn.disabled = true;
+  msg.style.color = '';
+  msg.textContent = 'در حال ارسال...';
+  try{
+    const { error } = await sb.auth.resend({
+      type: 'signup',
+      email: _trPendingEmail,
+      options: { emailRedirectTo: getSiteOrigin() + '/teacher/' }
+    });
+    if(error){
+      msg.style.color = '#b3261e';
+      msg.textContent = /rate limit|too many|seconds/i.test(String(error.message||''))
+        ? 'تعداد تلاش‌ها زیاد بوده؛ چند دقیقه بعد دوباره امتحان کنید'
+        : 'ارسال نشد: ' + error.message;
+    }else{
+      msg.style.color = '#2f855a';
+      msg.textContent = '✅ ایمیل تأیید دوباره ارسال شد';
+    }
+  }catch(e){
+    console.error('resendStaffConfirm failed:', e);
+    msg.style.color = '#b3261e';
+    msg.textContent = 'اتصال به سرور برقرار نشد — اینترنت خودتون رو چک کنید';
+  }
+  setTimeout(()=>{ if(btn) btn.disabled = false; }, 30000);
 }
 
 /* ==================================================== تأیید درخواست‌های عضویت (برای ادمین شهرستان/استان/سوپرادمین) */
