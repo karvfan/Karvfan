@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /download/
+Disallow: /version/
+Disallow: /survey/admin
+
+Sitemap: https://karvfan.ir/sitemap.xml
