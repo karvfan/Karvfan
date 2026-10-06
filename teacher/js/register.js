@@ -237,11 +237,15 @@ async function submitStaffRegister(){
     error = res.error;
   }catch(e){
     console.error('submitStaffRegister failed:', e);
-    /* فقط خطاهای واقعاً شبکه‌ای پیام «اتصال» می‌گیرن؛ خطای برنامه‌نویسی رو مخفی نکنیم */
-    const isNetwork = (e instanceof TypeError) || /fetch|network|load failed/i.test(String(e && e.message));
+    /* فقط خطاهای واقعاً شبکه‌ای پیام «اتصال» می‌گیرن. هر TypeError نشانه‌ی قطعی شبکه نیست
+       (مثلاً «x is not a function» یا «Cannot read properties of undefined» باگ برنامه‌ست)،
+       پس نوع خطا ملاک نیست؛ فقط آفلاین‌بودن دستگاه یا متن خطای شبکه‌ی مرورگر. */
+    const msg = String((e && e.message) || '');
+    const isNetwork = (typeof navigator !== 'undefined' && navigator.onLine === false)
+      || /failed to fetch|networkerror|network request failed|load failed/i.test(msg);
     error = { message: isNetwork
       ? 'اتصال به سرور برقرار نشد — اینترنت خودتون رو چک کنید و دوباره تلاش کنید'
-      : 'مشکل داخلی در ثبت‌نام رخ داد (' + ((e && e.message) || 'نامشخص') + ')' };
+      : 'مشکل داخلی در ثبت‌نام رخ داد (' + (msg || 'نامشخص') + ')' };
   }
   $('trBtn').disabled = false; $('trBtn').textContent = 'ثبت‌نام';
   if(error){
