@@ -198,11 +198,19 @@
       <textarea id="upEcoNote" rows="2" class="hidden" placeholder="چطور این کار رو سازگارتر با محیط‌زیست کردی؟" style="margin-top:6px"></textarea>
     </div>
     <div class="field">
-      <label>عکس فعالیت (فقط از دوربین گوشی)</label>
-      <div class="file-drop" id="upDrop" onclick="document.getElementById('upFile').click()">📷 برای گرفتن عکس از فعالیتت ضربه بزن</div>
+      <label>عکس، ویدیو یا فایل کار</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+        <button type="button" class="btn btn-sky btn-sm" onclick="pickMedia('photo')">📷 عکس (دوربین)</button>
+        <button type="button" class="btn btn-sky btn-sm" onclick="pickMedia('video')">🎬 ویدیو</button>
+        <button type="button" class="btn btn-sky btn-sm" onclick="pickMedia('file')">📎 فایل</button>
+      </div>
+      <div class="file-drop" id="upDrop" onclick="pickMedia('photo')">📎 عکس، ویدیو یا فایل کارت رو انتخاب کن</div>
       <input type="file" id="upFile" accept="image/*" capture="environment" class="hidden" onchange="onUploadFileChange()">
+      <input type="file" id="upVideo" accept="video/*" class="hidden" onchange="onMediaChosen('video')">
+      <input type="file" id="upAnyFile" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip" class="hidden" onchange="onMediaChosen('file')">
       <img id="upPreview" class="file-preview">
-      <div style="font-size:11.5px;color:var(--sub);margin-top:6px">نام و نام‌خانوادگی، مدرسه، پودمان و اسمی که برای کارت گذاشتی، خودکار روی عکس ثبت می‌شه.</div>
+      <video id="upVideoPreview" class="file-preview" controls playsinline style="display:none;max-width:100%"></video>
+      <div style="font-size:11.5px;color:var(--sub);margin-top:6px">عکس‌ها فقط از دوربین گرفته می‌شن و نام و نام‌خانوادگی، مدرسه، پودمان و اسمی که برای کارت گذاشتی، خودکار روی عکس ثبت می‌شه. ویدیو و فایل تا ۵۰ مگابایت قابل ارسالن.</div>
     </div>
     <div class="field-err" id="upErr"></div>
     <div class="modal-actions">
@@ -257,6 +265,7 @@
 <script>checkForAppUpdate('student', 'اپ دانش‌آموز');</script>
 <script src="js/auth.js"></script>
 <script src="js/student.js"></script>
+<script src="js/upload-media.js"></script>
 <script src="js/games.js"></script>
 <script src="js/careers.js"></script>
 <script src="js/main.js"></script>
