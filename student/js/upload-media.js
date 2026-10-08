@@ -2,8 +2,8 @@
  * upload-media.js — آپلود «عکس، ویدیو یا فایل» برای کارهای دانش‌آموز
  *
  * این فایل بعد از student.js لود می‌شه و مسیر آپلود رو گسترش می‌ده:
- *  - عکس: همون مسیر قبلی (دوربین + واترمارک)
- *  - ویدیو: انتخاب از گالری یا ضبط با دوربین
+ *  - عکس: فقط ضبط مستقیم با دوربین (+ واترمارک)
+ *  - ویدیو: فقط ضبط مستقیم با دوربین (بدون انتخاب از گالری)
  *  - فایل: PDF / Word / PowerPoint / Excel / متن / ZIP
  * ویدیو و فایل مستقیم (بدون base64) به Storage آپلود می‌شن تا حافظه‌ی گوشی پر نشه.
  */
@@ -12,6 +12,12 @@ const UPLOAD_MAX_MB = 50;
 const VIDEO_EXT_RE = /\.(mp4|webm|mov|m4v|3gp|mkv)$/i;
 const DOC_EXTS = ['pdf','doc','docx','ppt','pptx','xls','xlsx','txt','zip'];
 let mediaObjUrl = null;
+
+// ویدیو هم مثل عکس فقط با ضبط مستقیم دوربین گوشی
+(function initCaptureOnly(){
+  const v = $('upVideo');
+  if(v){ v.setAttribute('accept', 'video/*'); v.setAttribute('capture', 'environment'); }
+})();
 
 function resetMediaPreview(){
   if(mediaObjUrl){ try{ URL.revokeObjectURL(mediaObjUrl); }catch(e){} mediaObjUrl = null; }
@@ -65,7 +71,7 @@ function onMediaChosen(kind){
     v.style.display = 'block';
   }
   const mb = (f.size / 1024 / 1024).toFixed(1);
-  $('upDrop').textContent = (isVideo ? '✅ ویدیو انتخاب شد: ' : '✅ فایل انتخاب شد: ') + f.name + ' (' + mb + ' مگابایت)';
+  $('upDrop').textContent = (isVideo ? '✅ ویدیو ضبط شد: ' : '✅ فایل انتخاب شد: ') + f.name + ' (' + mb + ' مگابایت)';
   $('upDrop').classList.add('has-file');
 }
 
@@ -86,14 +92,14 @@ const _openUploadModalOrig = openUploadModal;
 openUploadModal = function(lessonId, assignmentId){
   resetMediaPreview();
   _openUploadModalOrig(lessonId, assignmentId);
-  $('upDrop').textContent = '📎 عکس، ویدیو یا فایل کارت رو انتخاب کن';
+  $('upDrop').textContent = '📷 عکس بگیر یا 🎬 ویدیو ضبط کن (یا فایل بفرست)';
 };
 
 // پیام خطای درست وقتی هیچ چیزی انتخاب نشده
 const _submitUploadOrig = submitUpload;
 submitUpload = function(){
   if($('upTitle').value.trim() && !uploadFileB64){
-    $('upErr').textContent = 'یک عکس، ویدیو یا فایل انتخاب کن';
+    $('upErr').textContent = 'یک عکس بگیر، ویدیو ضبط کن یا فایل انتخاب کن';
     return;
   }
   return _submitUploadOrig();
