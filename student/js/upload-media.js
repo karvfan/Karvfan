@@ -6,6 +6,9 @@
  *  - ویدیو: فقط ضبط مستقیم با دوربین (بدون انتخاب از گالری)
  *  - فایل: PDF / Word / PowerPoint / Excel / متن / ZIP
  * ویدیو و فایل مستقیم (بدون base64) به Storage آپلود می‌شن تا حافظه‌ی گوشی پر نشه.
+ *
+ * نمایش ویدیو (پنل معلم، «کارهای من»): در shared/js/utils.js → fileLinkOrImg
+ * نمایش ویدیو در گالری: loadGallery در همین فایل
  */
 
 const UPLOAD_MAX_MB = 50;
@@ -105,11 +108,36 @@ submitUpload = function(){
   return _submitUploadOrig();
 };
 
-// نمایش ویدیوی ثبت‌شده در «کارهای من» (به‌جای لینک ساده)
-const _fileLinkOrImgOrig = fileLinkOrImg;
-fileLinkOrImg = function(url){
-  if(url && VIDEO_EXT_RE.test(String(url).split('?')[0])){
-    return '<video class="sample-img" style="max-height:220px;width:100%" controls playsinline preload="metadata" src="' + esc(url) + '"></video>';
-  }
-  return _fileLinkOrImgOrig(url);
+/* ---- گالری: نمایش ویدیو با پلیر (بقیه‌ی منطق دقیقاً مثل student.js) ---- */
+loadGallery = async function(){
+  const el = $('pGallery');
+  el.innerHTML = '<div class="filter-row">'+
+    '<select id="galSchool" onchange="loadGallery()"><option value="">همه مدارس</option>'+SCHOOLS.map(s=>'<option '+(($('galSchool')&&$('galSchool').value===s)?'selected':'')+' value="'+s+'">'+s+'</option>').join('')+'</select>'+
+    '<select id="galGrade" onchange="loadGallery()"><option value="">همه پایه‌ها</option>'+GRADES.map(g=>'<option '+(($('galGrade')&&$('galGrade').value===String(g))?'selected':'')+' value="'+g+'">پایه '+({7:'هفتم',8:'هشتم',9:'نهم'}[g])+'</option>').join('')+'</select>'+
+    '</div><div id="galGrid" class="gallery-grid"></div>';
+  const school = $('galSchool').value || null, grade = $('galGrade').value ? parseInt($('galGrade').value) : null;
+  const { data, error } = await sb.rpc('get_gallery', { p_school: school, p_grade: grade });
+  const grid = $('galGrid');
+  if(error || !data || !data.length){ grid.outerHTML = emptyState('🖼️','هنوز کاری در گالری نیست','وقتی مربی یک کار رو تأیید و عمومی کنه، اینجا نمایش داده می‌شه'); return; }
+  grid.innerHTML = data.map(g=>{
+    const isImg = /\.(jpg|jpeg|png|webp|gif)$/i.test(g.file_url);
+    const isVid = isVideoUrl(g.file_url);
+    const liked = myLikedIds.has(g.id);
+    let media;
+    if(isImg){
+      media = '<div onclick="openLightbox(\''+esc(g.file_url)+'\')"><img src="'+esc(g.file_url)+'"></div>';
+    } else if(isVid){
+      media = '<div><video controls playsinline preload="metadata" style="width:100%;max-height:220px;display:block;background:#000" src="'+esc(g.file_url)+'"></video></div>';
+    } else {
+      media = '<div onclick="window.open(\''+esc(g.file_url)+'\',\'_blank\')"><div style="height:120px;display:flex;align-items:center;justify-content:center;font-size:34px;background:var(--paper-dark)">📄</div></div>';
+    }
+    return '<div class="g-item">'+
+      media+
+      '<div class="g-body"><div class="g-title">'+esc(g.title)+'</div><div class="g-name">'+esc(maskName(g.student_name))+' · '+esc(g.school)+'</div>'+
+      (g.is_eco_friendly? '<div class="eco-badge">♻️ سازگار با محیط‌زیست</div>':'')+
+      '<div class="g-actions"><button class="like-btn '+(liked?'liked':'')+'" onclick="toggleLike(\''+g.id+'\', this)">'+(liked?'❤️':'🤍')+' <span>'+g.like_count+'</span></button>'+
+      '<button class="like-btn" onclick="toggleCritique(\''+g.id+'\')">💬 نقد سازنده</button></div>'+
+      '<div class="critique-panel hidden" id="critique_'+g.id+'"></div>'+
+      '</div></div>';
+  }).join('');
 };

@@ -137,9 +137,14 @@ function embedUrl(url){
   if(y) return 'https://www.youtube.com/embed/'+y[1];
   return null;
 }
+// آیا آدرس فایل یک ویدیوی آپلودشده است؟ (پنل معلم، گالری و «کارهای من»)
+function isVideoUrl(url){
+  return !!url && /\.(mp4|webm|mov|m4v|3gp|mkv)$/i.test(String(url).split('?')[0]);
+}
 function fileLinkOrImg(url){
   if(!url) return '';
   if(/\.(jpg|jpeg|png|webp|gif)$/i.test(url)) return '<img class="sample-img" style="max-height:200px" src="'+esc(url)+'" onclick="openLightbox(\''+esc(url)+'\')">';
+  if(isVideoUrl(url)) return '<video class="sample-img" style="max-height:220px;width:100%;background:#000" controls playsinline preload="metadata" src="'+esc(url)+'"></video>';
   return '<a class="sub-file-link" href="'+esc(url)+'" target="_blank">📎 مشاهده فایل</a>';
 }
 function designReflectionHtml(json){
