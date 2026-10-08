@@ -107,6 +107,7 @@
   </div>
   <div class="tabs app-nav">
     <button class="tab active" data-p="tReview" onclick="switchTeacherTab('tReview')"><span class="ti">🗂️</span><span class="tl">بررسی کارها</span><span class="tab-badge hidden" id="badgeReview"></span></button>
+    <button class="tab" data-p="tGallery" onclick="switchTeacherTab('tGallery')"><span class="ti">🖼️</span><span class="tl">گالری</span></button>
     <button class="tab" data-p="tLessons" onclick="switchTeacherTab('tLessons')"><span class="ti">📚</span><span class="tl">آموزش‌ها</span></button>
     <button class="tab" data-p="tAssign" onclick="switchTeacherTab('tAssign')"><span class="ti">📅</span><span class="tl">تکالیف</span></button>
     <button class="tab" data-p="tStudents" onclick="switchTeacherTab('tStudents')"><span class="ti">👩‍🎓</span><span class="tl">دانش‌آموزان</span></button>
@@ -121,6 +122,7 @@
   </div>
   <div class="main">
     <div class="panel active" id="tReview"></div>
+    <div class="panel" id="tGallery"></div>
     <div class="panel" id="tLessons"></div>
     <div class="panel" id="tAssign"></div>
     <div class="panel" id="tStudents"></div>
@@ -301,6 +303,7 @@
 <script>checkForAppUpdate('teacher', 'اپ معلم');</script>
 <script src="js/auth.js"></script>
 <script src="js/teacher.js"></script>
+<script src="js/teacher-gallery.js"></script>
 <script src="js/schools.js"></script>
 <script src="js/register.js"></script>
 <script src="js/district.js"></script>

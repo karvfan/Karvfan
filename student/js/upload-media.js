@@ -8,7 +8,7 @@
  * ویدیو و فایل مستقیم (بدون base64) به Storage آپلود می‌شن تا حافظه‌ی گوشی پر نشه.
  *
  * نمایش ویدیو (پنل معلم، «کارهای من»): در shared/js/utils.js → fileLinkOrImg
- * نمایش ویدیو در گالری: loadGallery در همین فایل
+ * نمایش ویدیو و نظرهای گالری: loadGallery و toggleCritique در همین فایل
  */
 
 const UPLOAD_MAX_MB = 50;
@@ -140,4 +140,27 @@ loadGallery = async function(){
       '<div class="critique-panel hidden" id="critique_'+g.id+'"></div>'+
       '</div></div>';
   }).join('');
+};
+
+/* ---- نظرهای گالری: نمایش نظر معلم‌ها با نشان «معلم» (بقیه‌ی منطق مثل student.js) ---- */
+function critiqueItemHtml(f){
+  const who = f.is_staff
+    ? '<div style="font-size:12px;font-weight:700;margin-bottom:2px">👩‍🏫 '+esc(f.staff_name||'معلم')+' (معلم)</div>'
+    : '';
+  return '<div class="critique-item">'+who+
+    (f.liked_text? '<div><b>👍 دوست داشتم:</b> '+esc(f.liked_text)+'</div>':'')+
+    (f.suggestion_text? '<div><b>💡 پیشنهاد:</b> '+esc(f.suggestion_text)+'</div>':'')+
+    '</div>';
+}
+toggleCritique = async function(submissionId){
+  const panel = $('critique_'+submissionId);
+  if(!panel.classList.contains('hidden')){ panel.classList.add('hidden'); return; }
+  panel.classList.remove('hidden');
+  panel.innerHTML = '<div class="lesson-body">در حال بارگذاری...</div>';
+  const { data } = await sb.rpc('get_gallery_feedback', { p_submission_id: submissionId });
+  let html = (data||[]).map(critiqueItemHtml).join('');
+  html += '<div class="field"><label>یه چیزی که دوست داشتی</label><input id="cLiked_'+submissionId+'" placeholder="مثلاً: رنگ‌آمیزیش خیلی قشنگه"></div>'+
+    '<div class="field"><label>یه پیشنهاد برای بهترشدن</label><input id="cSugg_'+submissionId+'" placeholder="مثلاً: می‌تونستی لبه‌هاش رو صاف‌تر کنی"></div>'+
+    '<button class="btn btn-sky btn-sm" onclick="submitCritique(\''+submissionId+'\')">ارسال نظر</button>';
+  panel.innerHTML = html;
 };
