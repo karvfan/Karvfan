@@ -390,7 +390,9 @@ function tryGenericMatchPair(){
   }
 }
 
-/* ------------------------------------------------------------ بازی عمومی ۳: حافظه (memory) */
+/* ------------------------------------------------------------ بازی عمومی ۳: حافظه (memory)
+   ابتدا همه‌ی کارت‌ها یک بار (چند ثانیه) رو به دانش‌آموز نشان داده می‌شن؛
+   بعد پشت می‌شن (در همون جای قبلی) و بازی شروع می‌شه. */
 function startMemoryGame(l, g){
   const pairs = g.data.pairs;
   const cards = [];
@@ -398,8 +400,37 @@ function startMemoryGame(l, g){
   quizState = {
     type:'memory', lessonId:l.id, gameKey:g.key, gameTitle:g.title, points:g.points,
     cards: shuffleArr(cards), total: pairs.length, matched:new Set(),
-    flipped:[], locked:false, moves:0
+    flipped:[], locked:true, moves:0,
+    phase:'preview', previewLeft:0, previewTimer:null
   };
+  startMemoryPreview();
+}
+function startMemoryPreview(){
+  const st = quizState;
+  st.phase = 'preview'; st.locked = true;
+  st.previewLeft = Math.min(15, Math.max(6, st.cards.length));
+  renderMemoryPreview();
+  st.previewTimer = setInterval(()=>{
+    if(quizState !== st || st.phase !== 'preview'){ clearInterval(st.previewTimer); return; }
+    st.previewLeft--;
+    if(st.previewLeft <= 0){ beginMemoryPlay(); }
+    else { renderMemoryPreview(); }
+  }, 1000);
+}
+function renderMemoryPreview(){
+  const st = quizState;
+  $('quizBody').innerHTML =
+    '<div class="quiz-qcount">👀 کارت‌ها رو خوب نگاه کن و جای هر کدوم رو یادت بسپار! بعد از '+st.previewLeft+' ثانیه برمی‌گردن پشت</div>'+
+    '<div class="memory-grid">'+
+      st.cards.map(c=>'<button class="memory-card mem-flip" tabindex="-1" style="pointer-events:none">'+esc(c.text)+'</button>').join('')+
+    '</div>'+
+    '<button class="btn btn-thread btn-sm" style="margin-top:12px" onclick="beginMemoryPlay()">✅ یادم موند، شروع بازی</button>';
+}
+function beginMemoryPlay(){
+  const st = quizState;
+  if(!st || st.type!=='memory' || st.phase!=='preview') return;
+  clearInterval(st.previewTimer);
+  st.phase = 'play'; st.locked = false; st.flipped = [];
   renderMemory();
 }
 function renderMemory(){
@@ -416,7 +447,7 @@ function renderMemory(){
 }
 function flipMemoryCard(i){
   const st = quizState;
-  if(st.locked) return;
+  if(st.locked || st.phase==='preview') return;
   const c = st.cards[i];
   if(st.matched.has(c.pairId) || st.flipped.includes(i)) return;
   st.flipped.push(i);
