@@ -11,6 +11,14 @@ async function teacherLogin(){
   $('taBtn').disabled=true; $('taBtn').innerHTML='<span class="spinner"></span> در حال ورود...';
   try{
     const email = await resolveLoginIdentifier(raw);
+    /* ورودی نه ایمیل معتبره نه کد ملیِ پیداشده: به‌جای «رمز اشتباه» پیام درست نشون بده
+       (مثلاً وقتی به‌جای @ نقطه تایپ شده: name.gmail.com) */
+    if(!email.includes('@')){
+      $('taErr').textContent = /^\d{10}$/.test(toLatinDigits(raw))
+        ? 'این کد ملی در سامانه پیدا نشد — با ایمیل وارد شوید یا کد ملی را بررسی کنید'
+        : 'ایمیل معتبر نیست — علامت @ را فراموش نکرده‌اید؟ (مثال: name@gmail.com)';
+      return;
+    }
     const { error } = await sb.auth.signInWithPassword({ email, password: pass });
     if(error){
       /* ایمیل هنوز تأیید نشده: به‌جای «رمز اشتباه» پیام درست نشون بده */
