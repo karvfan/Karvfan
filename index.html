@@ -3,6 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<script>
+/* لینک «تغییر رمز» ایمیل اگه آدرس برگشت (redirectTo) در تنظیمات Supabase مجاز نباشه، به صفحه‌ی اصلی سایت
+   برمی‌گرده (Site URL) و توکن در #hash می‌مونه. این‌جا اون رو به صفحه‌ی تغییر رمز هدایت می‌کنیم. */
+(function(){
+  var h = location.hash || '';
+  if(/[#&]type=recovery(&|$)/.test(h) && /[#&]access_token=/.test(h)){
+    location.replace('teacher/reset-password.html' + h);
+  }
+})();
+</script>
 <title>کارفن | سامانه آموزش و ارزیابی درس کار و فناوری</title>
 <meta name="description" content="کارفن — سامانه‌ی آموزش، ارزیابی و مدیریت فعالیت‌های عملی درس کار و فناوری برای دانش‌آموزان پایه‌های هفتم، هشتم و نهم.">
 <meta name="robots" content="index, follow">
