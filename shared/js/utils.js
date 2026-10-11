@@ -56,14 +56,25 @@ function isValidNationalCode(code){
   const remainder = sum % 11;
   return (remainder < 2 && check === remainder) || (remainder >= 2 && check === 11 - remainder);
 }
+/* ارقام فارسی/عربی → لاتین. (در register.js هم با همین نام تعریف شده؛ رفتار یکسانه.) */
+function toLatinDigits(s){
+  return String(s||'')
+    .replace(/[۰-۹]/g, d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+    .replace(/[٠-٩]/g, d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+}
 // ورودی ایمیل یا کد ملی رو به ایمیل واقعیِ قابل‌استفاده برای Supabase Auth تبدیل می‌کنه.
 // اگه ایمیل باشه همون برمی‌گرده؛ اگه ۱۰ رقمی باشه، از دیتابیس ایمیل واقعیِ متناظرش جست‌وجو می‌شه.
+// نکته: کیبورد فارسی ارقام رو به‌صورت ۰-۹ (فارسی) می‌نویسه و گاهی کاراکترهای نامرئی (نیم‌فاصله/RLM) اضافه می‌کنه؛
+// قبلاً regex فقط ارقام لاتین رو قبول می‌کرد و کد ملیِ فارسی‌نویسی‌شده هیچ‌وقت پیدا نمی‌شد
+// (در نتیجه «ایمیل/کد ملی یا رمز عبور اشتباه است»). ثبت‌نام هم ارقام رو نرمال می‌کرد، ولی ورود نه.
 async function resolveLoginIdentifier(input){
-  input = (input||'').trim();
-  if(input.includes('@')) return input;
-  if(/^\d{10}$/.test(input)){
-    const { data } = await sb.rpc('resolve_national_code_email', { p_national_code: input });
-    return data || input; // اگه پیدا نشد، همون کد رو برمی‌گردونیم تا Supabase خطای معمول بده
+  input = String(input||'').replace(/[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]/g,'').trim();
+  if(input.includes('@')) return input.toLowerCase();
+  const code = toLatinDigits(input);
+  if(/^\d{10}$/.test(code)){
+    const { data, error } = await sb.rpc('resolve_national_code_email', { p_national_code: code });
+    if(error) console.error('resolve_national_code_email:', error);
+    return data || code; // اگه پیدا نشد، همون کد رو برمی‌گردونیم تا Supabase خطای معمول بده
   }
   return input;
 }
