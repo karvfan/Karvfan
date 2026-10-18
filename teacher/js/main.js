@@ -1,5 +1,5 @@
 /**
- * main.js — نقطه‌ی شروع اپ معلم/ادمین. باید همیشه آخرین اسکریپت بارگذاری‌شده باشد.
+ * main.js — نقطه‌ی شروع اپ معلم/ادمین. باید همیشه آخرین اسکریپت بارگذاری‌شده باشه.
  */
 
 function withTimeout(promise, ms){
@@ -59,3 +59,11 @@ sb && sb.auth.onAuthStateChange((event)=>{ if(event==='SIGNED_OUT') goTo('teache
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
 }
+
+/* سند کلاسی و طرح درس (معلم): بعد از همه‌ی اسکریپتها با ترتیب مشخص لود می‌شه */
+['js/evidence.js', 'js/evidence-boot.js'].forEach(src => {
+  const s = document.createElement('script');
+  s.src = src;
+  s.async = false;
+  document.body.appendChild(s);
+});

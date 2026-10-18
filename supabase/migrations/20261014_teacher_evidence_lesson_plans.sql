@@ -1,0 +1,4 @@
+-- Applied to Karfan.prod via Supabase migration "teacher_evidence_and_lesson_plans".
+-- Tables: class_evidence, lesson_plans (RLS on) + private bucket class-evidence + storage policies.
+-- Helper functions: kf_staff_role(), kf_in_scope(school_id), kf_touch_updated_at().
+-- See the migration history in Supabase for the full SQL.
