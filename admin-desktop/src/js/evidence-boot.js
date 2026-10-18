@@ -3,6 +3,11 @@
  * باید بعد از dashboard.js و evidence.js لود شود.
  */
 (function () {
+  // طرح درس سالانه: loadEvidenceAdmin را wrap می‌کند
+  const annual = document.createElement('script');
+  annual.src = 'js/annual-plan-admin.js';
+  document.body.appendChild(annual);
+
   const orig = window.switchPanel;
   window.switchPanel = function (id) {
     const r = orig.apply(this, arguments);
