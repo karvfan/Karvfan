@@ -7,6 +7,11 @@
 (function () {
   let inited = false;
 
+  // طرح درس سالانه: initTeacherEvidence را wrap می‌کند؛ قبل از اولین باز شدن تب لود می‌شود
+  const annual = document.createElement('script');
+  annual.src = 'js/annual-plan.js';
+  document.body.appendChild(annual);
+
   function inject() {
     const nav = document.querySelector('#teacherApp .tabs');
     const main = document.querySelector('#teacherApp .main');
