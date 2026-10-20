@@ -109,6 +109,7 @@
     <button class="tab active" data-p="tReview" onclick="switchTeacherTab('tReview')"><span class="ti">🗂️</span><span class="tl">بررسی کارها</span><span class="tab-badge hidden" id="badgeReview"></span></button>
     <button class="tab" data-p="tLessons" onclick="switchTeacherTab('tLessons')"><span class="ti">📚</span><span class="tl">آموزش‌ها</span></button>
     <button class="tab" data-p="tAssign" onclick="switchTeacherTab('tAssign')"><span class="ti">📅</span><span class="tl">تکالیف</span></button>
+    <button class="tab" data-p="tGroups" onclick="switchTeacherTab('tGroups')"><span class="ti">👥</span><span class="tl">گروه‌ها</span></button>
     <button class="tab" data-p="tStudents" onclick="switchTeacherTab('tStudents')"><span class="ti">👩‍🎓</span><span class="tl">دانش‌آموزان</span></button>
     <button class="tab" data-p="tAddStudent" onclick="switchTeacherTab('tAddStudent')"><span class="ti">➕</span><span class="tl">ثبت دانش‌آموز</span></button>
     <button class="tab" data-p="tSchools" onclick="switchTeacherTab('tSchools')"><span class="ti">🏫</span><span class="tl">مدرسه‌ها</span><span class="tab-badge hidden" id="badgeSchools"></span></button>
@@ -123,6 +124,7 @@
     <div class="panel active" id="tReview"></div>
     <div class="panel" id="tLessons"></div>
     <div class="panel" id="tAssign"></div>
+    <div class="panel" id="tGroups"></div>
     <div class="panel" id="tStudents"></div>
     <div class="panel" id="tAddStudent"></div>
     <div class="panel" id="tSchools"></div>
@@ -250,11 +252,35 @@
         <option value="company">💼 شرکت دانش‌آموزی مصغر (طراحی محصول، قیمت‌گذاری، تبلیغ)</option>
       </select>
     </div>
+    <div class="field"><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="amGroup" style="width:auto"> 👥 تکلیف گروهی</label>
+      <div class="quiz-hint" style="margin-top:6px">فقط دانش‌آموزهایی که از تب «گروه‌ها» عضو یک گروه شدن می‌تونن این تکلیف رو بفرستن؛ هر گروه یک کار می‌فرسته و همه‌ی اعضا امتیاز کامل رو می‌گیرن.</div>
+    </div>
     <div class="field"><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="amActive" checked style="width:auto"> فعال و قابل‌مشاهده برای دانش‌آموزان</label></div>
     <div class="field-err" id="amErr"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" style="flex:1" onclick="closeModal('assignModalOv')">انصراف</button>
       <button class="btn btn-thread" style="flex:2" onclick="saveAssignment()">ذخیره تکلیف</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== مودال: گروه دانش‌آموزی (مربی) ==================== -->
+<div class="modal-ov" id="groupModalOv">
+  <div class="modal">
+    <div class="modal-head"><h3 id="gmTitle">➕ گروه جدید</h3><button class="modal-close" onclick="closeModal('groupModalOv')">✕</button></div>
+    <input type="hidden" id="gmId">
+    <div class="field"><label>نام گروه</label><input id="gmName" maxlength="80" placeholder="مثلاً: گروه سازندگان"></div>
+    <div class="field"><label>مدرسه</label><select id="gmSchool" onchange="loadGroupStudents()"></select></div>
+    <div class="field"><label>پایه</label><select id="gmGrade" onchange="loadGroupStudents()"><option value="7">هفتم</option><option value="8">هشتم</option><option value="9">نهم</option></select></div>
+    <div class="field">
+      <label>اعضای گروه (۲ تا ۶ نفر) — <span id="gmCount">۰ نفر انتخاب شده</span></label>
+      <input id="gmSearch" placeholder="جستجوی نام..." oninput="filterGroupStudents()" style="margin-bottom:6px">
+      <div id="gmStudents" style="max-height:240px;overflow:auto"></div>
+    </div>
+    <div class="field-err" id="gmErr"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('groupModalOv')">انصراف</button>
+      <button class="btn btn-thread" style="flex:2" id="gmBtn" onclick="saveGroup()">ذخیره گروه</button>
     </div>
   </div>
 </div>
@@ -304,6 +330,7 @@
 <script src="js/schools.js"></script>
 <script src="js/register.js"></script>
 <script src="js/district.js"></script>
+<script src="js/group-work.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

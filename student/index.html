@@ -169,6 +169,11 @@
       <label>تکلیف هفتگی</label>
       <div class="assign-name-chip">📅 <span id="upAssignName"></span></div>
     </div>
+    <div class="field" id="upGroupField" style="display:none">
+      <label>👥 کار گروهی — این کار برای کدوم گروه ثبت بشه؟</label>
+      <select id="upGroup" onchange="_gwOnGroupChange()"></select>
+      <div class="quiz-hint" id="upGroupHint" style="margin-top:6px"></div>
+    </div>
     <div class="field">
       <label>عنوان کار</label>
       <input id="upTitle" placeholder="مثلاً: ساخت جعبه مقوایی" oninput="onWatermarkFieldsChange()">
@@ -267,6 +272,7 @@
 <script src="js/student.js"></script>
 <script src="js/upload-media.js"></script>
 <script src="js/edit-submission.js"></script>
+<script src="js/group-work.js"></script>
 <script src="js/games.js"></script>
 <script src="js/games-dragsort.js"></script>
 <script src="js/careers.js"></script>
