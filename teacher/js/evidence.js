@@ -37,18 +37,36 @@
     arr.map((x) => `<option value="${E(x[vKey])}">${E(typeof label === 'function' ? label(x) : x[label])}</option>`).join('');
   const lessonLabel = (l) => `${GRADE[l.grade] || l.grade || ''} — ${l.unit_title}`;
 
+  /**
+   * مدرسه‌های معلم.
+   * جدول staff_schools فعال‌بودن RLS دارد و policy برای خواندن مستقیم ندارد؛ پس
+   * sb.from('staff_schools') همیشه خالی برمی‌گشت و معلم‌های چندمدرسه‌ای فقط مدرسه‌ی اصلی‌شون
+   * (staff.school_id) رو می‌دیدن. rpc('my_schools') (SECURITY DEFINER) همون چیزیه که بقیه‌ی پنل
+   * مربی هم استفاده می‌کنه (teacher.js → loadMySchools).
+   */
+  async function fetchMySchools(uid) {
+    const { data, error } = await sb.rpc('my_schools');
+    if (error) console.error('my_schools failed:', error);
+    if (!error && data && data.length) return data.map((s) => ({ id: s.id, name: s.name }));
+    // fallback: مدرسه‌ی اصلی در جدول staff
+    const { data: me } = await sb.from('staff').select('school_id').eq('id', uid).maybeSingle();
+    if (me && me.school_id) {
+      const { data: sc } = await sb.from('schools').select('id,name').eq('id', me.school_id);
+      return sc || [];
+    }
+    return [];
+  }
+  window.kfFetchMySchools = fetchMySchools;
+
   async function loadContext() {
     const { data: { user } } = await sb.auth.getUser();
     if (!user) throw new Error('not logged in');
     S.uid = user.id;
-    const { data: me } = await sb.from('staff').select('school_id').eq('id', user.id).maybeSingle();
-    const { data: links } = await sb.from('staff_schools').select('school_id').eq('staff_id', user.id);
-    const ids = [...new Set([me && me.school_id, ...(links || []).map((l) => l.school_id)].filter(Boolean))];
-    const [sc, ls] = await Promise.all([
-      ids.length ? sb.from('schools').select('id,name').in('id', ids) : Promise.resolve({ data: [] }),
+    const [schools, ls] = await Promise.all([
+      fetchMySchools(user.id),
       sb.from('lessons').select('id,unit_title,grade,order_index').eq('is_published', true).order('grade').order('order_index'),
     ]);
-    S.schools = sc.data || [];
+    S.schools = schools;
     S.lessons = ls.data || [];
   }
 
@@ -108,7 +126,10 @@
   }
 
   function fillSelects() {
-    const so = opts(S.schools, 'id', 'name', S.schools.length > 1 ? 'انتخاب مدرسه' : '');
+    const noSchool = !S.schools.length;
+    const so = noSchool
+      ? '<option value="">مدرسه‌ای به حساب شما متصل نیست</option>'
+      : opts(S.schools, 'id', 'name', S.schools.length > 1 ? 'انتخاب مدرسه' : '');
     const lo = opts(S.lessons, 'id', lessonLabel, 'انتخاب پودمان');
     $e('evSchool').innerHTML = so; $e('lpSchool').innerHTML = so;
     $e('evLesson').innerHTML = lo; $e('lpLesson').innerHTML = lo;
