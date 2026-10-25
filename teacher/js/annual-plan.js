@@ -27,24 +27,38 @@
     } catch (e) { return '1405-1406'; }
   }
 
+  // مدرسه‌های معلم: staff_schools فعال‌بودن RLS دارد و policy خواندن ندارد، پس باید از rpc('my_schools') خواند
+  // (همون تابعی که بقیه‌ی پنل مربی استفاده می‌کنه). همان helper موجود در evidence.js استفاده می‌شود.
+  async function fetchMySchools(uid) {
+    if (typeof window.kfFetchMySchools === 'function') return window.kfFetchMySchools(uid);
+    const { data, error } = await sb.rpc('my_schools');
+    if (error) console.error('my_schools failed:', error);
+    if (!error && data && data.length) return data.map((s) => ({ id: s.id, name: s.name }));
+    const { data: me } = await sb.from('staff').select('school_id').eq('id', uid).maybeSingle();
+    if (me && me.school_id) {
+      const { data: sc } = await sb.from('schools').select('id,name').eq('id', me.school_id);
+      return sc || [];
+    }
+    return [];
+  }
+
   async function loadCtx() {
     const { data: { user } } = await sb.auth.getUser();
     if (!user) throw new Error('not logged in');
     C.uid = user.id;
-    const { data: me } = await sb.from('staff').select('school_id').eq('id', user.id).maybeSingle();
-    const { data: links } = await sb.from('staff_schools').select('school_id').eq('staff_id', user.id);
-    const ids = [...new Set([me && me.school_id, ...(links || []).map((l) => l.school_id)].filter(Boolean))];
-    const [sc, ls] = await Promise.all([
-      ids.length ? sb.from('schools').select('id,name').in('id', ids) : Promise.resolve({ data: [] }),
+    const [schools, ls] = await Promise.all([
+      fetchMySchools(user.id),
       sb.from('lessons').select('id,unit_title,grade,order_index').eq('is_published', true).order('grade').order('order_index'),
     ]);
-    C.schools = sc.data || [];
+    C.schools = schools;
     C.lessons = ls.data || [];
   }
 
   function formHtml() {
-    const schoolOpts = (C.schools.length > 1 ? '<option value="">انتخاب مدرسه</option>' : '') +
-      C.schools.map((s) => `<option value="${s.id}">${E(s.name)}</option>`).join('');
+    const schoolOpts = C.schools.length
+      ? (C.schools.length > 1 ? '<option value="">انتخاب مدرسه</option>' : '') +
+        C.schools.map((s) => `<option value="${s.id}">${E(s.name)}</option>`).join('')
+      : '<option value="">مدرسه‌ای به حساب شما متصل نیست</option>';
     return `<div class="kfe-card"><div class="kfe-h">طرح درس سالانه (به نام شما)</div>
 <label>مدرسه</label><select id="anSchool">${schoolOpts}</select>
 <label>سال تحصیلی</label><input id="anYear" value="${currentAcademicYear()}" placeholder="1405-1406" inputmode="numeric">
