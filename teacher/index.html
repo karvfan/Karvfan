@@ -240,7 +240,7 @@
       <option value="فرزانگان"></option>
       <option value="۱۳ آبان"></option>
     </datalist>
-    <div class="field"><label>مهلت تحویل (اختیاری)</label><input id="amDue" type="date"></div>
+    <div class="field"><label>مهلت تحویل (اختیاری — تقویم شمسی)</label><input id="amDue" type="date"></div>
     <div class="field"><label>امتیاز پیشنهادی</label><input id="amPoints" type="number" value="10"></div>
     <div class="field"><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="amChallenge" style="width:auto" onchange="$('amChallengeTypeField').classList.toggle('hidden', !this.checked)"> 🎨 چالش باز (به‌جای تکلیف با خروجی مشخص)</label>
       <div class="quiz-hint" style="margin-top:6px">وقتی فعال باشه، موقع آپلود کار، به‌جای فرم معمولی، یه‌سری سؤال هدایت‌کننده از دانش‌آموز پرسیده می‌شه.</div>
@@ -318,6 +318,7 @@
 <script src="../shared/js/config.js"></script>
 <script src="../shared/js/state.js"></script>
 <script src="../shared/js/utils.js"></script>
+<script src="../shared/js/jalali-core.js"></script>
 <script src="../shared/js/a11y.js"></script>
 <script src="../shared/js/certificate.js"></script>
 <script src="../shared/js/show-password.js"></script>
@@ -331,6 +332,8 @@
 <script src="js/register.js"></script>
 <script src="js/district.js"></script>
 <script src="js/group-work.js"></script>
+<script src="../shared/js/jalali-datepicker.js"></script>
+<script src="../shared/js/upload-stamp.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
