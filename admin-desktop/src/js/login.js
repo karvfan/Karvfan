@@ -3,14 +3,26 @@
  * initLogin(allowedRoles) را با آرایه‌ای از نقش‌های مجاز برای آن صفحه صدا می‌زنیم؛
  * بعد از ورود موفق، نقش واقعی کاربر از دیتابیس خوانده و با allowedRoles چک می‌شود.
  */
-// ورودی ایمیل یا کد ملی رو به شناسه‌ی قابل‌استفاده برای Supabase Auth تبدیل می‌کنه
-// ورودی ایمیل یا کد ملی رو به ایمیل واقعی تبدیل می‌کنه (کد ملی از دیتابیس جست‌وجو می‌شه)
+
+/* ارقام فارسی/عربی → لاتین (همان رفتار shared/js/utils.js در وب‌اپ معلم) */
+function toLatinDigits(s){
+  return String(s||'')
+    .replace(/[۰-۹]/g, d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+    .replace(/[٠-٩]/g, d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+}
+
+// ورودی ایمیل یا کد ملی رو به ایمیل واقعی تبدیل می‌کنه (کد ملی از دیتابیس جست‌وجو می‌شه).
+// کیبورد فارسی ارقام رو به‌صورت ۰-۹ (فارسی) می‌نویسه و گاهی کاراکترهای نامرئی (نیم‌فاصله/RLM) اضافه می‌کنه؛
+// قبلاً فقط ارقام لاتین قبول می‌شد و کد ملیِ فارسی‌نویسی‌شده هیچ‌وقت پیدا نمی‌شد
+// (در نتیجه «ایمیل/کد ملی یا رمز عبور اشتباه است»).
 async function resolveLoginIdentifier(input){
-  input = (input||'').trim();
-  if(input.includes('@')) return input;
-  if(/^\d{10}$/.test(input)){
-    const { data } = await sb.rpc('resolve_national_code_email', { p_national_code: input });
-    return data || input;
+  input = String(input||'').replace(/[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]/g,'').trim();
+  if(input.includes('@')) return input.toLowerCase();
+  const code = toLatinDigits(input);
+  if(/^\d{10}$/.test(code)){
+    const { data, error } = await sb.rpc('resolve_national_code_email', { p_national_code: code });
+    if(error) console.error('resolve_national_code_email:', error);
+    return data || code; // اگه پیدا نشد، همون کد رو برمی‌گردونیم تا پیام درست نشون داده بشه
   }
   return input;
 }
@@ -30,11 +42,26 @@ function initLogin(allowedRoles, bioVault){
     const raw = document.getElementById('email').value.trim();
     const pass = document.getElementById('pass').value;
     if(!raw || !pass){ errEl.textContent = 'ایمیل یا کد ملی، و رمز عبور را وارد کنید'; return; }
-    const email = await resolveLoginIdentifier(raw);
     btn.disabled = true; btn.textContent = 'در حال ورود...';
     try{
+      const email = await resolveLoginIdentifier(raw);
+      /* ورودی نه ایمیل معتبره نه کد ملیِ پیداشده: به‌جای «رمز اشتباه» پیام درست نشون بده */
+      if(!email.includes('@')){
+        errEl.textContent = /^\d{10}$/.test(toLatinDigits(raw))
+          ? 'این کد ملی در سامانه پیدا نشد — با ایمیل وارد شوید یا کد ملی را بررسی کنید'
+          : 'ایمیل معتبر نیست — علامت @ را فراموش نکرده‌اید؟ (مثال: name@gmail.com)';
+        return;
+      }
       const { error: authErr } = await sb.auth.signInWithPassword({ email, password: pass });
-      if(authErr){ errEl.textContent = 'ایمیل/کد ملی یا رمز عبور اشتباه است'; return; }
+      if(authErr){
+        /* ایمیل هنوز تأیید نشده: به‌جای «رمز اشتباه» پیام درست نشون بده */
+        if(/not confirmed|email_not_confirmed/i.test(String(authErr.message||'') + ' ' + String(authErr.code||''))){
+          errEl.textContent = 'ایمیل شما هنوز تأیید نشده — ایمیل «تأیید ایمیل شما در کارفن» رو باز کنید و روی دکمه‌ی تأیید بزنید (پوشه‌ی اسپم رو هم ببینید).';
+        }else{
+          errEl.textContent = 'ایمیل/کد ملی یا رمز عبور اشتباه است';
+        }
+        return;
+      }
 
       const { data: scopeRows, error: scopeErr } = await sb.rpc('my_scope');
       if(scopeErr || !scopeRows || !scopeRows.length){
